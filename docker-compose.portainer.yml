@@ -21,12 +21,31 @@ services:
 
       # Node environment
       - NODE_ENV=production
-    ports:
-      - "3001:80"
+    # ports:
+    #   - "3001:80"  # Porta comentada para Swarm mode - Traefik acessa via rede interna
     networks:
       - lcp-network
       - n8n_traefik_proxy
     restart: unless-stopped
+    deploy:
+      mode: replicated
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        monitor: 60s
+        order: start-first
+      rollback_config:
+        parallelism: 1
+        delay: 5s
+        failure_action: pause
+        monitor: 30s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
     command:
       - /bin/sh
       - -c
@@ -92,16 +111,19 @@ services:
         nginx -g 'daemon off;'
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost/health || exit 1"]
-      interval: 30s
-      timeout: 10s
+      interval: 10s
+      timeout: 5s
       retries: 3
-      start_period: 120s
+      start_period: 180s
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.lcp-front.rule=Host(`lcp.brainitsolutions.com.br`)"
       - "traefik.http.routers.lcp-front.entrypoints=websecure"
-      - "traefik.http.routers.lcp-front.tls.certresolver=le"
+      - "traefik.http.routers.lcp-front.tls.certresolver=letsencrypt"
       - "traefik.http.services.lcp-front.loadbalancer.server.port=80"
+      - "traefik.http.services.lcp-front.loadbalancer.healthcheck.path=/health"
+      - "traefik.http.services.lcp-front.loadbalancer.healthcheck.interval=10s"
+      - "traefik.docker.network=n8n_traefik_proxy"
 
 networks:
   lcp-network:
