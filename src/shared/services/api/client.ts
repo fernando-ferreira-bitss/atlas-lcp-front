@@ -1,8 +1,20 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
+// Função auxiliar para garantir que a URL sempre tenha protocolo
+const getApiBaseUrl = (): string => {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+
+  // Se a URL não tiver protocolo, adiciona https://
+  if (baseUrl && !baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
+    return `https://${baseUrl}`;
+  }
+
+  return baseUrl;
+};
+
 // Configuração base do cliente Axios
 export const apiClient = axios.create({
-  baseURL: `${import.meta.env.VITE_API_BASE_URL}/api/v1`,
+  baseURL: `${getApiBaseUrl()}/api/v1`,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
