@@ -29,8 +29,8 @@ export const Login = () => {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: 'admin@lcp.com',
-      password: 'admin123',
+      email: '',
+      password: '',
     },
   });
 
@@ -89,12 +89,6 @@ export const Login = () => {
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? 'Entrando...' : 'Entrar'}
             </Button>
-
-            <div className="text-xs text-muted-foreground">
-              <p>Credenciais de teste:</p>
-              <p>E-mail: admin@lcp.com</p>
-              <p>Senha: admin123</p>
-            </div>
           </form>
         </CardContent>
       </Card>
