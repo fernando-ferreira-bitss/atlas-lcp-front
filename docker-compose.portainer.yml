@@ -21,6 +21,7 @@ services:
 
       # Node environment
       - NODE_ENV=production
+      - HUSKY=0
     # ports:
     #   - "3001:80"  # Porta comentada para Swarm mode - Traefik acessa via rede interna
     networks:
@@ -50,8 +51,8 @@ services:
       - /bin/sh
       - -c
       - |
-        echo '📥 Installing git and nginx...'
-        apk add --no-cache git nginx
+        echo '📥 Installing git, nginx and wget...'
+        apk add --no-cache git nginx wget
         echo '📦 Cloning repository...'
         rm -rf /tmp/lcp-front
         if [ -n "$$GIT_TOKEN" ]; then
