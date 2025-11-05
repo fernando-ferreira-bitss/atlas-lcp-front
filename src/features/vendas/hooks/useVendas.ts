@@ -1,9 +1,9 @@
-import type { UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 
 import { vendaService } from '../services/vendaService';
 
 import type { Venda, VendaFilters } from '@/shared/types';
+import type { UseQueryResult } from '@tanstack/react-query';
 
 export const useVendas = (filters?: VendaFilters): UseQueryResult<Venda[], Error> =>
   useQuery({

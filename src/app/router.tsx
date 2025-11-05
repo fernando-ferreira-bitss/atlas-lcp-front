@@ -1,6 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 
-import { PrivateRoute } from '@/features/auth/components/PrivateRoute';
+import { AdminRoute, PrivateRoute } from '@/features/auth';
 import { Login } from '@/features/auth/pages/Login';
 import { Dashboard } from '@/features/dashboard/pages/Dashboard';
 import { Users } from '@/features/users/pages/Users';
@@ -38,7 +38,13 @@ export const router = createBrowserRouter([
       },
       {
         path: 'usuarios',
-        element: <Users />,
+        element: <AdminRoute />,
+        children: [
+          {
+            index: true,
+            element: <Users />,
+          },
+        ],
       },
       {
         path: 'configuracoes',

@@ -1,6 +1,8 @@
 import { Eye } from 'lucide-react';
 import { useState } from 'react';
 
+import type { Venda } from '@/shared/types';
+
 import { useVendas } from '@/features/vendas/hooks/useVendas';
 import { Loading } from '@/shared/components/common';
 import { Button } from '@/shared/components/ui/button';
@@ -12,7 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/shared/components/ui/table';
-import type { Venda } from '@/shared/types';
 import { formatCurrency, formatDate } from '@/shared/utils/format';
 
 interface VendaDetalhesModalProps {
@@ -20,8 +21,7 @@ interface VendaDetalhesModalProps {
   onClose: () => void;
 }
 
-const VendaDetalhesModal = ({ venda, onClose }: VendaDetalhesModalProps) => {
-  return (
+const VendaDetalhesModal = ({ venda, onClose }: VendaDetalhesModalProps) => (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6 shadow-xl">
         <h2 className="mb-4 text-2xl font-bold">Detalhes da Venda</h2>
@@ -88,7 +88,6 @@ const VendaDetalhesModal = ({ venda, onClose }: VendaDetalhesModalProps) => {
       </div>
     </div>
   );
-};
 
 export const UltimasVendasTable = () => {
   const [selectedVenda, setSelectedVenda] = useState<Venda | null>(null);

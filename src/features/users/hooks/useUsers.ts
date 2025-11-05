@@ -101,32 +101,6 @@ export const useUpdateUser = () => {
 };
 
 /**
- * Hook para deletar um usuário
- * @returns Mutation para deletar usuário
- */
-export const useDeleteUser = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: number) => userService.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      toast({
-        title: 'Usuário deletado',
-        description: 'O usuário foi deletado com sucesso.',
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Erro ao deletar usuário',
-        description: error.message || 'Ocorreu um erro ao deletar o usuário.',
-        variant: 'destructive',
-      });
-    },
-  });
-};
-
-/**
  * Hook para ativar/desativar um usuário
  * @returns Mutation para toggle active
  */
@@ -147,6 +121,33 @@ export const useToggleUserActive = () => {
       toast({
         title: 'Erro ao atualizar status',
         description: error.message || 'Ocorreu um erro ao atualizar o status do usuário.',
+        variant: 'destructive',
+      });
+    },
+  });
+};
+
+/**
+ * Hook para resetar senha de um usuário (Admin apenas)
+ * @returns Mutation para resetar senha
+ */
+export const useResetUserPassword = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, newPassword }: { id: number; newPassword: string }) =>
+      userService.resetPassword(id, newPassword),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast({
+        title: 'Senha resetada',
+        description: 'A senha do usuário foi resetada com sucesso.',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Erro ao resetar senha',
+        description: error.message || 'Ocorreu um erro ao resetar a senha.',
         variant: 'destructive',
       });
     },

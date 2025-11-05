@@ -17,6 +17,11 @@ export default {
         ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
+        // Cores personalizadas LCP
+        'lcp-blue': '#0B2D5C',
+        'lcp-orange': '#F45B32',
+        'lcp-green': '#20B187',
+        'lcp-gray': '#6B7280',
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',

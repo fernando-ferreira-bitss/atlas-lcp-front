@@ -1,5 +1,6 @@
-import { apiClient } from '@/shared/services/api/client';
 import type { Venda, VendaFilters } from '@/shared/types';
+
+import { apiClient } from '@/shared/services/api/client';
 
 class VendaService {
   private baseURL = '/vendas';

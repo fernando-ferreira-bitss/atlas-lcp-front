@@ -1,9 +1,9 @@
-import type { UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 
 import { empreendimentoService } from '../services/empreendimentoService';
 
 import type { Empreendimento } from '@/shared/types';
+import type { UseQueryResult } from '@tanstack/react-query';
 
 export const useEmpreendimentos = (): UseQueryResult<Empreendimento[], Error> =>
   useQuery({

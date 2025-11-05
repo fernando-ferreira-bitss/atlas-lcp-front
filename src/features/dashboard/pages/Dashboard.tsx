@@ -19,9 +19,10 @@ import {
   useTopEmpreendimentos,
 } from '../hooks/useDashboard';
 
+import type { DashboardFilters as IFilters } from '@/shared/types';
+
 import { Loading } from '@/shared/components/common';
 import { Button } from '@/shared/components/ui/button';
-import type { DashboardFilters as IFilters } from '@/shared/types';
 import { formatCurrency, formatPercentage } from '@/shared/utils/format';
 
 export const Dashboard = () => {
@@ -92,12 +93,12 @@ export const Dashboard = () => {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold sm:text-3xl">Dashboard</h1>
-          <p className="text-sm text-muted-foreground sm:text-base">
+          <h1 className="text-2xl font-bold text-lcp-blue sm:text-3xl">Dashboard</h1>
+          <p className="text-sm text-lcp-gray sm:text-base">
             Visão geral dos indicadores de vendas
           </p>
         </div>
-        <Button className="w-full bg-green-600 hover:bg-green-700 sm:w-auto">
+        <Button className="w-full bg-lcp-green hover:bg-lcp-green/90 sm:w-auto">
           <Download className="mr-2 h-4 w-4" />
           Exportar CSV/XLSX
         </Button>
@@ -174,8 +175,10 @@ export const Dashboard = () => {
       {/* Primeira linha: Atendimento de Metas | Meta vs. Realizado (Mensal) */}
       <div className="grid gap-4 md:grid-cols-2">
         {/* Atendimento de Metas (Gauges) */}
-        <div className="rounded-lg border bg-card p-4 sm:p-6">
-          <h2 className="mb-4 text-base font-semibold sm:text-lg">Atendimento de Metas</h2>
+        <div className="rounded-lg border-none bg-card p-4 shadow-md sm:p-6">
+          <h2 className="mb-4 text-base font-semibold text-lcp-blue sm:text-lg">
+            Atendimento de Metas
+          </h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <MetaGaugeChart
               percentual={kpis.percentual_meta_mensal}
@@ -191,8 +194,8 @@ export const Dashboard = () => {
         </div>
 
         {/* Meta vs. Realizado (Mensal) */}
-        <div className="rounded-lg border bg-card p-4 sm:p-6">
-          <h2 className="mb-4 text-base font-semibold sm:text-lg">
+        <div className="rounded-lg border-none bg-card p-4 shadow-md sm:p-6">
+          <h2 className="mb-4 text-base font-semibold text-lcp-blue sm:text-lg">
             Meta vs. Realizado (Mensal)
           </h2>
           {isLoadingGrafico && (
@@ -216,8 +219,8 @@ export const Dashboard = () => {
       {/* Segunda linha: Evolução de Vendas | Taxa de Conversão */}
       <div className="grid gap-4 md:grid-cols-2">
         {/* Evolução de Vendas (2024 vs 2025) */}
-        <div className="rounded-lg border bg-card p-4 sm:p-6">
-          <h2 className="mb-4 text-base font-semibold sm:text-lg">
+        <div className="rounded-lg border-none bg-card p-4 shadow-md sm:p-6">
+          <h2 className="mb-4 text-base font-semibold text-lcp-blue sm:text-lg">
             Evolução de Vendas ({previousYear} vs {currentYear})
           </h2>
           {isLoadingComparativo && (
@@ -238,8 +241,8 @@ export const Dashboard = () => {
         </div>
 
         {/* Taxa de Conversão por Empreendimento */}
-        <div className="rounded-lg border bg-card p-4 sm:p-6">
-          <h2 className="mb-4 text-base font-semibold sm:text-lg">
+        <div className="rounded-lg border-none bg-card p-4 shadow-md sm:p-6">
+          <h2 className="mb-4 text-base font-semibold text-lcp-blue sm:text-lg">
             Taxa de Conversão por Empreendimento
           </h2>
           {isLoadingConversao && (
@@ -263,8 +266,8 @@ export const Dashboard = () => {
       {/* Terceira linha: Vendas por Empreendimento | Evolução do Ticket Médio */}
       <div className="grid gap-4 md:grid-cols-2">
         {/* Vendas por Empreendimento */}
-        <div className="rounded-lg border bg-card p-4 sm:p-6">
-          <h2 className="mb-4 text-base font-semibold sm:text-lg">
+        <div className="rounded-lg border-none bg-card p-4 shadow-md sm:p-6">
+          <h2 className="mb-4 text-base font-semibold text-lcp-blue sm:text-lg">
             Vendas por Empreendimento
           </h2>
           {isLoadingTop && (
@@ -285,8 +288,8 @@ export const Dashboard = () => {
         </div>
 
         {/* Evolução do Ticket Médio */}
-        <div className="rounded-lg border bg-card p-4 sm:p-6">
-          <h2 className="mb-4 text-base font-semibold sm:text-lg">
+        <div className="rounded-lg border-none bg-card p-4 shadow-md sm:p-6">
+          <h2 className="mb-4 text-base font-semibold text-lcp-blue sm:text-lg">
             Evolução do Ticket Médio (k)
           </h2>
           {isLoadingTicket && (
@@ -308,8 +311,8 @@ export const Dashboard = () => {
       </div>
 
       {/* Tabela de Últimas Vendas */}
-      <div className="rounded-lg border bg-card p-4 sm:p-6">
-        <h2 className="mb-4 text-base font-semibold sm:text-lg">Últimas Vendas</h2>
+      <div className="rounded-lg border-none bg-card p-4 shadow-md sm:p-6">
+        <h2 className="mb-4 text-base font-semibold text-lcp-blue sm:text-lg">Últimas Vendas</h2>
         <UltimasVendasTable />
       </div>
     </div>

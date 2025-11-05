@@ -17,7 +17,7 @@ import {
 } from '@/shared/components/ui/dialog';
 import { Input } from '@/shared/components/ui/input';
 import { Label } from '@/shared/components/ui/label';
-import { useToast } from '@/shared/hooks/useToast';
+import { useToast } from '@/shared/hooks/use-toast';
 
 const changePasswordSchema = z
   .object({

@@ -1,8 +1,8 @@
-import { Edit, Plus, Trash2, UserCheck, UserX } from 'lucide-react';
+import { Edit, Plus, UserCheck, UserX } from 'lucide-react';
 import { useState } from 'react';
 
 import { UserFormModal } from '../components/UserFormModal';
-import { useDeleteUser, useToggleUserActive, useUsers } from '../hooks/useUsers';
+import { useToggleUserActive, useUsers } from '../hooks/useUsers';
 
 import type { User } from '@/shared/types';
 
@@ -22,15 +22,7 @@ export const Users = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data: users, isLoading, error } = useUsers();
-  const deleteUser = useDeleteUser();
   const toggleActive = useToggleUserActive();
-
-  const handleDelete = (id: number) => {
-    // eslint-disable-next-line no-alert
-    if (window.confirm('Tem certeza que deseja deletar este usuário?')) {
-      deleteUser.mutate(id);
-    }
-  };
 
   const handleToggleActive = (id: number, currentStatus: boolean) => {
     toggleActive.mutate({ id, is_active: !currentStatus });
@@ -125,6 +117,7 @@ export const Users = () => {
                           size="icon"
                           onClick={() => handleEdit(user)}
                           className="h-8 w-8"
+                          title="Editar usuário"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -133,20 +126,13 @@ export const Users = () => {
                           size="icon"
                           onClick={() => handleToggleActive(user.id, user.is_active)}
                           className="h-8 w-8"
+                          title={user.is_active ? 'Desativar usuário' : 'Ativar usuário'}
                         >
                           {user.is_active ? (
                             <UserX className="h-4 w-4 text-red-600" />
                           ) : (
                             <UserCheck className="h-4 w-4 text-green-600" />
                           )}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(user.id)}
-                          className="h-8 w-8 text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>

@@ -1,6 +1,7 @@
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import type { EvolucaoTicketMedio } from '@/shared/types';
+
 import { formatCurrency } from '@/shared/utils/format';
 
 interface TicketMedioChartProps {
@@ -9,9 +10,7 @@ interface TicketMedioChartProps {
 
 const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
-const formatThousands = (value: number): string => {
-  return `R$ ${(value / 1000).toFixed(0)}k`;
-};
+const formatThousands = (value: number): string => `R$ ${(value / 1000).toFixed(0)}k`;
 
 export const TicketMedioChart = ({ data }: TicketMedioChartProps) => {
   const chartData = data.map((item) => ({

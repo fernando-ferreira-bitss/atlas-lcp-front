@@ -61,14 +61,6 @@ class UserService {
   }
 
   /**
-   * Deleta um usuário
-   * @param id - ID do usuário
-   */
-  async delete(id: number): Promise<void> {
-    return apiClient.delete<void>(`${this.baseURL}/${id}`);
-  }
-
-  /**
    * Ativa um usuário
    * @param id - ID do usuário
    * @returns Usuário atualizado
@@ -94,6 +86,22 @@ class UserService {
    */
   async toggleActive(id: number, is_active: boolean): Promise<User> {
     return is_active ? this.activate(id) : this.deactivate(id);
+  }
+
+  /**
+   * Reseta a senha de um usuário (Admin apenas)
+   * @param id - ID do usuário
+   * @param newPassword - Nova senha
+   * @returns Mensagem de confirmação
+   */
+  async resetPassword(
+    id: number,
+    newPassword: string
+  ): Promise<{ message: string; user: User }> {
+    return apiClient.post<{ new_password: string }, { message: string; user: User }>(
+      `${this.baseURL}/${id}/reset-password`,
+      { new_password: newPassword }
+    );
   }
 }
 

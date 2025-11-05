@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 
+import type { DashboardFilters as IFilters } from '@/shared/types';
+
 import { useEmpreendimentos } from '@/features/empreendimentos/hooks/useEmpreendimentos';
 import { Button } from '@/shared/components/ui/button';
 import { Label } from '@/shared/components/ui/label';
-import type { DashboardFilters as IFilters } from '@/shared/types';
 
 interface DashboardFiltersProps {
   onFilterChange: (filters: IFilters) => void;

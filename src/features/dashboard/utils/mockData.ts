@@ -47,7 +47,7 @@ export const getMockComparativoAnos = () => {
     'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
   ];
 
-  return meses.map((mes, index) => ({
+  return meses.map((mes, _index) => ({
     mes,
     vendas_2024: Math.floor(Math.random() * 30) + 10,
     vendas_2025: Math.floor(Math.random() * 35) + 15,
@@ -60,15 +60,13 @@ export const getMockComparativoAnos = () => {
  * Gera dados mockados para gráfico de taxa de conversão por empreendimento
  * NOTA: Este endpoint não existe na API
  */
-export const getMockConversaoPorEmpreendimento = () => {
-  return [
+export const getMockConversaoPorEmpreendimento = () => [
     { nome: 'Empreendimento A', taxa_conversao: 78.5, total_propostas: 45, total_vendas: 35 },
     { nome: 'Empreendimento B', taxa_conversao: 65.3, total_propostas: 62, total_vendas: 40 },
     { nome: 'Empreendimento C', taxa_conversao: 82.1, total_propostas: 38, total_vendas: 31 },
     { nome: 'Empreendimento D', taxa_conversao: 71.4, total_propostas: 28, total_vendas: 20 },
     { nome: 'Empreendimento E', taxa_conversao: 88.2, total_propostas: 17, total_vendas: 15 },
   ];
-};
 
 /**
  * Gera dados mockados para gráfico de evolução do ticket médio

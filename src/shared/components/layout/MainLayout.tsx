@@ -8,11 +8,11 @@ import { SidebarProvider } from '@/shared/contexts/SidebarContext';
 
 export const MainLayout = () => (
   <SidebarProvider>
-    <div className="min-h-screen bg-background">
-      <Header />
-      <div className="flex pt-16">
-        <Sidebar />
-        <main className="flex-1 md:pl-64">
+    <div className="min-h-screen bg-gray-50">
+      <Sidebar />
+      <div className="md:pl-64">
+        <Header />
+        <main className="min-h-screen pt-16">
           <div className="container py-6">
             <Outlet />
           </div>

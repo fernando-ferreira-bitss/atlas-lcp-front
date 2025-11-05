@@ -22,20 +22,20 @@ export const KPICard = ({
   trendValue,
   className,
 }: KPICardProps) => (
-  <Card className={cn('', className)}>
+  <Card className={cn('border-none shadow-md', className)}>
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <CardTitle className="text-sm font-medium">{title}</CardTitle>
-      {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
+      <CardTitle className="text-sm font-medium text-lcp-gray">{title}</CardTitle>
+      {Icon && <Icon className="h-4 w-4 text-lcp-gray" />}
     </CardHeader>
     <CardContent>
-      <div className="text-2xl font-bold">{value}</div>
-      {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+      <div className="text-2xl font-bold text-lcp-blue">{value}</div>
+      {subtitle && <p className="text-xs text-lcp-gray">{subtitle}</p>}
       {trendValue && (
         <p
-          className={cn('text-xs', {
-            'text-green-600': trend === 'up',
-            'text-red-600': trend === 'down',
-            'text-gray-600': trend === 'neutral',
+          className={cn('mt-1 text-xs font-medium', {
+            'text-lcp-green': trend === 'up',
+            'text-lcp-orange': trend === 'down',
+            'text-lcp-gray': trend === 'neutral',
           })}
         >
           {trend === 'up' && '↑ '}

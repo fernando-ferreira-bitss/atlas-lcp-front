@@ -1,5 +1,6 @@
-import { apiClient } from '@/shared/services/api/client';
 import type { Empreendimento, PaginationParams } from '@/shared/types';
+
+import { apiClient } from '@/shared/services/api/client';
 
 class EmpreendimentoService {
   private baseURL = '/empreendimentos';
