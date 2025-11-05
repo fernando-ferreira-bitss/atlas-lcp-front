@@ -13,13 +13,7 @@ export const MetaGaugeChart = ({ percentual, title, subtitle }: MetaGaugeChartPr
     { name: 'Restante', value: 100 - value },
   ];
 
-  const getColor = (perc: number) => {
-    if (perc >= 90) return '#22c55e'; // green-500
-    if (perc >= 70) return '#eab308'; // yellow-500
-    return '#ef4444'; // red-500
-  };
-
-  const COLORS = [getColor(value), '#e5e7eb']; // gray-200
+  const COLORS = ['#1f9f7a', '#e5e7eb']; // Verde e gray-200
 
   return (
     <div className="flex flex-col items-center">
@@ -43,7 +37,7 @@ export const MetaGaugeChart = ({ percentual, title, subtitle }: MetaGaugeChartPr
         </PieChart>
       </ResponsiveContainer>
       <div className="mt-[-60px] text-center">
-        <p className="text-3xl font-bold" style={{ color: getColor(value) }}>
+        <p className="text-3xl font-bold" style={{ color: '#1f9f7a' }}>
           {value.toFixed(1)}%
         </p>
         <p className="text-sm font-medium text-gray-600">{title}</p>

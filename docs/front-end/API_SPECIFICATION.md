@@ -97,7 +97,7 @@ Registra um novo usuário.
 {
   "email": "usuario@exemplo.com",
   "nome": "Nome do Usuário",
-  "password": "senha123",
+  "password": "admin123",
   "is_admin": false
 }
 ```
@@ -117,6 +117,259 @@ Registra um novo usuário.
 
 **Erros:**
 - 400: Email já cadastrado
+
+---
+
+### 4. GET /auth/users
+
+Lista todos os usuários do sistema.
+
+**Autenticação:** Requerida (Admin apenas)
+
+**Query Parameters (opcionais):**
+- `skip` (int): Número de registros para pular (padrão: 0)
+- `limit` (int): Número máximo de registros (padrão: 100)
+
+**Response (200):**
+```json
+[
+  {
+    "id": 1,
+    "email": "admin@lcp.com",
+    "nome": "Admin LCP",
+    "is_active": true,
+    "is_admin": true,
+    "created_at": "2025-11-05T10:51:29.913518",
+    "updated_at": "2025-11-05T15:00:21.934091"
+  },
+  {
+    "id": 2,
+    "email": "test_user@lcp.com",
+    "nome": "Test User",
+    "is_active": true,
+    "is_admin": false,
+    "created_at": "2025-11-05T15:43:00.451846",
+    "updated_at": "2025-11-05T15:43:00.451849"
+  }
+]
+```
+
+**Erros:**
+- 401: Não autenticado
+- 403: Não é administrador
+
+---
+
+### 5. GET /auth/users/{user_id}
+
+Retorna dados de um usuário específico por ID.
+
+**Autenticação:** Requerida (Admin apenas)
+
+**Path Parameters:**
+- `user_id` (int): ID do usuário
+
+**Response (200):**
+```json
+{
+  "id": 2,
+  "email": "test_user@lcp.com",
+  "nome": "Test User",
+  "is_active": true,
+  "is_admin": false,
+  "created_at": "2025-11-05T15:43:00.451846",
+  "updated_at": "2025-11-05T15:43:00.451849"
+}
+```
+
+**Erros:**
+- 401: Não autenticado
+- 403: Não é administrador
+- 404: Usuário não encontrado
+
+---
+
+### 6. PUT /auth/users/{user_id}
+
+Atualiza dados de um usuário.
+
+**Autenticação:** Requerida (Admin apenas)
+
+**Path Parameters:**
+- `user_id` (int): ID do usuário
+
+**Request Body (todos os campos são opcionais):**
+```json
+{
+  "nome": "Nome Atualizado",
+  "email": "novo_email@exemplo.com",
+  "password": "novasenha123",
+  "is_active": true,
+  "is_admin": false
+}
+```
+
+**Response (200):**
+```json
+{
+  "id": 2,
+  "email": "novo_email@exemplo.com",
+  "nome": "Nome Atualizado",
+  "is_active": true,
+  "is_admin": false,
+  "created_at": "2025-11-05T15:43:00.451846",
+  "updated_at": "2025-11-05T15:43:02.399401"
+}
+```
+
+**Erros:**
+- 400: Email já existe
+- 401: Não autenticado
+- 403: Não é administrador
+- 404: Usuário não encontrado
+
+---
+
+### 7. POST /auth/users/{user_id}/activate
+
+Ativa uma conta de usuário.
+
+**Autenticação:** Requerida (Admin apenas)
+
+**Path Parameters:**
+- `user_id` (int): ID do usuário
+
+**Response (200):**
+```json
+{
+  "id": 2,
+  "email": "test_user@lcp.com",
+  "nome": "Test User Updated",
+  "is_active": true,
+  "is_admin": false,
+  "created_at": "2025-11-05T15:43:00.451846",
+  "updated_at": "2025-11-05T15:43:10.037971"
+}
+```
+
+**Erros:**
+- 401: Não autenticado
+- 403: Não é administrador
+- 404: Usuário não encontrado
+
+---
+
+### 8. POST /auth/users/{user_id}/deactivate
+
+Desativa uma conta de usuário (soft delete).
+
+**⚠️ IMPORTANTE:** Este endpoint **NÃO deleta o usuário do banco de dados**. Apenas define `is_active=False`, impedindo o login mas mantendo todos os dados históricos.
+
+**Autenticação:** Requerida (Admin apenas)
+
+**Path Parameters:**
+- `user_id` (int): ID do usuário
+
+**Response (200):**
+```json
+{
+  "id": 2,
+  "email": "test_user@lcp.com",
+  "nome": "Test User Updated",
+  "is_active": false,
+  "is_admin": false,
+  "created_at": "2025-11-05T15:43:00.451846",
+  "updated_at": "2025-11-05T15:43:07.958743"
+}
+```
+
+**Comportamento:**
+- Usuário desativado não pode fazer login (retorna 403 Forbidden)
+- Usuário permanece no banco de dados
+- Pode ser reativado com `/auth/users/{user_id}/activate`
+
+**Erros:**
+- 401: Não autenticado
+- 403: Não é administrador
+- 404: Usuário não encontrado
+
+---
+
+### 9. POST /auth/change-password
+
+Permite ao usuário mudar sua própria senha.
+
+**Autenticação:** Requerida
+
+**Request Body:**
+```json
+{
+  "current_password": "senha_atual",
+  "new_password": "nova_senha123"
+}
+```
+
+**Response (200):**
+```json
+{
+  "id": 2,
+  "email": "test_user@lcp.com",
+  "nome": "Test User Updated",
+  "is_active": true,
+  "is_admin": false,
+  "created_at": "2025-11-05T15:43:00.451846",
+  "updated_at": "2025-11-05T15:43:03.888525"
+}
+```
+
+**Validações:**
+- Senha atual deve estar correta
+- Nova senha deve ter pelo menos 8 caracteres
+
+**Erros:**
+- 400: Senha atual incorreta
+- 401: Não autenticado
+- 404: Usuário não encontrado
+
+---
+
+### 10. POST /auth/users/{user_id}/reset-password
+
+Reset de senha por administrador (não requer senha atual).
+
+**Autenticação:** Requerida (Admin apenas)
+
+**Path Parameters:**
+- `user_id` (int): ID do usuário
+
+**Request Body:**
+```json
+{
+  "new_password": "senha_resetada123"
+}
+```
+
+**Response (200):**
+```json
+{
+  "id": 2,
+  "email": "test_user@lcp.com",
+  "nome": "Test User Updated",
+  "is_active": true,
+  "is_admin": false,
+  "created_at": "2025-11-05T15:43:00.451846",
+  "updated_at": "2025-11-05T15:43:06.142368"
+}
+```
+
+**Diferença entre change-password e reset-password:**
+- `change-password`: Usuário muda própria senha, requer senha atual
+- `reset-password`: Admin reseta senha de qualquer usuário, não requer senha atual
+
+**Erros:**
+- 401: Não autenticado
+- 403: Não é administrador
+- 404: Usuário não encontrado
 
 ---
 
@@ -1188,6 +1441,52 @@ class LCPApiClient {
 
   async me() {
     return this.request<User>('/auth/me');
+  }
+
+  async listUsers(skip = 0, limit = 100) {
+    return this.request<User[]>(
+      `/auth/users?skip=${skip}&limit=${limit}`
+    );
+  }
+
+  async getUser(userId: number) {
+    return this.request<User>(`/auth/users/${userId}`);
+  }
+
+  async updateUser(userId: number, data: Partial<User>) {
+    return this.request<User>(`/auth/users/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async activateUser(userId: number) {
+    return this.request<User>(`/auth/users/${userId}/activate`, {
+      method: 'POST',
+    });
+  }
+
+  async deactivateUser(userId: number) {
+    return this.request<User>(`/auth/users/${userId}/deactivate`, {
+      method: 'POST',
+    });
+  }
+
+  async changePassword(currentPassword: string, newPassword: string) {
+    return this.request<User>('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        current_password: currentPassword,
+        new_password: newPassword,
+      }),
+    });
+  }
+
+  async resetPassword(userId: number, newPassword: string) {
+    return this.request<User>(`/auth/users/${userId}/reset-password`, {
+      method: 'POST',
+      body: JSON.stringify({ new_password: newPassword }),
+    });
   }
 
   // Dashboard

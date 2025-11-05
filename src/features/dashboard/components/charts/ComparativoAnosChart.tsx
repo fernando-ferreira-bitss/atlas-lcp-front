@@ -1,36 +1,31 @@
-import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
-import { formatCurrency } from '@/shared/utils/format';
+import type { ComparativoAnos } from '@/shared/types';
 
 interface ComparativoAnosChartProps {
-  data: Array<{
-    mes: string;
-    vendas_2024: number;
-    vendas_2025: number;
-    valor_2024: number;
-    valor_2025: number;
-  }>;
+  data: ComparativoAnos[];
 }
 
+const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
 export const ComparativoAnosChart = ({ data }: ComparativoAnosChartProps) => {
+  const chartData = data.map((item) => ({
+    mes: MESES[item.mes - 1],
+    'Ano Anterior': item.vendas_ano_anterior,
+    'Ano Atual': item.vendas_ano_atual,
+  }));
+
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={data}>
+      <LineChart data={chartData}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="mes" />
         <YAxis />
-        <Tooltip
-          formatter={(value: number, name: string) => {
-            if (name.includes('vendas')) {
-              return [value, name];
-            }
-            return [formatCurrency(value), name];
-          }}
-        />
+        <Tooltip />
         <Legend />
-        <Bar dataKey="vendas_2024" name="Vendas 2024" fill="#3b82f6" />
-        <Bar dataKey="vendas_2025" name="Vendas 2025" fill="#f97316" />
-      </BarChart>
+        <Line type="monotone" dataKey="Ano Anterior" stroke="#f97316" strokeWidth={2} />
+        <Line type="monotone" dataKey="Ano Atual" stroke="#1f9f7a" strokeWidth={2} />
+      </LineChart>
     </ResponsiveContainer>
   );
 };

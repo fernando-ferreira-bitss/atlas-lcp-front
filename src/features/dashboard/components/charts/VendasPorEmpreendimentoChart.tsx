@@ -1,7 +1,6 @@
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
 import type { TopEmpreendimento } from '@/shared/types';
-import { formatCurrency } from '@/shared/utils/format';
 
 interface VendasPorEmpreendimentoChartProps {
   data: TopEmpreendimento[];
@@ -9,29 +8,29 @@ interface VendasPorEmpreendimentoChartProps {
 
 export const VendasPorEmpreendimentoChart = ({ data }: VendasPorEmpreendimentoChartProps) => {
   const chartData = data.map((item) => ({
-    nome: item.empreendimento_nome.length > 30
-      ? `${item.empreendimento_nome.substring(0, 30)}...`
+    nomeCompleto: item.empreendimento_nome,
+    nomeAbreviado: item.empreendimento_nome.length > 20
+      ? `${item.empreendimento_nome.substring(0, 20)}...`
       : item.empreendimento_nome,
+    propostas: Math.round(item.total_vendas * 1.5), // Mockado: estimativa de propostas
     vendas: item.total_vendas,
-    valor: item.valor_vendas,
   }));
 
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={chartData}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="nome" angle={-45} textAnchor="end" height={120} />
-        <YAxis yAxisId="left" orientation="left" stroke="#3b82f6" />
-        <YAxis yAxisId="right" orientation="right" stroke="#f97316" />
+        <XAxis dataKey="nomeAbreviado" angle={-45} textAnchor="end" height={120} />
+        <YAxis />
         <Tooltip
-          formatter={(value: number, name: string) => {
-            if (name === 'Valor (R$)') return [formatCurrency(value), name];
-            return [value, name];
+          labelFormatter={(label) => {
+            const item = chartData.find((d) => d.nomeAbreviado === label);
+            return item?.nomeCompleto || label;
           }}
         />
         <Legend />
-        <Bar yAxisId="left" dataKey="vendas" name="Quantidade" fill="#3b82f6" />
-        <Bar yAxisId="right" dataKey="valor" name="Valor (R$)" fill="#f97316" />
+        <Bar dataKey="propostas" name="Propostas" fill="#0b2d5c" stackId="a" />
+        <Bar dataKey="vendas" name="Vendas" fill="#1f9f7a" stackId="a" />
       </BarChart>
     </ResponsiveContainer>
   );

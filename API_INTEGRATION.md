@@ -36,14 +36,14 @@ import { authService } from '@/features/auth';
 // Login
 const { access_token } = await authService.login({
   email: 'admin@lcp.com',
-  password: 'senha123'
+  password: 'admin123'
 });
 
 // Registrar usuário
 const user = await authService.register({
   email: 'user@exemplo.com',
   nome: 'Usuário Teste',
-  password: 'senha123'
+  password: 'admin123'
 });
 
 // Buscar usuário atual
@@ -116,7 +116,7 @@ function LoginPage() {
     try {
       await login.mutateAsync({
         email: 'admin@lcp.com',
-        password: 'senha123'
+        password: 'admin123'
       });
       // Redirecionar ou mostrar sucesso
     } catch (error) {

@@ -160,17 +160,43 @@ export interface DashboardKPIs {
   total_propostas: number;
   total_vendas: number;
   valor_total_vendas: number;
-  valor_total_propostas?: number; // MOCKADO - Não está na API
+  valor_total_propostas: number;
   ticket_medio: number;
-  ticket_medio_proposta?: number; // MOCKADO - Não está na API
+  ticket_medio_proposta: number;
   taxa_conversao: number;
-  taxa_conversao_valor?: number; // MOCKADO - Não está na API
+  taxa_conversao_valor: number;
   meta_vendas: number;
   percentual_meta: number;
-  meta_vendas_ytd?: number; // MOCKADO - Não está na API
-  percentual_meta_ytd?: number; // MOCKADO - Não está na API
-  meta_vendas_mensal?: number; // MOCKADO - Não está na API
-  percentual_meta_mensal?: number; // MOCKADO - Não está na API
+  meta_vendas_ytd: number;
+  percentual_meta_ytd: number;
+  meta_vendas_mensal: number;
+  percentual_meta_mensal: number;
+}
+
+export interface ComparativoAnos {
+  mes: number;
+  vendas_ano_anterior: number;
+  vendas_ano_atual: number;
+  valor_ano_anterior: number;
+  valor_ano_atual: number;
+}
+
+export interface ConversaoPorEmpreendimento {
+  empreendimento_id: number;
+  empreendimento_nome: string;
+  total_propostas: number;
+  total_vendas: number;
+  taxa_conversao: number;
+  valor_propostas: number;
+  valor_vendas: number;
+}
+
+export interface EvolucaoTicketMedio {
+  mes: number;
+  ticket_medio_proposta: number;
+  ticket_medio_venda: number;
+  total_propostas: number;
+  total_vendas: number;
 }
 
 export interface DashboardFilters {

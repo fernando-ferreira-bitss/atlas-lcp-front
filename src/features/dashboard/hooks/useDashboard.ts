@@ -3,8 +3,11 @@ import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { dashboardService } from '../services/dashboardService';
 
 import type {
+  ComparativoAnos,
+  ConversaoPorEmpreendimento,
   DashboardKPIs,
   DashboardResumo,
+  EvolucaoTicketMedio,
   GraficoVendasMes,
   TopEmpreendimento,
   VendasPorPeriodo,
@@ -87,4 +90,54 @@ export const useVendasPorPeriodo = (
     queryFn: () => dashboardService.getVendasPorPeriodo(filters),
     staleTime: 1000 * 60 * 5, // 5 minutos
     enabled: !!filters, // Só executa se houver filtros
+  });
+
+/**
+ * Hook para buscar comparativo de vendas entre dois anos
+ * @param ano_atual - Ano atual para comparação
+ * @param ano_anterior - Ano anterior para comparação
+ * @param empreendimento_id - ID do empreendimento (opcional)
+ * @returns Query result com comparativo por mês
+ */
+export const useComparativoAnos = (
+  ano_atual: number,
+  ano_anterior: number,
+  empreendimento_id?: number
+): UseQueryResult<ComparativoAnos[], Error> =>
+  useQuery({
+    queryKey: ['comparativo-anos', ano_atual, ano_anterior, empreendimento_id],
+    queryFn: () => dashboardService.getComparativoAnos(ano_atual, ano_anterior, empreendimento_id),
+    staleTime: 1000 * 60 * 5, // 5 minutos
+  });
+
+/**
+ * Hook para buscar taxa de conversão por empreendimento
+ * @param filters - Filtros opcionais de data e limite
+ * @returns Query result com conversão por empreendimento
+ */
+export const useConversaoPorEmpreendimento = (filters?: {
+  data_inicio?: string;
+  data_fim?: string;
+  limit?: number;
+}): UseQueryResult<ConversaoPorEmpreendimento[], Error> =>
+  useQuery({
+    queryKey: ['conversao-por-empreendimento', filters],
+    queryFn: () => dashboardService.getConversaoPorEmpreendimento(filters),
+    staleTime: 1000 * 60 * 5, // 5 minutos
+  });
+
+/**
+ * Hook para buscar evolução mensal do ticket médio
+ * @param ano - Ano para análise
+ * @param empreendimento_id - ID do empreendimento (opcional)
+ * @returns Query result com evolução do ticket médio
+ */
+export const useEvolucaoTicketMedio = (
+  ano: number,
+  empreendimento_id?: number
+): UseQueryResult<EvolucaoTicketMedio[], Error> =>
+  useQuery({
+    queryKey: ['evolucao-ticket-medio', ano, empreendimento_id],
+    queryFn: () => dashboardService.getEvolucaoTicketMedio(ano, empreendimento_id),
+    staleTime: 1000 * 60 * 5, // 5 minutos
   });

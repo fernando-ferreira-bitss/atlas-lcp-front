@@ -76,8 +76,8 @@ export const VendasMesChart = ({ data }: VendasMesChartProps) => {
             return value;
           }}
         />
-        <Bar dataKey="vendas" fill="hsl(var(--primary))" radius={[8, 8, 0, 0]} />
-        <Bar dataKey="meta" fill="hsl(var(--muted))" radius={[8, 8, 0, 0]} />
+        <Bar dataKey="vendas" fill="#1f9f7a" radius={[8, 8, 0, 0]} />
+        <Bar dataKey="meta" fill="#0b2d5c" radius={[8, 8, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );

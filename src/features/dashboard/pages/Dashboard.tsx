@@ -10,13 +10,14 @@ import { VendasMesChart } from '../components/charts/VendasMesChart';
 import { VendasPorEmpreendimentoChart } from '../components/charts/VendasPorEmpreendimentoChart';
 import { DashboardFilters } from '../components/filters/DashboardFilters';
 import { UltimasVendasTable } from '../components/tables/UltimasVendasTable';
-import { useDashboardKPIs, useGraficoVendasMes, useTopEmpreendimentos } from '../hooks/useDashboard';
 import {
-  enhanceKPIsWithMockData,
-  getMockComparativoAnos,
-  getMockConversaoPorEmpreendimento,
-  getMockEvolucaoTicketMedio,
-} from '../utils/mockData';
+  useComparativoAnos,
+  useConversaoPorEmpreendimento,
+  useDashboardKPIs,
+  useEvolucaoTicketMedio,
+  useGraficoVendasMes,
+  useTopEmpreendimentos,
+} from '../hooks/useDashboard';
 
 import { Loading } from '@/shared/components/common';
 import { Button } from '@/shared/components/ui/button';
@@ -27,8 +28,9 @@ export const Dashboard = () => {
   const [filters, setFilters] = useState<IFilters>({});
 
   const currentYear = new Date().getFullYear();
+  const previousYear = currentYear - 1;
 
-  const { data: kpisRaw, isLoading, error } = useDashboardKPIs(filters);
+  const { data: kpis, isLoading, error } = useDashboardKPIs(filters);
   const { data: graficoData, isLoading: isLoadingGrafico } = useGraficoVendasMes(
     currentYear,
     filters.empreendimento_id
@@ -39,10 +41,21 @@ export const Dashboard = () => {
     limit: 5,
   });
 
-  // Dados mockados
-  const comparativoAnos = getMockComparativoAnos();
-  const conversaoPorEmp = getMockConversaoPorEmpreendimento();
-  const evolucaoTicket = getMockEvolucaoTicketMedio();
+  // Novos hooks para dados reais
+  const { data: comparativoAnos, isLoading: isLoadingComparativo } = useComparativoAnos(
+    currentYear,
+    previousYear,
+    filters.empreendimento_id
+  );
+  const { data: conversaoPorEmp, isLoading: isLoadingConversao } = useConversaoPorEmpreendimento({
+    data_inicio: filters.data_inicio,
+    data_fim: filters.data_fim,
+    limit: 10,
+  });
+  const { data: evolucaoTicket, isLoading: isLoadingTicket } = useEvolucaoTicketMedio(
+    currentYear,
+    filters.empreendimento_id
+  );
 
   if (isLoading) {
     return <Loading />;
@@ -61,7 +74,7 @@ export const Dashboard = () => {
     );
   }
 
-  if (!kpisRaw) {
+  if (!kpis) {
     return (
       <div className="flex h-96 items-center justify-center">
         <div className="text-center">
@@ -73,9 +86,6 @@ export const Dashboard = () => {
       </div>
     );
   }
-
-  // Adiciona dados mockados aos KPIs
-  const kpis = enhanceKPIsWithMockData(kpisRaw);
 
   return (
     <div className="space-y-6">
@@ -122,18 +132,18 @@ export const Dashboard = () => {
           icon={Target}
         />
 
-        {/* 4. Conversão (R$) - MOCKADO */}
+        {/* 4. Conversão (R$) */}
         <KPICard
           title="Conversão (R$)"
-          value={formatPercentage(kpis.taxa_conversao_valor || 0, 1)}
+          value={formatPercentage(kpis.taxa_conversao_valor, 1)}
           subtitle="Relação financeira"
           icon={Percent}
         />
 
-        {/* 5. Ticket Médio (Proposta) - MOCKADO */}
+        {/* 5. Ticket Médio (Proposta) */}
         <KPICard
           title="Ticket Médio (Proposta)"
-          value={formatCurrency(kpis.ticket_medio_proposta || 0)}
+          value={formatCurrency(kpis.ticket_medio_proposta)}
           icon={BarChart3}
         />
 
@@ -144,139 +154,156 @@ export const Dashboard = () => {
           icon={BarChart3}
         />
 
-        {/* 7. Meta VGV Mensal - MOCKADO */}
+        {/* 7. Meta VGV Mensal */}
         <KPICard
           title="Meta VGV Mensal"
-          value={formatPercentage(kpis.percentual_meta_mensal || 0, 1)}
-          subtitle={formatCurrency(kpis.meta_vendas_mensal || 0)}
+          value={formatPercentage(kpis.percentual_meta_mensal, 1)}
+          subtitle={formatCurrency(kpis.meta_vendas_mensal)}
           icon={Target}
         />
 
-        {/* 8. Meta VGV YTD - MOCKADO */}
+        {/* 8. Meta VGV YTD */}
         <KPICard
           title="Meta VGV YTD"
-          value={formatPercentage(kpis.percentual_meta_ytd || 0, 1)}
-          subtitle={formatCurrency(kpis.meta_vendas_ytd || 0)}
+          value={formatPercentage(kpis.percentual_meta_ytd, 1)}
+          subtitle={formatCurrency(kpis.meta_vendas_ytd)}
           icon={Target}
         />
       </div>
 
-      {/* Atendimento de Metas (Gauges) - MOCKADO */}
+      {/* Primeira linha: Atendimento de Metas | Meta vs. Realizado (Mensal) */}
       <div className="grid gap-4 md:grid-cols-2">
+        {/* Atendimento de Metas (Gauges) */}
         <div className="rounded-lg border bg-card p-4 sm:p-6">
           <h2 className="mb-4 text-base font-semibold sm:text-lg">Atendimento de Metas</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <MetaGaugeChart
-              percentual={kpis.percentual_meta_mensal || 0}
+              percentual={kpis.percentual_meta_mensal}
               title="Meta Mensal"
-              subtitle={formatCurrency(kpis.meta_vendas_mensal || 0)}
+              subtitle={formatCurrency(kpis.meta_vendas_mensal)}
             />
             <MetaGaugeChart
-              percentual={kpis.percentual_meta_ytd || 0}
+              percentual={kpis.percentual_meta_ytd}
               title="Meta YTD"
-              subtitle={formatCurrency(kpis.meta_vendas_ytd || 0)}
+              subtitle={formatCurrency(kpis.meta_vendas_ytd)}
             />
           </div>
         </div>
 
-        {/* Performance de Vendas */}
+        {/* Meta vs. Realizado (Mensal) */}
         <div className="rounded-lg border bg-card p-4 sm:p-6">
-          <h2 className="mb-4 text-base font-semibold sm:text-lg">Performance de Vendas</h2>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Realizado:</span>
-              <span className="font-medium">{formatCurrency(kpis.valor_total_vendas)}</span>
+          <h2 className="mb-4 text-base font-semibold sm:text-lg">
+            Meta vs. Realizado (Mensal)
+          </h2>
+          {isLoadingGrafico && (
+            <div className="flex h-80 items-center justify-center">
+              <Loading />
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Meta:</span>
-              <span className="font-medium">{formatCurrency(kpis.meta_vendas)}</span>
+          )}
+          {!isLoadingGrafico && graficoData && graficoData.length > 0 && (
+            <div className="h-80">
+              <VendasMesChart data={graficoData} />
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Propostas:</span>
-              <span className="font-medium">{kpis.total_propostas}</span>
+          )}
+          {!isLoadingGrafico && (!graficoData || graficoData.length === 0) && (
+            <div className="flex h-80 items-center justify-center">
+              <p className="text-sm text-muted-foreground">Nenhum dado disponível</p>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Taxa Conversão:</span>
-              <span className="font-medium">{formatPercentage(kpis.taxa_conversao, 1)}</span>
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
-      {/* Meta vs Realizado (Mensal) */}
-      <div className="rounded-lg border bg-card p-4 sm:p-6">
-        <h2 className="mb-4 text-base font-semibold sm:text-lg">
-          Meta vs Realizado - {currentYear}
-        </h2>
-        {isLoadingGrafico && (
-          <div className="flex h-80 items-center justify-center">
-            <Loading />
-          </div>
-        )}
-        {!isLoadingGrafico && graficoData && graficoData.length > 0 && (
-          <div className="h-80">
-            <VendasMesChart data={graficoData} />
-          </div>
-        )}
-        {!isLoadingGrafico && (!graficoData || graficoData.length === 0) && (
-          <div className="flex h-80 items-center justify-center">
-            <p className="text-sm text-muted-foreground">Nenhum dado disponível</p>
-          </div>
-        )}
-      </div>
+      {/* Segunda linha: Evolução de Vendas | Taxa de Conversão */}
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Evolução de Vendas (2024 vs 2025) */}
+        <div className="rounded-lg border bg-card p-4 sm:p-6">
+          <h2 className="mb-4 text-base font-semibold sm:text-lg">
+            Evolução de Vendas ({previousYear} vs {currentYear})
+          </h2>
+          {isLoadingComparativo && (
+            <div className="flex h-80 items-center justify-center">
+              <Loading />
+            </div>
+          )}
+          {!isLoadingComparativo && comparativoAnos && comparativoAnos.length > 0 && (
+            <div className="h-80">
+              <ComparativoAnosChart data={comparativoAnos} />
+            </div>
+          )}
+          {!isLoadingComparativo && (!comparativoAnos || comparativoAnos.length === 0) && (
+            <div className="flex h-80 items-center justify-center">
+              <p className="text-sm text-muted-foreground">Nenhum dado disponível</p>
+            </div>
+          )}
+        </div>
 
-      {/* Evolução de Vendas (2024 vs 2025) - MOCKADO */}
-      <div className="rounded-lg border bg-card p-4 sm:p-6">
-        <h2 className="mb-4 text-base font-semibold sm:text-lg">
-          Evolução de Vendas (2024 vs 2025)
-          <span className="ml-2 text-xs font-normal text-orange-600">[DADOS MOCKADOS]</span>
-        </h2>
-        <div className="h-80">
-          <ComparativoAnosChart data={comparativoAnos} />
+        {/* Taxa de Conversão por Empreendimento */}
+        <div className="rounded-lg border bg-card p-4 sm:p-6">
+          <h2 className="mb-4 text-base font-semibold sm:text-lg">
+            Taxa de Conversão por Empreendimento
+          </h2>
+          {isLoadingConversao && (
+            <div className="flex h-80 items-center justify-center">
+              <Loading />
+            </div>
+          )}
+          {!isLoadingConversao && conversaoPorEmp && conversaoPorEmp.length > 0 && (
+            <div className="h-80">
+              <ConversaoPorEmpreendimentoChart data={conversaoPorEmp} />
+            </div>
+          )}
+          {!isLoadingConversao && (!conversaoPorEmp || conversaoPorEmp.length === 0) && (
+            <div className="flex h-80 items-center justify-center">
+              <p className="text-sm text-muted-foreground">Nenhum dado disponível</p>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Taxa de Conversão por Empreendimento - MOCKADO */}
-      <div className="rounded-lg border bg-card p-4 sm:p-6">
-        <h2 className="mb-4 text-base font-semibold sm:text-lg">
-          Taxa de Conversão por Empreendimento
-          <span className="ml-2 text-xs font-normal text-orange-600">[DADOS MOCKADOS]</span>
-        </h2>
-        <div className="h-80">
-          <ConversaoPorEmpreendimentoChart data={conversaoPorEmp} />
+      {/* Terceira linha: Vendas por Empreendimento | Evolução do Ticket Médio */}
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Vendas por Empreendimento */}
+        <div className="rounded-lg border bg-card p-4 sm:p-6">
+          <h2 className="mb-4 text-base font-semibold sm:text-lg">
+            Vendas por Empreendimento
+          </h2>
+          {isLoadingTop && (
+            <div className="flex h-80 items-center justify-center">
+              <Loading />
+            </div>
+          )}
+          {!isLoadingTop && topEmpreendimentos && topEmpreendimentos.length > 0 && (
+            <div className="h-80">
+              <VendasPorEmpreendimentoChart data={topEmpreendimentos} />
+            </div>
+          )}
+          {!isLoadingTop && (!topEmpreendimentos || topEmpreendimentos.length === 0) && (
+            <div className="flex h-80 items-center justify-center">
+              <p className="text-sm text-muted-foreground">Nenhum dado disponível</p>
+            </div>
+          )}
         </div>
-      </div>
 
-      {/* Vendas por Empreendimento */}
-      <div className="rounded-lg border bg-card p-4 sm:p-6">
-        <h2 className="mb-4 text-base font-semibold sm:text-lg">
-          Top 5 Empreendimentos
-        </h2>
-        {isLoadingTop && (
-          <div className="flex h-80 items-center justify-center">
-            <Loading />
-          </div>
-        )}
-        {!isLoadingTop && topEmpreendimentos && topEmpreendimentos.length > 0 && (
-          <div className="h-80">
-            <VendasPorEmpreendimentoChart data={topEmpreendimentos} />
-          </div>
-        )}
-        {!isLoadingTop && (!topEmpreendimentos || topEmpreendimentos.length === 0) && (
-          <div className="flex h-80 items-center justify-center">
-            <p className="text-sm text-muted-foreground">Nenhum dado disponível</p>
-          </div>
-        )}
-      </div>
-
-      {/* Evolução do Ticket Médio - MOCKADO */}
-      <div className="rounded-lg border bg-card p-4 sm:p-6">
-        <h2 className="mb-4 text-base font-semibold sm:text-lg">
-          Evolução do Ticket Médio
-          <span className="ml-2 text-xs font-normal text-orange-600">[DADOS MOCKADOS]</span>
-        </h2>
-        <div className="h-80">
-          <TicketMedioChart data={evolucaoTicket} />
+        {/* Evolução do Ticket Médio */}
+        <div className="rounded-lg border bg-card p-4 sm:p-6">
+          <h2 className="mb-4 text-base font-semibold sm:text-lg">
+            Evolução do Ticket Médio (k)
+          </h2>
+          {isLoadingTicket && (
+            <div className="flex h-80 items-center justify-center">
+              <Loading />
+            </div>
+          )}
+          {!isLoadingTicket && evolucaoTicket && evolucaoTicket.length > 0 && (
+            <div className="h-80">
+              <TicketMedioChart data={evolucaoTicket} />
+            </div>
+          )}
+          {!isLoadingTicket && (!evolucaoTicket || evolucaoTicket.length === 0) && (
+            <div className="flex h-80 items-center justify-center">
+              <p className="text-sm text-muted-foreground">Nenhum dado disponível</p>
+            </div>
+          )}
         </div>
       </div>
 

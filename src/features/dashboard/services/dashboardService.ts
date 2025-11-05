@@ -1,6 +1,9 @@
 import type {
+  ComparativoAnos,
+  ConversaoPorEmpreendimento,
   DashboardKPIs,
   DashboardResumo,
+  EvolucaoTicketMedio,
   GraficoVendasMes,
   TopEmpreendimento,
   VendasPorPeriodo,
@@ -85,6 +88,60 @@ class DashboardService {
     return apiClient.get<never, VendasPorPeriodo[]>(
       `${this.baseURL}/vendas-por-periodo`,
       { params: filters }
+    );
+  }
+
+  /**
+   * Busca comparativo de vendas entre dois anos
+   * @param ano_atual - Ano atual para comparação
+   * @param ano_anterior - Ano anterior para comparação
+   * @param empreendimento_id - ID do empreendimento (opcional)
+   * @returns Lista com comparativo por mês
+   */
+  async getComparativoAnos(
+    ano_atual: number,
+    ano_anterior: number,
+    empreendimento_id?: number
+  ): Promise<ComparativoAnos[]> {
+    return apiClient.get<never, ComparativoAnos[]>(
+      `${this.baseURL}/comparativo-anos`,
+      {
+        params: { ano_atual, ano_anterior, empreendimento_id },
+      }
+    );
+  }
+
+  /**
+   * Busca taxa de conversão por empreendimento
+   * @param filters - Filtros opcionais de data e limite
+   * @returns Lista de empreendimentos com taxa de conversão
+   */
+  async getConversaoPorEmpreendimento(filters?: {
+    data_inicio?: string;
+    data_fim?: string;
+    limit?: number;
+  }): Promise<ConversaoPorEmpreendimento[]> {
+    return apiClient.get<never, ConversaoPorEmpreendimento[]>(
+      `${this.baseURL}/conversao-por-empreendimento`,
+      { params: filters }
+    );
+  }
+
+  /**
+   * Busca evolução mensal do ticket médio
+   * @param ano - Ano para análise
+   * @param empreendimento_id - ID do empreendimento (opcional)
+   * @returns Lista com evolução do ticket médio por mês
+   */
+  async getEvolucaoTicketMedio(
+    ano: number,
+    empreendimento_id?: number
+  ): Promise<EvolucaoTicketMedio[]> {
+    return apiClient.get<never, EvolucaoTicketMedio[]>(
+      `${this.baseURL}/evolucao-ticket-medio`,
+      {
+        params: { ano, empreendimento_id },
+      }
     );
   }
 }

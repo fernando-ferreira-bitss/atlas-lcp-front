@@ -30,7 +30,7 @@ export const Login = () => {
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: 'admin@lcp.com',
-      password: 'senha123',
+      password: 'admin123',
     },
   });
 
@@ -93,7 +93,7 @@ export const Login = () => {
             <div className="text-xs text-muted-foreground">
               <p>Credenciais de teste:</p>
               <p>E-mail: admin@lcp.com</p>
-              <p>Senha: senha123</p>
+              <p>Senha: admin123</p>
             </div>
           </form>
         </CardContent>

@@ -1,36 +1,43 @@
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 
+import type { EvolucaoTicketMedio } from '@/shared/types';
 import { formatCurrency } from '@/shared/utils/format';
 
 interface TicketMedioChartProps {
-  data: Array<{
-    mes: string;
-    ticket_proposta: number;
-    ticket_venda: number;
-  }>;
+  data: EvolucaoTicketMedio[];
 }
 
+const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
+const formatThousands = (value: number): string => {
+  return `R$ ${(value / 1000).toFixed(0)}k`;
+};
+
 export const TicketMedioChart = ({ data }: TicketMedioChartProps) => {
+  const chartData = data.map((item) => ({
+    mes: MESES[item.mes - 1],
+    'Ticket Médio Proposta': item.ticket_medio_proposta,
+    'Ticket Médio Venda': item.ticket_medio_venda,
+  }));
+
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={data}>
+      <LineChart data={chartData}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="mes" />
-        <YAxis tickFormatter={(value) => formatCurrency(value, 0)} />
+        <YAxis tickFormatter={formatThousands} />
         <Tooltip formatter={(value: number) => formatCurrency(value)} />
         <Legend />
         <Line
           type="monotone"
-          dataKey="ticket_proposta"
-          name="Ticket Médio Proposta"
-          stroke="#3b82f6"
+          dataKey="Ticket Médio Proposta"
+          stroke="#0b2d5c"
           strokeWidth={2}
         />
         <Line
           type="monotone"
-          dataKey="ticket_venda"
-          name="Ticket Médio Venda"
-          stroke="#f97316"
+          dataKey="Ticket Médio Venda"
+          stroke="#1f9f7a"
           strokeWidth={2}
         />
       </LineChart>
