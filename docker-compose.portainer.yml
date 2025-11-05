@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  # ============================================
+  # LCP Dashboard Frontend - NO BUILD, runtime installation
+  # ============================================
+  lcp-front:
+    image: node:18-alpine
+    container_name: lcp-front
+    working_dir: /app
+    environment:
+      # Git config
+      - GIT_REPO=${GIT_REPO:-https://github.com/fernando-ferreira-bitss/lcp-front.git}
+      - GIT_BRANCH=${GIT_BRANCH:-main}
+      - GIT_TOKEN=${GIT_TOKEN:-}
+
+      # Vite environment variables
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-https://apilcp.brainitsolutions.com.br}
+      - VITE_APP_NAME=${VITE_APP_NAME:-Dashboard LCP}
+      - VITE_ENABLE_ANALYTICS=${VITE_ENABLE_ANALYTICS:-false}
+
+      # Node environment
+      - NODE_ENV=development
+    ports:
+      - "3001:80"
+    networks:
+      - lcp-network
+      - n8n_traefik_proxy
+    restart: unless-stopped
+    command:
+      - /bin/sh
+      - -c
+      - |
+        echo '📥 Installing git and nginx...'
+        apk add --no-cache git nginx
+        echo '📦 Cloning repository...'
+        rm -rf /tmp/lcp-front
+        if [ -n "$$GIT_TOKEN" ]; then
+          REPO_URL=$$(echo $$GIT_REPO | sed "s|https://|https://$$GIT_TOKEN@|g")
+          git clone --depth 1 --branch $$GIT_BRANCH $$REPO_URL /tmp/lcp-front
+        else
+          git clone --depth 1 --branch $$GIT_BRANCH $$GIT_REPO /tmp/lcp-front
+        fi
+        cp -r /tmp/lcp-front/* /app/
+        cp -r /tmp/lcp-front/.* /app/ 2>/dev/null || true
+        echo '📦 Installing pnpm...'
+        npm install -g pnpm
+        echo '🔧 Installing dependencies with pnpm...'
+        cd /app
+        pnpm install --frozen-lockfile
+        echo '🏗️ Building frontend with Vite...'
+        pnpm run build
+        echo '📝 Configuring nginx...'
+        cat > /etc/nginx/http.d/default.conf <<'EOF'
+        server {
+            listen 80;
+            server_name _;
+            root /app/dist;
+            index index.html;
+
+            # Gzip compression
+            gzip on;
+            gzip_vary on;
+            gzip_min_length 1024;
+            gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/xml+rss application/javascript application/json;
+
+            # Security headers
+            add_header X-Frame-Options "SAMEORIGIN" always;
+            add_header X-Content-Type-Options "nosniff" always;
+            add_header X-XSS-Protection "1; mode=block" always;
+
+            # Static assets cache
+            location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+                expires 1y;
+                add_header Cache-Control "public, immutable";
+            }
+
+            # SPA routing - serve index.html for all routes
+            location / {
+                try_files $$uri $$uri/ /index.html;
+            }
+
+            # Health check endpoint
+            location /health {
+                access_log off;
+                return 200 "healthy\n";
+                add_header Content-Type text/plain;
+            }
+        }
+        EOF
+        echo '🚀 Starting nginx...'
+        nginx -g 'daemon off;'
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.lcp-front.rule=Host(`lcp.brainitsolutions.com.br`)"
+      - "traefik.http.routers.lcp-front.entrypoints=websecure"
+      - "traefik.http.routers.lcp-front.tls.certresolver=le"
+      - "traefik.http.services.lcp-front.loadbalancer.server.port=80"
+
+networks:
+  lcp-network:
+    driver: bridge
+  n8n_traefik_proxy:
+    external: true
