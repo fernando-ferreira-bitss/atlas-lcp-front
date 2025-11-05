@@ -10,7 +10,7 @@ services:
     working_dir: /app
     environment:
       # Git config
-      - GIT_REPO=${GIT_REPO:-https://github.com/fernando-ferreira-bitss/lcp-front.git}
+      - GIT_REPO=${GIT_REPO:-https://github.com/fernando-ferreira-bitss/atlas-lcp-front.git}
       - GIT_BRANCH=${GIT_BRANCH:-main}
       - GIT_TOKEN=${GIT_TOKEN:-}
 
@@ -20,7 +20,7 @@ services:
       - VITE_ENABLE_ANALYTICS=${VITE_ENABLE_ANALYTICS:-false}
 
       # Node environment
-      - NODE_ENV=development
+      - NODE_ENV=production
     ports:
       - "3001:80"
     networks:
@@ -47,7 +47,7 @@ services:
         npm install -g pnpm
         echo '🔧 Installing dependencies with pnpm...'
         cd /app
-        pnpm install --frozen-lockfile
+        pnpm install --no-frozen-lockfile
         echo '🏗️ Building frontend with Vite...'
         pnpm run build
         echo '📝 Configuring nginx...'
