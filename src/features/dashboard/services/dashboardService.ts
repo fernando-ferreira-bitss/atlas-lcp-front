@@ -1,6 +1,7 @@
 import type {
   DashboardKPIs,
   DashboardResumo,
+  GraficoVendasMes,
   TopEmpreendimento,
   VendasPorPeriodo,
   VendasPorPeriodoFilters,
@@ -8,6 +9,11 @@ import type {
 
 import { apiClient } from '@/shared/services/api/client';
 
+interface DashboardFilters {
+  data_inicio?: string;
+  data_fim?: string;
+  empreendimento_id?: number;
+}
 
 /**
  * Service para gerenciar dados do dashboard
@@ -17,10 +23,31 @@ class DashboardService {
 
   /**
    * Busca indicadores chave de performance (KPIs)
+   * @param filters - Filtros opcionais de data e empreendimento
    * @returns KPIs gerais do dashboard
    */
-  async getKPIs(): Promise<DashboardKPIs> {
-    return apiClient.get<never, DashboardKPIs>(`${this.baseURL}/kpis`);
+  async getKPIs(filters?: DashboardFilters): Promise<DashboardKPIs> {
+    return apiClient.get<never, DashboardKPIs>(`${this.baseURL}/indicadores`, {
+      params: filters,
+    });
+  }
+
+  /**
+   * Busca dados de vendas por mês para gráficos
+   * @param ano - Ano para filtrar
+   * @param empreendimento_id - ID do empreendimento (opcional)
+   * @returns Lista de vendas por mês
+   */
+  async getGraficoVendasMes(
+    ano: number,
+    empreendimento_id?: number
+  ): Promise<GraficoVendasMes[]> {
+    return apiClient.get<never, GraficoVendasMes[]>(
+      `${this.baseURL}/grafico-vendas-mes`,
+      {
+        params: { ano, empreendimento_id },
+      }
+    );
   }
 
   /**
@@ -33,13 +60,17 @@ class DashboardService {
 
   /**
    * Busca empreendimentos com mais vendas
-   * @param limit - Limite de registros (padrão: 10)
+   * @param filters - Filtros opcionais de data e limite
    * @returns Lista dos top empreendimentos
    */
-  async getTopEmpreendimentos(limit = 10): Promise<TopEmpreendimento[]> {
+  async getTopEmpreendimentos(filters?: {
+    data_inicio?: string;
+    data_fim?: string;
+    limit?: number;
+  }): Promise<TopEmpreendimento[]> {
     return apiClient.get<never, TopEmpreendimento[]>(
       `${this.baseURL}/top-empreendimentos`,
-      { params: { limit } }
+      { params: filters }
     );
   }
 

@@ -45,6 +45,41 @@ Dashboard de vendas para análise de indicadores comerciais, permitindo visualiz
 - **Type Checking:** TypeScript strict mode
 - **Testing:** Vitest + React Testing Library + Playwright (E2E)
 
+## 2.8. Responsividade
+
+**PREMISSA FUNDAMENTAL: TODO O PROJETO DEVE SER RESPONSIVO**
+
+- **Mobile First:** Desenvolvimento iniciando pelo mobile e expandindo para desktop
+- **Breakpoints do Tailwind:**
+  - `sm`: 640px (smartphones landscape e tablets pequenos)
+  - `md`: 768px (tablets)
+  - `lg`: 1024px (desktops)
+  - `xl`: 1280px (desktops grandes)
+  - `2xl`: 1536px (telas muito grandes)
+
+### Implementação de Responsividade
+
+#### Menu Lateral (Sidebar)
+- **Mobile (< 768px):** Menu tipo drawer que desliza da esquerda
+  - Botão hamburguer no header para abrir
+  - Overlay escuro quando aberto
+  - Botão X para fechar
+  - Fecha automaticamente ao clicar em um item
+  - Animação suave de slide (transition-transform)
+- **Desktop (>= 768px):** Menu fixo sempre visível à esquerda
+
+#### Layout Principal
+- **Mobile:** Sem padding lateral para sidebar (conteúdo ocupa 100% da largura)
+- **Desktop:** Padding lateral de 256px (w-64) para acomodar sidebar fixa
+
+#### Componentes
+- Todos os componentes devem adaptar:
+  - Tamanhos de fonte (text-sm sm:text-base)
+  - Espaçamentos (gap-2 sm:gap-4)
+  - Direção de flex (flex-col sm:flex-row)
+  - Grid columns (grid-cols-1 md:grid-cols-2 lg:grid-cols-4)
+  - Botões (w-full sm:w-auto)
+
 ## 3. Arquitetura e Estrutura de Pastas
 
 ### 3.1. Arquitetura
@@ -92,7 +127,8 @@ lcp-front/
 │   │   ├── components/        # Componentes reutilizáveis
 │   │   │   ├── ui/           # Componentes do Shadcn
 │   │   │   ├── layout/       # Layout components
-│   │   │   └── common/       # Componentes comuns
+│   │   │   └── common/       # Componentes comuns (Loading, etc)
+│   │   ├── contexts/         # Contexts React (SidebarContext, etc)
 │   │   ├── hooks/            # Custom hooks globais
 │   │   ├── services/         # Serviços compartilhados
 │   │   │   ├── api/          # Configuração Axios
@@ -488,7 +524,7 @@ class DashboardService {
   private readonly baseURL = '/api/dashboard';
 
   async getKPIs(filters: DashboardFilters): Promise<DashboardData> {
-    return apiClient.get(`${this.baseURL}/kpis`, { params: filters });
+    return apiClient.get(`${this.baseURL}/indicadores`, { params: filters });
   }
 
   async getCharts(filters: DashboardFilters) {

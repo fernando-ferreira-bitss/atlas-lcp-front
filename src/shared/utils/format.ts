@@ -1,15 +1,19 @@
 /**
  * Formata um valor numérico como moeda brasileira (BRL)
  * @param value - Valor numérico a ser formatado
+ * @param decimals - Número de casas decimais (padrão: 2)
  * @returns String formatada como moeda (ex: R$ 1.234,56)
  * @example
  * ```ts
  * formatCurrency(1234.56) // "R$ 1.234,56"
+ * formatCurrency(1234.56, 0) // "R$ 1.235"
  * ```
  */
-export const formatCurrency = (value: number): string => new Intl.NumberFormat('pt-BR', {
+export const formatCurrency = (value: number, decimals = 2): string => new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
   }).format(value);
 
 /**
@@ -49,3 +53,38 @@ export const formatCompactNumber = (value: number): string => new Intl.NumberFor
     notation: 'compact',
     compactDisplay: 'short',
   }).format(value);
+
+/**
+ * Formata uma data no formato brasileiro (DD/MM/YYYY)
+ * @param dateString - String de data no formato ISO ou Date object
+ * @param includeTime - Se true, inclui horas e minutos (padrão: false)
+ * @returns String formatada como data (ex: 05/11/2025)
+ * @example
+ * ```ts
+ * formatDate('2025-11-05') // "05/11/2025"
+ * formatDate('2025-11-05T14:30:00', true) // "05/11/2025 14:30"
+ * ```
+ */
+export const formatDate = (dateString: string | Date, includeTime = false): string => {
+  const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
+
+  if (isNaN(date.getTime())) {
+    return 'Data inválida';
+  }
+
+  if (includeTime) {
+    return new Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(date);
+  }
+
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(date);
+};

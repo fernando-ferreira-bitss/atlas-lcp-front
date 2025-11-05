@@ -1,19 +1,20 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 import { PrivateRoute } from '@/features/auth/components/PrivateRoute';
-import { HomePage } from '@/shared/components/common/HomePage';
-import { LoginPage } from '@/shared/components/common/LoginPage';
+import { Login } from '@/features/auth/pages/Login';
+import { Dashboard } from '@/features/dashboard/pages/Dashboard';
+import { Users } from '@/features/users/pages/Users';
 
 // Placeholder components
-const Propostas = () => <div>Propostas em breve...</div>;
-const Vendas = () => <div>Vendas em breve...</div>;
-const Relatorios = () => <div>Relatórios em breve...</div>;
-const Configuracoes = () => <div>Configurações em breve...</div>;
+const Propostas = () => <div className="p-6">Propostas em breve...</div>;
+const Vendas = () => <div className="p-6">Vendas em breve...</div>;
+const Relatorios = () => <div className="p-6">Relatórios em breve...</div>;
+const Configuracoes = () => <div className="p-6">Configurações em breve...</div>;
 
 export const router = createBrowserRouter([
   {
     path: '/login',
-    element: <LoginPage />,
+    element: <Login />,
   },
   {
     path: '/',
@@ -21,7 +22,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <HomePage />,
+        element: <Dashboard />,
       },
       {
         path: 'propostas',
@@ -34,6 +35,10 @@ export const router = createBrowserRouter([
       {
         path: 'relatorios',
         element: <Relatorios />,
+      },
+      {
+        path: 'usuarios',
+        element: <Users />,
       },
       {
         path: 'configuracoes',

@@ -1,25 +1,53 @@
-# 📘 LCP Dashboard API - Especificação para Front-End
+# 📘 LCP Dashboard API - Especificação Completa
 
 **Versão:** 1.0.0
 **Base URL:** `http://localhost:8000/api/v1`
 **Autenticação:** JWT Bearer Token
 **Formato:** JSON
+**Última atualização:** 2025-11-05
+
+---
+
+## 📋 Índice
+
+1. [Autenticação](#-autenticação)
+2. [Dashboard](#-dashboard)
+3. [Empreendimentos](#-empreendimentos)
+4. [Propostas](#-propostas)
+5. [Vendas](#-vendas)
+6. [Metas](#-metas)
+7. [Sincronização](#-sincronização)
+8. [Exportação](#-exportação)
+9. [Tratamento de Erros](#-tratamento-de-erros)
+10. [Modelos de Dados](#-modelos-de-dados)
+11. [Exemplos de Código](#-exemplos-de-código)
 
 ---
 
 ## 🔐 Autenticação
 
-### 1. Login
+Todos os endpoints (exceto `/auth/login` e `/auth/register`) requerem autenticação via JWT Bearer token.
+
+### Como autenticar:
+
+```javascript
+headers: {
+  'Authorization': `Bearer ${token}`,
+  'Content-Type': 'application/json'
+}
+```
+
+### 1. POST /auth/login
+
 Autentica um usuário e retorna token JWT.
 
-**Endpoint:** `POST /auth/login`
 **Autenticação:** Não requerida
 
 **Request Body:**
 ```json
 {
   "email": "admin@lcp.com",
-  "password": "senha123"
+  "password": "admin123"
 }
 ```
 
@@ -31,18 +59,37 @@ Autentica um usuário e retorna token JWT.
 }
 ```
 
-**Como usar o token:**
-```javascript
-headers: {
-  'Authorization': `Bearer ${token}`,
-  'Content-Type': 'application/json'
+**Erros:**
+- 401: Credenciais inválidas
+- 403: Usuário inativo
+
+---
+
+### 2. GET /auth/me
+
+Retorna dados do usuário autenticado.
+
+**Autenticação:** Requerida
+
+**Response (200):**
+```json
+{
+  "id": 1,
+  "email": "admin@lcp.com",
+  "nome": "Admin LCP",
+  "is_active": true,
+  "is_admin": true,
+  "created_at": "2025-11-05T10:51:29.913518",
+  "updated_at": "2025-11-05T15:00:21.934091"
 }
 ```
 
-### 2. Registrar Usuário
-Cria um novo usuário no sistema.
+---
 
-**Endpoint:** `POST /auth/register`
+### 3. POST /auth/register
+
+Registra um novo usuário.
+
 **Autenticação:** Não requerida
 
 **Request Body:**
@@ -68,65 +115,315 @@ Cria um novo usuário no sistema.
 }
 ```
 
-### 3. Obter Usuário Atual
-Retorna dados do usuário autenticado.
+**Erros:**
+- 400: Email já cadastrado
 
-**Endpoint:** `GET /auth/me`
+---
+
+## 📊 Dashboard
+
+### 1. GET /dashboard/indicadores
+
+Retorna indicadores principais (KPIs) do dashboard.
+
 **Autenticação:** Requerida
+
+**Query Parameters (opcionais):**
+- `data_inicio` (datetime): Data início para filtro
+- `data_fim` (datetime): Data fim para filtro
+- `empreendimento_id` (int): Filtrar por empreendimento específico
 
 **Response (200):**
 ```json
 {
-  "id": 1,
-  "email": "admin@lcp.com",
-  "nome": "Admin LCP",
-  "is_active": true,
-  "is_admin": true,
-  "created_at": "2025-11-05T10:51:29",
-  "updated_at": "2025-11-05T10:51:29"
+  "total_propostas": 200,
+  "total_vendas": 150,
+  "valor_total_vendas": 80535283.0,
+  "ticket_medio": 536901.89,
+  "taxa_conversao": 75.0,
+  "meta_vendas": 0.0,
+  "percentual_meta": 0.0
 }
+```
+
+**Exemplo de uso:**
+```javascript
+const response = await fetch('/api/v1/dashboard/indicadores?data_inicio=2025-01-01&data_fim=2025-12-31', {
+  headers: { 'Authorization': `Bearer ${token}` }
+});
+const indicadores = await response.json();
+```
+
+---
+
+### 2. GET /dashboard/grafico-vendas-mes
+
+Retorna dados de vendas agrupadas por mês para gráficos.
+
+**Autenticação:** Requerida
+
+**Query Parameters:**
+- `ano` (int, **obrigatório**): Ano para o gráfico
+- `empreendimento_id` (int, opcional): Filtrar por empreendimento
+
+**Response (200):**
+```json
+[
+  {
+    "mes": 1,
+    "total_vendas": 0,
+    "valor_vendas": 0.0,
+    "meta_vendas": 0.0
+  },
+  {
+    "mes": 7,
+    "total_vendas": 32,
+    "valor_vendas": 17699889.0,
+    "meta_vendas": 0.0
+  },
+  {
+    "mes": 8,
+    "total_vendas": 47,
+    "valor_vendas": 25445436.0,
+    "meta_vendas": 0.0
+  }
+]
+```
+
+**Exemplo de uso:**
+```javascript
+const response = await fetch('/api/v1/dashboard/grafico-vendas-mes?ano=2025', {
+  headers: { 'Authorization': `Bearer ${token}` }
+});
+const vendas = await response.json();
+```
+
+---
+
+### 3. GET /dashboard/top-empreendimentos
+
+Retorna os empreendimentos com mais vendas.
+
+**Autenticação:** Requerida
+
+**Query Parameters (opcionais):**
+- `data_inicio` (datetime): Data início para filtro
+- `data_fim` (datetime): Data fim para filtro
+- `limit` (int): Limite de registros (padrão: 5, máx: 20)
+
+**Response (200):**
+```json
+[
+  {
+    "empreendimento_id": 84,
+    "empreendimento_nome": "LOTEAMENTO NOVA BARRA VELHA (BARRA VELHA)",
+    "total_vendas": 6,
+    "valor_vendas": 3090617.0
+  },
+  {
+    "empreendimento_id": 3,
+    "empreendimento_nome": "- COMPLEXO BELEM - MATRÍCULA 11.365  (CASA) (SAO BENTO DO SUL)",
+    "total_vendas": 4,
+    "valor_vendas": 2907806.0
+  }
+]
+```
+
+---
+
+### 4. GET /dashboard/ultimas-vendas
+
+Retorna as últimas vendas realizadas para exibir em tabela.
+
+**Autenticação:** Requerida
+
+**Query Parameters (opcionais):**
+- `limit` (int): Quantidade de vendas (padrão: 10, máx: 50)
+- `empreendimento_id` (int): Filtrar por empreendimento
+
+**Response (200):**
+```json
+[
+  {
+    "id": 115,
+    "codigo_mega": 60115,
+    "empreendimento_nome": "LOTEAMENTO NOVA BARRA VELHA (BARRA VELHA)",
+    "cliente_nome": "Tatiane Andrade",
+    "unidade": "Lote 117",
+    "valor_venda": 230746.0,
+    "data_venda": "2025-11-05T13:11:11.774398",
+    "status": "Ativa",
+    "forma_pagamento": "Consórcio"
+  }
+]
+```
+
+---
+
+### 5. GET /dashboard/vendas-por-status
+
+Retorna distribuição de vendas por status para gráficos.
+
+**Autenticação:** Requerida
+
+**Query Parameters (opcionais):**
+- `data_inicio` (datetime): Data início
+- `data_fim` (datetime): Data fim
+- `empreendimento_id` (int): Filtrar por empreendimento
+
+**Response (200):**
+```json
+[
+  {
+    "status": "Ativa",
+    "total": 56,
+    "valor_total": 28367281.0,
+    "percentual": 37.33
+  },
+  {
+    "status": "Distratada",
+    "total": 48,
+    "valor_total": 25297624.0,
+    "percentual": 32.0
+  },
+  {
+    "status": "Cancelada",
+    "total": 46,
+    "valor_total": 26870378.0,
+    "percentual": 30.67
+  }
+]
+```
+
+---
+
+### 6. GET /dashboard/vendas-por-forma-pagamento
+
+Retorna distribuição de vendas por forma de pagamento para gráficos.
+
+**Autenticação:** Requerida
+
+**Query Parameters (opcionais):**
+- `data_inicio` (datetime): Data início
+- `data_fim` (datetime): Data fim
+- `empreendimento_id` (int): Filtrar por empreendimento
+
+**Response (200):**
+```json
+[
+  {
+    "forma_pagamento": "Consórcio",
+    "total": 32,
+    "valor_total": 15873779.0,
+    "percentual": 21.33
+  },
+  {
+    "forma_pagamento": "Financiamento",
+    "total": 28,
+    "valor_total": 14000000.0,
+    "percentual": 18.67
+  }
+]
+```
+
+---
+
+### 7. GET /dashboard/funil-conversao
+
+Retorna dados do funil de conversão (propostas → vendas).
+
+**Autenticação:** Requerida
+
+**Query Parameters (opcionais):**
+- `data_inicio` (datetime): Data início
+- `data_fim` (datetime): Data fim
+- `empreendimento_id` (int): Filtrar por empreendimento
+
+**Response (200):**
+```json
+{
+  "propostas_totais": 200,
+  "propostas_em_analise": 41,
+  "propostas_aprovadas": 34,
+  "vendas_concluidas": 56,
+  "taxa_conversao_proposta_venda": 28.0,
+  "taxa_conversao_analise_aprovacao": 17.0
+}
+```
+
+---
+
+### 8. GET /dashboard/vendas-por-vendedor
+
+Retorna ranking de vendedores por performance.
+
+**Autenticação:** Requerida
+
+**Query Parameters (opcionais):**
+- `data_inicio` (datetime): Data início
+- `data_fim` (datetime): Data fim
+- `limit` (int): Quantidade de vendedores (padrão: 10, máx: 50)
+
+**Response (200):**
+```json
+[
+  {
+    "vendedor": "João Silva",
+    "total_vendas": 25,
+    "valor_total": 12500000.0,
+    "ticket_medio": 500000.0
+  },
+  {
+    "vendedor": "Maria Santos",
+    "total_vendas": 18,
+    "valor_total": 9000000.0,
+    "ticket_medio": 500000.0
+  }
+]
 ```
 
 ---
 
 ## 🏢 Empreendimentos
 
-### 1. Listar Empreendimentos
+### 1. GET /empreendimentos/
+
 Lista todos os empreendimentos com paginação.
 
-**Endpoint:** `GET /empreendimentos`
 **Autenticação:** Requerida
 
-**Query Parameters:**
-- `skip` (int, opcional): Registros a pular (padrão: 0)
-- `limit` (int, opcional): Limite de registros (padrão: 100)
+**Query Parameters (opcionais):**
+- `skip` (int): Registros a pular (padrão: 0)
+- `limit` (int): Limite de registros (padrão: 100)
 
 **Response (200):**
 ```json
 [
   {
-    "id": 1,
+    "id": 55,
     "codigo_mega": 18056,
-    "nome": "LOTEAMENTO JARDIM CRISTINA",
-    "endereco": "Rua das Flores, 123",
-    "cidade": "Joinville",
-    "estado": "SC",
-    "filial": "Matriz",
+    "nome": "CASA NOVA BARRA VELHA",
+    "endereco": null,
+    "cidade": null,
+    "estado": null,
+    "filial": null,
     "status": "Ativo",
-    "data_lancamento": "2024-01-15",
-    "total_unidades": 150,
-    "unidades_disponiveis": 45,
-    "unidades_vendidas": 105,
-    "created_at": "2025-11-05T10:58:53",
-    "updated_at": "2025-11-05T10:58:53"
+    "data_lancamento": null,
+    "total_unidades": 0,
+    "unidades_disponiveis": 0,
+    "unidades_vendidas": 0,
+    "created_at": "2025-11-05T10:58:53.730176",
+    "updated_at": "2025-11-05T10:58:53.730181"
   }
 ]
 ```
 
-### 2. Detalhes de Empreendimento
+---
+
+### 2. GET /empreendimentos/{id}
+
 Retorna detalhes de um empreendimento específico.
 
-**Endpoint:** `GET /empreendimentos/{id}`
 **Autenticação:** Requerida
 
 **Path Parameters:**
@@ -135,84 +432,73 @@ Retorna detalhes de um empreendimento específico.
 **Response (200):**
 ```json
 {
-  "id": 1,
+  "id": 55,
   "codigo_mega": 18056,
-  "nome": "LOTEAMENTO JARDIM CRISTINA",
-  "endereco": "Rua das Flores, 123",
-  "cidade": "Joinville",
-  "estado": "SC",
-  "filial": "Matriz",
+  "nome": "CASA NOVA BARRA VELHA",
+  "endereco": null,
+  "cidade": null,
+  "estado": null,
+  "filial": null,
   "status": "Ativo",
-  "data_lancamento": "2024-01-15",
-  "total_unidades": 150,
-  "unidades_disponiveis": 45,
-  "unidades_vendidas": 105,
-  "created_at": "2025-11-05T10:58:53",
-  "updated_at": "2025-11-05T10:58:53"
+  "data_lancamento": null,
+  "total_unidades": 0,
+  "unidades_disponiveis": 0,
+  "unidades_vendidas": 0,
+  "created_at": "2025-11-05T10:58:53.730176",
+  "updated_at": "2025-11-05T10:58:53.730181"
 }
 ```
 
-### 3. Estatísticas de Empreendimento
-Retorna estatísticas agregadas.
-
-**Endpoint:** `GET /empreendimentos/stats`
-**Autenticação:** Requerida
-
-**Response (200):**
-```json
-{
-  "total_empreendimentos": 104,
-  "total_unidades": 15000,
-  "unidades_disponiveis": 4500,
-  "unidades_vendidas": 8500,
-  "unidades_reservadas": 2000,
-  "valor_total_vendas": 850000000.00,
-  "ticket_medio": 100000.00
-}
-```
+**Erros:**
+- 404: Empreendimento não encontrado
 
 ---
 
 ## 📋 Propostas
 
-### 1. Listar Propostas
+### 1. GET /propostas/
+
 Lista todas as propostas com filtros.
 
-**Endpoint:** `GET /propostas`
 **Autenticação:** Requerida
 
-**Query Parameters:**
-- `skip` (int, opcional): Registros a pular (padrão: 0)
-- `limit` (int, opcional): Limite de registros (padrão: 100)
-- `empreendimento_id` (int, opcional): Filtrar por empreendimento
-- `status` (string, opcional): Filtrar por status ("Aberta", "Aprovada", "Reprovada", "Cancelada")
+**Query Parameters (opcionais):**
+- `skip` (int): Registros a pular (padrão: 0)
+- `limit` (int): Limite de registros (padrão: 100)
+- `empreendimento_id` (int): Filtrar por empreendimento
+- `status` (string): Filtrar por status
+- `data_inicio` (datetime): Data início
+- `data_fim` (datetime): Data fim
 
 **Response (200):**
 ```json
 [
   {
-    "id": 1,
-    "codigo_mega": 50001,
-    "empreendimento_id": 1,
-    "empreendimento_nome": "LOTEAMENTO JARDIM CRISTINA",
-    "cliente_nome": "João da Silva",
-    "cliente_cpf": "123.456.789-00",
-    "unidade": "Lote 45",
-    "bloco": "Quadra A",
-    "valor_proposta": 250000.00,
-    "data_proposta": "2025-10-15T14:30:00",
-    "status": "Aprovada",
-    "vendedor": "Maria Santos",
-    "created_at": "2025-10-15T14:30:00",
-    "updated_at": "2025-10-16T10:00:00"
+    "id": 154,
+    "codigo_mega": 50154,
+    "empreendimento_id": 52,
+    "cliente_nome": "Paulo Ramos",
+    "cliente_cpf": "400.500.600-22",
+    "unidade": "Lote 197",
+    "bloco": "Quadra D",
+    "valor_proposta": "776122.00",
+    "data_proposta": "2025-11-03T13:11:11.101234",
+    "status": "Em Análise",
+    "origem": null,
+    "vendedor": "Juliana Martins",
+    "observacoes": null,
+    "created_at": "2025-11-05T13:11:11.107782",
+    "updated_at": "2025-11-05T13:11:11.107782"
   }
 ]
 ```
 
-### 2. Detalhes de Proposta
+---
+
+### 2. GET /propostas/{id}
+
 Retorna detalhes de uma proposta específica.
 
-**Endpoint:** `GET /propostas/{id}`
 **Autenticação:** Requerida
 
 **Path Parameters:**
@@ -221,89 +507,75 @@ Retorna detalhes de uma proposta específica.
 **Response (200):**
 ```json
 {
-  "id": 1,
-  "codigo_mega": 50001,
-  "empreendimento_id": 1,
-  "empreendimento_nome": "LOTEAMENTO JARDIM CRISTINA",
-  "cliente_nome": "João da Silva",
-  "cliente_cpf": "123.456.789-00",
-  "unidade": "Lote 45",
-  "bloco": "Quadra A",
-  "valor_proposta": 250000.00,
-  "data_proposta": "2025-10-15T14:30:00",
-  "status": "Aprovada",
-  "vendedor": "Maria Santos",
-  "created_at": "2025-10-15T14:30:00",
-  "updated_at": "2025-10-16T10:00:00"
+  "id": 154,
+  "codigo_mega": 50154,
+  "empreendimento_id": 52,
+  "cliente_nome": "Paulo Ramos",
+  "cliente_cpf": "400.500.600-22",
+  "unidade": "Lote 197",
+  "bloco": "Quadra D",
+  "valor_proposta": "776122.00",
+  "data_proposta": "2025-11-03T13:11:11.101234",
+  "status": "Em Análise",
+  "origem": null,
+  "vendedor": "Juliana Martins",
+  "observacoes": null,
+  "created_at": "2025-11-05T13:11:11.107782",
+  "updated_at": "2025-11-05T13:11:11.107782"
 }
 ```
 
-### 3. Propostas por Empreendimento
-Lista propostas de um empreendimento específico.
+**Erros:**
+- 404: Proposta não encontrada
 
-**Endpoint:** `GET /propostas/por-empreendimento/{empreendimento_id}`
+---
+
+## 💰 Vendas
+
+### 1. GET /vendas/
+
+Lista todas as vendas com filtros.
+
 **Autenticação:** Requerida
 
-**Path Parameters:**
-- `empreendimento_id` (int): ID do empreendimento
+**Query Parameters (opcionais):**
+- `skip` (int): Registros a pular (padrão: 0)
+- `limit` (int): Limite de registros (padrão: 100)
+- `empreendimento_id` (int): Filtrar por empreendimento
+- `status` (string): Filtrar por status
+- `data_inicio` (datetime): Data início
+- `data_fim` (datetime): Data fim
 
 **Response (200):**
 ```json
 [
   {
-    "id": 1,
-    "codigo_mega": 50001,
-    "cliente_nome": "João da Silva",
-    "unidade": "Lote 45",
-    "valor_proposta": 250000.00,
-    "status": "Aprovada"
+    "id": 115,
+    "codigo_mega": 60115,
+    "empreendimento_id": 84,
+    "proposta_id": null,
+    "cliente_nome": "Tatiane Andrade",
+    "cliente_cpf": null,
+    "unidade": "Lote 117",
+    "bloco": "Quadra D",
+    "valor_venda": "230746.00",
+    "data_venda": "2025-11-05T13:11:11.774398",
+    "status": "Ativa",
+    "forma_pagamento": "Consórcio",
+    "vendedor": null,
+    "observacoes": null,
+    "created_at": "2025-11-05T13:11:12.282801",
+    "updated_at": "2025-11-05T13:11:12.282801"
   }
 ]
 ```
 
 ---
 
-## 💰 Vendas
+### 2. GET /vendas/{id}
 
-### 1. Listar Vendas
-Lista todas as vendas com filtros.
-
-**Endpoint:** `GET /vendas`
-**Autenticação:** Requerida
-
-**Query Parameters:**
-- `skip` (int, opcional): Registros a pular (padrão: 0)
-- `limit` (int, opcional): Limite de registros (padrão: 100)
-- `empreendimento_id` (int, opcional): Filtrar por empreendimento
-- `status` (string, opcional): Filtrar por status ("Ativa", "Cancelada", "Distratada")
-- `data_inicio` (date, opcional): Data início (formato: YYYY-MM-DD)
-- `data_fim` (date, opcional): Data fim (formato: YYYY-MM-DD)
-
-**Response (200):**
-```json
-[
-  {
-    "id": 1,
-    "codigo_mega": 60001,
-    "empreendimento_id": 1,
-    "empreendimento_nome": "LOTEAMENTO JARDIM CRISTINA",
-    "cliente_nome": "Maria Oliveira",
-    "unidade": "Lote 23",
-    "bloco": "Quadra B",
-    "valor_venda": 320000.00,
-    "data_venda": "2025-11-01T10:00:00",
-    "status": "Ativa",
-    "forma_pagamento": "Financiamento",
-    "created_at": "2025-11-01T10:00:00",
-    "updated_at": "2025-11-01T10:00:00"
-  }
-]
-```
-
-### 2. Detalhes de Venda
 Retorna detalhes de uma venda específica.
 
-**Endpoint:** `GET /vendas/{id}`
 **Autenticação:** Requerida
 
 **Path Parameters:**
@@ -312,213 +584,104 @@ Retorna detalhes de uma venda específica.
 **Response (200):**
 ```json
 {
-  "id": 1,
-  "codigo_mega": 60001,
-  "empreendimento_id": 1,
-  "empreendimento_nome": "LOTEAMENTO JARDIM CRISTINA",
-  "cliente_nome": "Maria Oliveira",
-  "unidade": "Lote 23",
-  "bloco": "Quadra B",
-  "valor_venda": 320000.00,
-  "data_venda": "2025-11-01T10:00:00",
+  "id": 115,
+  "codigo_mega": 60115,
+  "empreendimento_id": 84,
+  "proposta_id": null,
+  "cliente_nome": "Tatiane Andrade",
+  "cliente_cpf": null,
+  "unidade": "Lote 117",
+  "bloco": "Quadra D",
+  "valor_venda": "230746.00",
+  "data_venda": "2025-11-05T13:11:11.774398",
   "status": "Ativa",
-  "forma_pagamento": "Financiamento",
-  "created_at": "2025-11-01T10:00:00",
-  "updated_at": "2025-11-01T10:00:00"
+  "forma_pagamento": "Consórcio",
+  "vendedor": null,
+  "observacoes": null,
+  "created_at": "2025-11-05T13:11:12.282801",
+  "updated_at": "2025-11-05T13:11:12.282801"
 }
 ```
 
-### 3. Vendas por Empreendimento
-Lista vendas de um empreendimento específico.
-
-**Endpoint:** `GET /vendas/por-empreendimento/{empreendimento_id}`
-**Autenticação:** Requerida
-
-**Path Parameters:**
-- `empreendimento_id` (int): ID do empreendimento
-
-**Response (200):**
-```json
-[
-  {
-    "id": 1,
-    "codigo_mega": 60001,
-    "cliente_nome": "Maria Oliveira",
-    "unidade": "Lote 23",
-    "valor_venda": 320000.00,
-    "data_venda": "2025-11-01",
-    "status": "Ativa"
-  }
-]
-```
-
----
-
-## 📊 Dashboard
-
-### 1. Top Empreendimentos
-Retorna empreendimentos com mais vendas.
-
-**Endpoint:** `GET /dashboard/top-empreendimentos`
-**Autenticação:** Requerida
-
-**Query Parameters:**
-- `limit` (int, opcional): Limite de registros (padrão: 10)
-
-**Response (200):**
-```json
-[
-  {
-    "empreendimento_id": 1,
-    "empreendimento_nome": "LOTEAMENTO JARDIM CRISTINA",
-    "total_vendas": 105,
-    "valor_total": 33600000.00,
-    "ticket_medio": 320000.00
-  }
-]
-```
-
-### 2. Vendas por Período
-Retorna vendas agrupadas por período.
-
-**Endpoint:** `GET /dashboard/vendas-por-periodo`
-**Autenticação:** Requerida
-
-**Query Parameters:**
-- `data_inicio` (date, opcional): Data início (formato: YYYY-MM-DD)
-- `data_fim` (date, opcional): Data fim (formato: YYYY-MM-DD)
-- `agrupamento` (string, opcional): "dia", "semana", "mes" (padrão: "mes")
-
-**Response (200):**
-```json
-[
-  {
-    "periodo": "2025-11",
-    "total_vendas": 45,
-    "valor_total": 14400000.00,
-    "ticket_medio": 320000.00
-  },
-  {
-    "periodo": "2025-10",
-    "total_vendas": 38,
-    "valor_total": 12160000.00,
-    "ticket_medio": 320000.00
-  }
-]
-```
-
-### 3. KPIs Gerais
-Retorna indicadores chave de performance.
-
-**Endpoint:** `GET /dashboard/kpis`
-**Autenticação:** Requerida
-
-**Response (200):**
-```json
-{
-  "vendas_mes_atual": {
-    "quantidade": 45,
-    "valor_total": 14400000.00,
-    "variacao_mes_anterior": 18.4
-  },
-  "propostas_abertas": {
-    "quantidade": 78,
-    "valor_total": 24960000.00
-  },
-  "taxa_conversao": {
-    "percentual": 57.6,
-    "propostas_aprovadas": 120,
-    "total_propostas": 208
-  },
-  "ticket_medio": {
-    "valor": 320000.00,
-    "variacao_mes_anterior": -2.3
-  },
-  "empreendimentos_ativos": 104,
-  "unidades_disponiveis": 4500
-}
-```
-
-### 4. Resumo Geral
-Retorna resumo completo do dashboard.
-
-**Endpoint:** `GET /dashboard`
-**Autenticação:** Requerida
-
-**Response (200):**
-```json
-{
-  "kpis": {
-    "total_empreendimentos": 104,
-    "total_vendas_mes": 45,
-    "valor_vendas_mes": 14400000.00,
-    "propostas_abertas": 78,
-    "taxa_conversao": 57.6
-  },
-  "top_empreendimentos": [
-    {
-      "nome": "LOTEAMENTO JARDIM CRISTINA",
-      "vendas": 105,
-      "valor": 33600000.00
-    }
-  ],
-  "vendas_por_mes": [
-    {
-      "mes": "2025-11",
-      "vendas": 45,
-      "valor": 14400000.00
-    }
-  ]
-}
-```
+**Erros:**
+- 404: Venda não encontrada
 
 ---
 
 ## 🎯 Metas
 
-### 1. Listar Metas
+### 1. GET /metas/
+
 Lista todas as metas cadastradas.
 
-**Endpoint:** `GET /metas`
 **Autenticação:** Requerida
 
-**Query Parameters:**
-- `ativo` (bool, opcional): Filtrar metas ativas
+**Query Parameters (opcionais):**
+- `skip` (int): Registros a pular (padrão: 0)
+- `limit` (int): Limite de registros (padrão: 100)
+- `empreendimento_id` (int): Filtrar por empreendimento
+- `ano` (int): Filtrar por ano
 
 **Response (200):**
 ```json
 [
   {
     "id": 1,
-    "nome": "Meta Vendas Q1 2025",
-    "tipo": "vendas",
-    "valor_meta": 50000000.00,
-    "valor_realizado": 33600000.00,
-    "percentual_atingido": 67.2,
-    "periodo_inicio": "2025-01-01",
-    "periodo_fim": "2025-03-31",
-    "ativo": true,
-    "created_at": "2025-01-01T00:00:00",
-    "updated_at": "2025-11-05T15:00:00"
+    "empreendimento_id": 55,
+    "mes": 12,
+    "ano": 2025,
+    "meta_vendas": "5000000.00",
+    "meta_unidades": 10,
+    "created_at": "2025-11-05T15:04:07.195964",
+    "updated_at": "2025-11-05T15:04:07.195966"
   }
 ]
 ```
 
-### 2. Criar Meta
+---
+
+### 2. GET /metas/{id}
+
+Retorna detalhes de uma meta específica.
+
+**Autenticação:** Requerida
+
+**Path Parameters:**
+- `id` (int): ID da meta
+
+**Response (200):**
+```json
+{
+  "id": 1,
+  "empreendimento_id": 55,
+  "mes": 12,
+  "ano": 2025,
+  "meta_vendas": "5000000.00",
+  "meta_unidades": 10,
+  "created_at": "2025-11-05T15:04:07.195964",
+  "updated_at": "2025-11-05T15:04:07.195966"
+}
+```
+
+**Erros:**
+- 404: Meta não encontrada
+
+---
+
+### 3. POST /metas/
+
 Cria uma nova meta.
 
-**Endpoint:** `POST /metas`
 **Autenticação:** Requerida (Admin)
 
 **Request Body:**
 ```json
 {
-  "nome": "Meta Vendas Q1 2025",
-  "tipo": "vendas",
-  "valor_meta": 50000000.00,
-  "periodo_inicio": "2025-01-01",
-  "periodo_fim": "2025-03-31",
-  "ativo": true
+  "empreendimento_id": 55,
+  "mes": 12,
+  "ano": 2025,
+  "meta_vendas": 5000000.00,
+  "meta_unidades": 10
 }
 ```
 
@@ -526,190 +689,267 @@ Cria uma nova meta.
 ```json
 {
   "id": 1,
-  "nome": "Meta Vendas Q1 2025",
-  "tipo": "vendas",
-  "valor_meta": 50000000.00,
-  "valor_realizado": 0.00,
-  "percentual_atingido": 0.0,
-  "periodo_inicio": "2025-01-01",
-  "periodo_fim": "2025-03-31",
-  "ativo": true
+  "empreendimento_id": 55,
+  "mes": 12,
+  "ano": 2025,
+  "meta_vendas": "5000000.00",
+  "meta_unidades": 10,
+  "created_at": "2025-11-05T15:04:07.195964",
+  "updated_at": "2025-11-05T15:04:07.195966"
 }
 ```
 
-### 3. Atualizar Meta
+**Erros:**
+- 400: Meta já existe para este empreendimento/mês/ano
+- 403: Usuário não é admin
+
+---
+
+### 4. PUT /metas/{id}
+
 Atualiza uma meta existente.
 
-**Endpoint:** `PUT /metas/{id}`
 **Autenticação:** Requerida (Admin)
 
-**Request Body:**
+**Path Parameters:**
+- `id` (int): ID da meta
+
+**Request Body (campos opcionais):**
 ```json
 {
-  "valor_meta": 60000000.00,
-  "ativo": true
+  "mes": 12,
+  "ano": 2025,
+  "meta_vendas": 6000000.00,
+  "meta_unidades": 15
 }
 ```
 
-### 4. Deletar Meta
-Remove uma meta.
+**Response (200):**
+```json
+{
+  "id": 1,
+  "empreendimento_id": 55,
+  "mes": 12,
+  "ano": 2025,
+  "meta_vendas": "6000000.00",
+  "meta_unidades": 15,
+  "created_at": "2025-11-05T15:04:07.195964",
+  "updated_at": "2025-11-05T15:05:10.123456"
+}
+```
 
-**Endpoint:** `DELETE /metas/{id}`
+**Erros:**
+- 403: Usuário não é admin
+- 404: Meta não encontrada
+
+---
+
+### 5. DELETE /metas/{id}
+
+Deleta uma meta.
+
 **Autenticação:** Requerida (Admin)
 
+**Path Parameters:**
+- `id` (int): ID da meta
+
 **Response (204):** Sem conteúdo
+
+**Erros:**
+- 403: Usuário não é admin
+- 404: Meta não encontrada
 
 ---
 
 ## 🔄 Sincronização
 
-### 1. Sincronizar Empreendimentos
-Sincroniza empreendimentos das APIs externas.
+Todos os endpoints de sincronização executam em **background** e retornam imediatamente.
 
-**Endpoint:** `POST /sync/empreendimentos`
-**Autenticação:** Requerida (Admin)
+### 1. POST /sync/full
 
-**Response (200):**
-```json
-{
-  "status": "sucesso",
-  "mensagem": "Sincronização concluída",
-  "criados": 5,
-  "atualizados": 99,
-  "erros": 0,
-  "tempo_execucao": 12
-}
-```
-
-### 2. Sincronizar Propostas e Vendas
-Sincroniza propostas e vendas das APIs externas.
-
-**Endpoint:** `POST /sync/propostas-vendas`
-**Autenticação:** Requerida (Admin)
-
-**Response (200):**
-```json
-{
-  "status": "sucesso",
-  "mensagem": "Sincronização concluída",
-  "propostas_criadas": 25,
-  "propostas_atualizadas": 10,
-  "vendas_criadas": 15,
-  "vendas_atualizadas": 5,
-  "erros": 0,
-  "tempo_execucao": 45
-}
-```
-
-### 3. Sincronização Completa
 Executa sincronização completa (empreendimentos + propostas + vendas).
 
-**Endpoint:** `POST /sync/full`
-**Autenticação:** Requerida (Admin)
+**Autenticação:** Requerida
 
-**Response (200):**
+**Response (202):**
 ```json
 {
-  "status": "sucesso",
-  "empreendimentos": {
-    "criados": 5,
-    "atualizados": 99
-  },
-  "propostas": {
-    "criadas": 25,
-    "atualizadas": 10
-  },
-  "vendas": {
-    "criadas": 15,
-    "atualizadas": 5
-  }
+  "message": "Sincronização completa iniciada em background",
+  "status": "em_progresso"
 }
 ```
 
-### 4. Status da Sincronização
-Retorna status da última sincronização.
+---
 
-**Endpoint:** `GET /sync/status`
+### 2. POST /sync/empreendimentos
+
+Sincroniza apenas empreendimentos.
+
 **Autenticação:** Requerida
+
+**Response (202):**
+```json
+{
+  "message": "Sincronização de empreendimentos iniciada em background",
+  "status": "em_progresso"
+}
+```
+
+---
+
+### 3. POST /sync/propostas-vendas
+
+Sincroniza propostas e vendas.
+
+**Autenticação:** Requerida
+
+**Response (202):**
+```json
+{
+  "message": "Sincronização de propostas/vendas iniciada em background",
+  "status": "em_progresso"
+}
+```
+
+---
+
+### 4. GET /sync/status
+
+Retorna histórico de sincronizações.
+
+**Autenticação:** Requerida
+
+**Query Parameters (opcionais):**
+- `tipo_sync` (string): Filtrar por tipo ("full", "empreendimentos", "propostas_vendas")
+- `skip` (int): Registros a pular (padrão: 0)
+- `limit` (int): Limite de registros (padrão: 10)
 
 **Response (200):**
 ```json
 {
   "logs": [
     {
-      "id": 1,
-      "tipo_sync": "full",
+      "id": 10,
+      "tipo_sync": "empreendimentos",
       "status": "sucesso",
-      "total_registros": 154,
-      "registros_criados": 45,
-      "registros_atualizados": 109,
+      "total_registros": 104,
+      "registros_criados": 5,
+      "registros_atualizados": 99,
       "registros_erro": 0,
-      "tempo_execucao_segundos": 57,
-      "mensagem": "Sincronização completa: 154 registros",
-      "data_inicio": "2025-11-05T10:58:00",
-      "data_fim": "2025-11-05T10:58:57"
+      "tempo_execucao_segundos": 12,
+      "mensagem": "Sincronização empreendimentos concluída",
+      "data_inicio": "2025-11-05T14:11:36.841880",
+      "data_fim": "2025-11-05T14:11:48.123456"
     }
-  ]
+  ],
+  "skip": 0,
+  "limit": 10
 }
 ```
 
 ---
 
-## 📤 Exportação
+### 5. GET /sync/status/latest/{tipo_sync}
 
-### 1. Exportar Empreendimentos (Excel)
-Exporta lista de empreendimentos em formato Excel.
+Retorna a última sincronização de um tipo específico.
 
-**Endpoint:** `GET /export/empreendimentos/excel`
 **Autenticação:** Requerida
 
-**Response:** Arquivo `.xlsx`
+**Path Parameters:**
+- `tipo_sync` (string): Tipo de sincronização ("full", "empreendimentos", "propostas_vendas")
+
+**Response (200):**
+```json
+{
+  "id": 9,
+  "tipo_sync": "full",
+  "status": "sucesso",
+  "total_registros": 154,
+  "registros_criados": 45,
+  "registros_atualizados": 109,
+  "registros_erro": 0,
+  "tempo_execucao_segundos": 57,
+  "mensagem": "Sincronização full concluída",
+  "detalhes_erro": null,
+  "data_inicio": "2025-11-05T14:11:36.325623",
+  "data_fim": "2025-11-05T14:12:33.456789",
+  "user_id": 1,
+  "created_at": "2025-11-05T14:11:36.328153"
+}
+```
+
+**Erros:**
+- 404: Nenhuma sincronização encontrada para este tipo
+
+---
+
+## 📤 Exportação
+
+Todos os endpoints de exportação retornam arquivos (CSV ou XLSX), não JSON.
+
+### 1. GET /export/vendas
+
+Exporta vendas em formato CSV ou XLSX.
+
+**Autenticação:** Requerida
+
+**Query Parameters:**
+- `formato` (string): "csv" ou "xlsx" (padrão: "xlsx")
+- `data_inicio` (datetime, opcional): Data início
+- `data_fim` (datetime, opcional): Data fim
+- `empreendimento_id` (int, opcional): Filtrar por empreendimento
+
+**Response:** Arquivo para download
 
 **Headers:**
 ```
 Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
-Content-Disposition: attachment; filename=empreendimentos_2025-11-05.xlsx
+Content-Disposition: attachment; filename=vendas_20251105_120000.xlsx
 ```
 
-### 2. Exportar Empreendimentos (CSV)
-Exporta lista de empreendimentos em formato CSV.
-
-**Endpoint:** `GET /export/empreendimentos/csv`
-**Autenticação:** Requerida
-
-**Response:** Arquivo `.csv`
-
-**Headers:**
+**Exemplo de uso:**
+```javascript
+const response = await fetch('/api/v1/export/vendas?formato=xlsx&data_inicio=2025-01-01', {
+  headers: { 'Authorization': `Bearer ${token}` }
+});
+const blob = await response.blob();
+const url = window.URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = 'vendas.xlsx';
+a.click();
 ```
-Content-Type: text/csv
-Content-Disposition: attachment; filename=empreendimentos_2025-11-05.csv
-```
 
-### 3. Exportar Propostas (Excel)
-Exporta lista de propostas em formato Excel.
+---
 
-**Endpoint:** `GET /export/propostas/excel`
-**Autenticação:** Requerida
+### 2. GET /export/propostas
 
-**Query Parameters:**
-- `empreendimento_id` (int, opcional): Filtrar por empreendimento
-- `data_inicio` (date, opcional): Data início
-- `data_fim` (date, opcional): Data fim
+Exporta propostas em formato CSV ou XLSX.
 
-**Response:** Arquivo `.xlsx`
-
-### 4. Exportar Vendas (Excel)
-Exporta lista de vendas em formato Excel.
-
-**Endpoint:** `GET /export/vendas/excel`
 **Autenticação:** Requerida
 
 **Query Parameters:**
+- `formato` (string): "csv" ou "xlsx" (padrão: "xlsx")
+- `data_inicio` (datetime, opcional): Data início
+- `data_fim` (datetime, opcional): Data fim
 - `empreendimento_id` (int, opcional): Filtrar por empreendimento
-- `data_inicio` (date, opcional): Data início
-- `data_fim` (date, opcional): Data fim
+- `status` (string, opcional): Filtrar por status
 
-**Response:** Arquivo `.xlsx`
+**Response:** Arquivo para download
+
+---
+
+### 3. GET /export/relatorio-completo
+
+Exporta relatório completo com múltiplas abas (apenas XLSX).
+
+**Autenticação:** Requerida
+
+**Query Parameters (opcionais):**
+- `data_inicio` (datetime): Data início
+- `data_fim` (datetime): Data fim
+
+**Response:** Arquivo XLSX com múltiplas abas (Vendas, Propostas, Empreendimentos)
 
 ---
 
@@ -721,6 +961,7 @@ Exporta lista de vendas em formato Excel.
 |--------|-----------|
 | 200 | Sucesso |
 | 201 | Criado com sucesso |
+| 202 | Aceito (processamento em background) |
 | 204 | Sem conteúdo (operação bem-sucedida) |
 | 400 | Requisição inválida |
 | 401 | Não autenticado |
@@ -746,7 +987,8 @@ Exporta lista de vendas em formato Excel.
       "type": "missing",
       "loc": ["body", "email"],
       "msg": "Field required",
-      "input": {}
+      "input": {},
+      "url": "https://errors.pydantic.dev/2.12/v/missing"
     }
   ]
 }
@@ -757,17 +999,18 @@ Exporta lista de vendas em formato Excel.
 ## 📋 Modelos de Dados
 
 ### Empreendimento
+
 ```typescript
 interface Empreendimento {
   id: number;
   codigo_mega: number;
   nome: string;
-  endereco?: string | null;
-  cidade?: string | null;
-  estado?: string | null;
-  filial?: string | null;
+  endereco: string | null;
+  cidade: string | null;
+  estado: string | null;
+  filial: string | null;
   status: string;
-  data_lancamento?: string | null;
+  data_lancamento: string | null;
   total_unidades: number;
   unidades_disponiveis: number;
   unidades_vendidas: number;
@@ -777,140 +1020,122 @@ interface Empreendimento {
 ```
 
 ### Proposta
+
 ```typescript
 interface Proposta {
   id: number;
   codigo_mega: number;
   empreendimento_id: number;
-  empreendimento_nome?: string;
   cliente_nome: string;
-  cliente_cpf?: string | null;
+  cliente_cpf: string | null;
   unidade: string;
   bloco: string;
-  valor_proposta: number;
+  valor_proposta: string;  // Decimal as string
   data_proposta: string;
   status: string;
-  vendedor?: string | null;
+  origem: string | null;
+  vendedor: string | null;
+  observacoes: string | null;
   created_at: string;
   updated_at: string;
 }
 ```
 
 ### Venda
+
 ```typescript
 interface Venda {
   id: number;
   codigo_mega: number;
   empreendimento_id: number;
-  empreendimento_nome?: string;
+  proposta_id: number | null;
   cliente_nome: string;
+  cliente_cpf: string | null;
   unidade: string;
   bloco: string;
-  valor_venda: number;
+  valor_venda: string;  // Decimal as string
   data_venda: string;
   status: string;
-  forma_pagamento?: string | null;
+  forma_pagamento: string | null;
+  vendedor: string | null;
+  observacoes: string | null;
   created_at: string;
   updated_at: string;
 }
 ```
 
 ### Meta
+
 ```typescript
 interface Meta {
   id: number;
-  nome: string;
-  tipo: string;
-  valor_meta: number;
-  valor_realizado: number;
-  percentual_atingido: number;
-  periodo_inicio: string;
-  periodo_fim: string;
-  ativo: boolean;
+  empreendimento_id: number;
+  mes: number;  // 1-12
+  ano: number;  // 2020-2100
+  meta_vendas: string;  // Decimal as string
+  meta_unidades: number;
   created_at: string;
   updated_at: string;
 }
 ```
 
+### User
+
+```typescript
+interface User {
+  id: number;
+  email: string;
+  nome: string;
+  is_active: boolean;
+  is_admin: boolean;
+  created_at: string;
+  updated_at: string;
+}
+```
+
+### DashboardIndicadores
+
+```typescript
+interface DashboardIndicadores {
+  total_propostas: number;
+  total_vendas: number;
+  valor_total_vendas: number;
+  ticket_medio: number;
+  taxa_conversao: number;
+  meta_vendas: number;
+  percentual_meta: number;
+}
+```
+
+### SyncLog
+
+```typescript
+interface SyncLog {
+  id: number;
+  tipo_sync: 'full' | 'empreendimentos' | 'propostas_vendas';
+  status: 'iniciado' | 'em_progresso' | 'sucesso' | 'erro';
+  total_registros: number;
+  registros_criados: number;
+  registros_atualizados: number;
+  registros_erro: number;
+  tempo_execucao_segundos: number | null;
+  mensagem: string;
+  detalhes_erro: string | null;
+  data_inicio: string;
+  data_fim: string | null;
+  user_id: number;
+  created_at: string;
+}
+```
+
 ---
 
-## 🔧 Exemplos de Uso (JavaScript/TypeScript)
+## 🔧 Exemplos de Código
 
-### Autenticação e Requisição Básica
-
-```javascript
-// 1. Login
-const loginResponse = await fetch('http://localhost:8000/api/v1/auth/login', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    email: 'admin@lcp.com',
-    password: 'senha123'
-  })
-});
-
-const { access_token } = await loginResponse.json();
-
-// 2. Usar o token em requisições
-const empreendimentosResponse = await fetch('http://localhost:8000/api/v1/empreendimentos', {
-  headers: {
-    'Authorization': `Bearer ${access_token}`,
-    'Content-Type': 'application/json'
-  }
-});
-
-const empreendimentos = await empreendimentosResponse.json();
-```
-
-### Hook React para Autenticação
+### Setup de API Client (TypeScript)
 
 ```typescript
-import { useState, useEffect } from 'react';
-
-interface AuthContext {
-  token: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-  isAuthenticated: boolean;
-}
-
-export const useAuth = (): AuthContext => {
-  const [token, setToken] = useState<string | null>(
-    localStorage.getItem('token')
-  );
-
-  const login = async (email: string, password: string) => {
-    const response = await fetch('http://localhost:8000/api/v1/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-
-    const data = await response.json();
-    setToken(data.access_token);
-    localStorage.setItem('token', data.access_token);
-  };
-
-  const logout = () => {
-    setToken(null);
-    localStorage.removeItem('token');
-  };
-
-  return {
-    token,
-    login,
-    logout,
-    isAuthenticated: !!token
-  };
-};
-```
-
-### Service para API
-
-```typescript
-class LCPApiService {
+class LCPApiClient {
   private baseURL = 'http://localhost:8000/api/v1';
   private token: string | null = null;
 
@@ -918,30 +1143,177 @@ class LCPApiService {
     this.token = token;
   }
 
+  clearToken() {
+    this.token = null;
+  }
+
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    };
+
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`;
+    }
+
     const response = await fetch(`${this.baseURL}${endpoint}`, {
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(this.token && { Authorization: `Bearer ${this.token}` }),
-        ...options.headers
-      }
+      headers,
     });
 
     if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
+      const error = await response.json();
+      throw new Error(error.detail || 'API request failed');
     }
 
     return response.json();
   }
 
+  // Auth
+  async login(email: string, password: string) {
+    const data = await this.request<{ access_token: string; token_type: string }>(
+      '/auth/login',
+      {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      }
+    );
+    this.setToken(data.access_token);
+    return data;
+  }
+
+  async me() {
+    return this.request<User>('/auth/me');
+  }
+
+  // Dashboard
+  async getIndicadores(filters?: {
+    data_inicio?: string;
+    data_fim?: string;
+    empreendimento_id?: number;
+  }) {
+    const params = new URLSearchParams(
+      Object.entries(filters || {}).map(([k, v]) => [k, String(v)])
+    );
+    return this.request<DashboardIndicadores>(
+      `/dashboard/indicadores?${params}`
+    );
+  }
+
+  async getGraficoVendasMes(ano: number, empreendimento_id?: number) {
+    const params = new URLSearchParams({ ano: String(ano) });
+    if (empreendimento_id) {
+      params.append('empreendimento_id', String(empreendimento_id));
+    }
+    return this.request<Array<{
+      mes: number;
+      total_vendas: number;
+      valor_vendas: number;
+      meta_vendas: number;
+    }>>(`/dashboard/grafico-vendas-mes?${params}`);
+  }
+
+  async getTopEmpreendimentos(limit = 5) {
+    return this.request<Array<{
+      empreendimento_id: number;
+      empreendimento_nome: string;
+      total_vendas: number;
+      valor_vendas: number;
+    }>>(`/dashboard/top-empreendimentos?limit=${limit}`);
+  }
+
+  async getUltimasVendas(limit = 10, empreendimento_id?: number) {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (empreendimento_id) {
+      params.append('empreendimento_id', String(empreendimento_id));
+    }
+    return this.request<Array<{
+      id: number;
+      codigo_mega: number;
+      empreendimento_nome: string;
+      cliente_nome: string;
+      unidade: string;
+      valor_venda: number;
+      data_venda: string;
+      status: string;
+      forma_pagamento: string | null;
+    }>>(`/dashboard/ultimas-vendas?${params}`);
+  }
+
+  async getVendasPorStatus(filters?: {
+    data_inicio?: string;
+    data_fim?: string;
+    empreendimento_id?: number;
+  }) {
+    const params = new URLSearchParams(
+      Object.entries(filters || {}).map(([k, v]) => [k, String(v)])
+    );
+    return this.request<Array<{
+      status: string;
+      total: number;
+      valor_total: number;
+      percentual: number;
+    }>>(`/dashboard/vendas-por-status?${params}`);
+  }
+
+  async getVendasPorFormaPagamento(filters?: {
+    data_inicio?: string;
+    data_fim?: string;
+    empreendimento_id?: number;
+  }) {
+    const params = new URLSearchParams(
+      Object.entries(filters || {}).map(([k, v]) => [k, String(v)])
+    );
+    return this.request<Array<{
+      forma_pagamento: string;
+      total: number;
+      valor_total: number;
+      percentual: number;
+    }>>(`/dashboard/vendas-por-forma-pagamento?${params}`);
+  }
+
+  async getFunilConversao(filters?: {
+    data_inicio?: string;
+    data_fim?: string;
+    empreendimento_id?: number;
+  }) {
+    const params = new URLSearchParams(
+      Object.entries(filters || {}).map(([k, v]) => [k, String(v)])
+    );
+    return this.request<{
+      propostas_totais: number;
+      propostas_em_analise: number;
+      propostas_aprovadas: number;
+      vendas_concluidas: number;
+      taxa_conversao_proposta_venda: number;
+      taxa_conversao_analise_aprovacao: number;
+    }>(`/dashboard/funil-conversao?${params}`);
+  }
+
+  async getVendasPorVendedor(filters?: {
+    data_inicio?: string;
+    data_fim?: string;
+    limit?: number;
+  }) {
+    const params = new URLSearchParams(
+      Object.entries(filters || {}).map(([k, v]) => [k, String(v)])
+    );
+    return this.request<Array<{
+      vendedor: string;
+      total_vendas: number;
+      valor_total: number;
+      ticket_medio: number;
+    }>>(`/dashboard/vendas-por-vendedor?${params}`);
+  }
+
   // Empreendimentos
   async getEmpreendimentos(skip = 0, limit = 100) {
     return this.request<Empreendimento[]>(
-      `/empreendimentos?skip=${skip}&limit=${limit}`
+      `/empreendimentos/?skip=${skip}&limit=${limit}`
     );
   }
 
@@ -954,26 +1326,259 @@ class LCPApiService {
     skip?: number;
     limit?: number;
     empreendimento_id?: number;
+    status?: string;
     data_inicio?: string;
     data_fim?: string;
   }) {
     const params = new URLSearchParams(
       Object.entries(filters || {}).map(([k, v]) => [k, String(v)])
     );
-    return this.request<Venda[]>(`/vendas?${params}`);
+    return this.request<Venda[]>(`/vendas/?${params}`);
   }
 
-  // Dashboard
-  async getDashboardKPIs() {
-    return this.request<any>('/dashboard/kpis');
+  async getVenda(id: number) {
+    return this.request<Venda>(`/vendas/${id}`);
   }
 
-  async getTopEmpreendimentos(limit = 10) {
-    return this.request<any[]>(`/dashboard/top-empreendimentos?limit=${limit}`);
+  // Propostas
+  async getPropostas(filters?: {
+    skip?: number;
+    limit?: number;
+    empreendimento_id?: number;
+    status?: string;
+    data_inicio?: string;
+    data_fim?: string;
+  }) {
+    const params = new URLSearchParams(
+      Object.entries(filters || {}).map(([k, v]) => [k, String(v)])
+    );
+    return this.request<Proposta[]>(`/propostas/?${params}`);
+  }
+
+  async getProposta(id: number) {
+    return this.request<Proposta>(`/propostas/${id}`);
+  }
+
+  // Metas
+  async getMetas(filters?: {
+    skip?: number;
+    limit?: number;
+    empreendimento_id?: number;
+    ano?: number;
+  }) {
+    const params = new URLSearchParams(
+      Object.entries(filters || {}).map(([k, v]) => [k, String(v)])
+    );
+    return this.request<Meta[]>(`/metas/?${params}`);
+  }
+
+  async getMeta(id: number) {
+    return this.request<Meta>(`/metas/${id}`);
+  }
+
+  async createMeta(data: {
+    empreendimento_id: number;
+    mes: number;
+    ano: number;
+    meta_vendas: number;
+    meta_unidades: number;
+  }) {
+    return this.request<Meta>('/metas/', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateMeta(
+    id: number,
+    data: {
+      mes?: number;
+      ano?: number;
+      meta_vendas?: number;
+      meta_unidades?: number;
+    }
+  ) {
+    return this.request<Meta>(`/metas/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteMeta(id: number) {
+    return this.request<void>(`/metas/${id}`, { method: 'DELETE' });
+  }
+
+  // Sync
+  async triggerFullSync() {
+    return this.request<{ message: string; status: string }>('/sync/full', {
+      method: 'POST',
+    });
+  }
+
+  async getSyncStatus(tipo_sync?: string, skip = 0, limit = 10) {
+    const params = new URLSearchParams({
+      skip: String(skip),
+      limit: String(limit),
+    });
+    if (tipo_sync) {
+      params.append('tipo_sync', tipo_sync);
+    }
+    return this.request<{ logs: SyncLog[]; skip: number; limit: number }>(
+      `/sync/status?${params}`
+    );
+  }
+
+  async getLatestSync(tipo_sync: string) {
+    return this.request<SyncLog>(`/sync/status/latest/${tipo_sync}`);
+  }
+
+  // Export
+  async downloadVendas(formato: 'csv' | 'xlsx' = 'xlsx', filters?: {
+    data_inicio?: string;
+    data_fim?: string;
+    empreendimento_id?: number;
+  }) {
+    const params = new URLSearchParams({ formato });
+    if (filters) {
+      Object.entries(filters).forEach(([k, v]) => {
+        if (v) params.append(k, String(v));
+      });
+    }
+
+    const response = await fetch(
+      `${this.baseURL}/export/vendas?${params}`,
+      {
+        headers: { Authorization: `Bearer ${this.token}` },
+      }
+    );
+
+    if (!response.ok) throw new Error('Download failed');
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `vendas_${new Date().toISOString().split('T')[0]}.${formato}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
   }
 }
 
-export const api = new LCPApiService();
+export const api = new LCPApiClient();
+```
+
+### React Hook para Autenticação
+
+```typescript
+import { useState, useEffect, createContext, useContext } from 'react';
+import { api } from './api-client';
+
+interface AuthContextType {
+  user: User | null;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Tentar carregar token do localStorage
+    const token = localStorage.getItem('lcp_token');
+    if (token) {
+      api.setToken(token);
+      api.me()
+        .then(setUser)
+        .catch(() => {
+          localStorage.removeItem('lcp_token');
+          api.clearToken();
+        })
+        .finally(() => setIsLoading(false));
+    } else {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    const data = await api.login(email, password);
+    localStorage.setItem('lcp_token', data.access_token);
+    const userData = await api.me();
+    setUser(userData);
+  };
+
+  const logout = () => {
+    localStorage.removeItem('lcp_token');
+    api.clearToken();
+    setUser(null);
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        logout,
+        isAuthenticated: !!user,
+        isLoading,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+}
+```
+
+### Exemplo de Uso em Componente React
+
+```typescript
+import { useEffect, useState } from 'react';
+import { api } from './api-client';
+import { useAuth } from './auth-context';
+
+export function Dashboard() {
+  const { isAuthenticated } = useAuth();
+  const [indicadores, setIndicadores] = useState<DashboardIndicadores | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    api.getIndicadores()
+      .then(setIndicadores)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [isAuthenticated]);
+
+  if (loading) return <div>Carregando...</div>;
+  if (!indicadores) return <div>Erro ao carregar</div>;
+
+  return (
+    <div>
+      <h1>Dashboard</h1>
+      <div>
+        <div>Total Vendas: {indicadores.total_vendas}</div>
+        <div>Valor Total: R$ {indicadores.valor_total_vendas.toLocaleString('pt-BR')}</div>
+        <div>Ticket Médio: R$ {indicadores.ticket_medio.toLocaleString('pt-BR')}</div>
+        <div>Taxa Conversão: {indicadores.taxa_conversao}%</div>
+      </div>
+    </div>
+  );
+}
 ```
 
 ---
@@ -982,12 +1587,13 @@ export const api = new LCPApiService();
 
 1. **Ambiente de Desenvolvimento:**
    - Base URL: `http://localhost:8000/api/v1`
-   - Swagger/OpenAPI: `http://localhost:8000/docs`
+   - Documentação interativa (Swagger): `http://localhost:8000/docs`
+   - ReDoc: `http://localhost:8000/redoc`
 
 2. **Autenticação:**
-   - Todos os endpoints (exceto `/auth/login` e `/auth/register`) requerem autenticação
    - Token JWT expira em 24 horas
    - Incluir header: `Authorization: Bearer {token}`
+   - Renovar token fazendo novo login antes da expiração
 
 3. **Paginação:**
    - Padrão: `skip=0`, `limit=100`
@@ -995,17 +1601,29 @@ export const api = new LCPApiService();
 
 4. **Datas:**
    - Formato ISO 8601: `YYYY-MM-DDTHH:mm:ss`
-   - Filtros de data usam formato: `YYYY-MM-DD`
+   - Todas as datas são em UTC
+   - Filtros de data aceitam formato: `YYYY-MM-DD`
 
 5. **Valores Monetários:**
-   - Retornados como `number` (float)
+   - Retornados como `Decimal` (string) para precisão
    - Sempre em Reais (BRL)
+   - Use bibliotecas como `decimal.js` para cálculos
 
 6. **CORS:**
-   - Configurado para aceitar requisições de `http://localhost:3000` (React)
+   - Configurado para aceitar requisições de `http://localhost:3000`
+   - Produção deve configurar origins específicos
+
+7. **Rate Limiting:**
+   - Não implementado em desenvolvimento
+   - Produção terá limite de 100 req/min por IP
+
+8. **Sincronização:**
+   - Processos executam em background
+   - Use endpoint `/sync/status` para monitorar progresso
+   - Sincronização completa pode levar vários minutos
 
 ---
 
 **Última atualização:** 2025-11-05
 **Versão da API:** 1.0.0
-**Contato:** desenvolvimento@lcp.com
+**Status:** ✅ Todos os endpoints testados e funcionando

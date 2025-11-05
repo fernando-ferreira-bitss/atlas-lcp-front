@@ -5,27 +5,55 @@ import { dashboardService } from '../services/dashboardService';
 import type {
   DashboardKPIs,
   DashboardResumo,
+  GraficoVendasMes,
   TopEmpreendimento,
   VendasPorPeriodo,
   VendasPorPeriodoFilters,
 } from '@/shared/types';
 
+interface DashboardFilters {
+  data_inicio?: string;
+  data_fim?: string;
+  empreendimento_id?: number;
+}
+
 /**
  * Hook para buscar KPIs do dashboard
+ * @param filters - Filtros opcionais
  * @returns Query result com KPIs
  */
-export const useDashboardKPIs = (): UseQueryResult<DashboardKPIs, Error> => useQuery({
-    queryKey: ['dashboard-kpis'],
-    queryFn: () => dashboardService.getKPIs(),
+export const useDashboardKPIs = (
+  filters?: DashboardFilters
+): UseQueryResult<DashboardKPIs, Error> =>
+  useQuery({
+    queryKey: ['dashboard-kpis', filters],
+    queryFn: () => dashboardService.getKPIs(filters),
     staleTime: 1000 * 60 * 2, // 2 minutos
     refetchInterval: 1000 * 60 * 5, // Atualiza a cada 5 minutos
+  });
+
+/**
+ * Hook para buscar gráfico de vendas por mês
+ * @param ano - Ano para filtrar
+ * @param empreendimento_id - ID do empreendimento (opcional)
+ * @returns Query result com dados do gráfico
+ */
+export const useGraficoVendasMes = (
+  ano: number,
+  empreendimento_id?: number
+): UseQueryResult<GraficoVendasMes[], Error> =>
+  useQuery({
+    queryKey: ['grafico-vendas-mes', ano, empreendimento_id],
+    queryFn: () => dashboardService.getGraficoVendasMes(ano, empreendimento_id),
+    staleTime: 1000 * 60 * 5, // 5 minutos
   });
 
 /**
  * Hook para buscar resumo completo do dashboard
  * @returns Query result com resumo
  */
-export const useDashboardResumo = (): UseQueryResult<DashboardResumo, Error> => useQuery({
+export const useDashboardResumo = (): UseQueryResult<DashboardResumo, Error> =>
+  useQuery({
     queryKey: ['dashboard-resumo'],
     queryFn: () => dashboardService.getResumo(),
     staleTime: 1000 * 60 * 2, // 2 minutos
@@ -33,14 +61,17 @@ export const useDashboardResumo = (): UseQueryResult<DashboardResumo, Error> => 
 
 /**
  * Hook para buscar top empreendimentos
- * @param limit - Limite de resultados
+ * @param filters - Filtros opcionais
  * @returns Query result com top empreendimentos
  */
-export const useTopEmpreendimentos = (
-  limit = 10
-): UseQueryResult<TopEmpreendimento[], Error> => useQuery({
-    queryKey: ['top-empreendimentos', limit],
-    queryFn: () => dashboardService.getTopEmpreendimentos(limit),
+export const useTopEmpreendimentos = (filters?: {
+  data_inicio?: string;
+  data_fim?: string;
+  limit?: number;
+}): UseQueryResult<TopEmpreendimento[], Error> =>
+  useQuery({
+    queryKey: ['top-empreendimentos', filters],
+    queryFn: () => dashboardService.getTopEmpreendimentos(filters),
     staleTime: 1000 * 60 * 5, // 5 minutos
   });
 

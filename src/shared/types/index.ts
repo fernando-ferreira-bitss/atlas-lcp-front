@@ -139,8 +139,14 @@ export interface TopEmpreendimento {
   empreendimento_id: number;
   empreendimento_nome: string;
   total_vendas: number;
-  valor_total: number;
-  ticket_medio: number;
+  valor_vendas: number;
+}
+
+export interface GraficoVendasMes {
+  mes: number;
+  total_vendas: number;
+  valor_vendas: number;
+  meta_vendas: number;
 }
 
 export interface VendasPorPeriodo {
@@ -151,26 +157,27 @@ export interface VendasPorPeriodo {
 }
 
 export interface DashboardKPIs {
-  vendas_mes_atual: {
-    quantidade: number;
-    valor_total: number;
-    variacao_mes_anterior: number;
-  };
-  propostas_abertas: {
-    quantidade: number;
-    valor_total: number;
-  };
-  taxa_conversao: {
-    percentual: number;
-    propostas_aprovadas: number;
-    total_propostas: number;
-  };
-  ticket_medio: {
-    valor: number;
-    variacao_mes_anterior: number;
-  };
-  empreendimentos_ativos: number;
-  unidades_disponiveis: number;
+  total_propostas: number;
+  total_vendas: number;
+  valor_total_vendas: number;
+  valor_total_propostas?: number; // MOCKADO - Não está na API
+  ticket_medio: number;
+  ticket_medio_proposta?: number; // MOCKADO - Não está na API
+  taxa_conversao: number;
+  taxa_conversao_valor?: number; // MOCKADO - Não está na API
+  meta_vendas: number;
+  percentual_meta: number;
+  meta_vendas_ytd?: number; // MOCKADO - Não está na API
+  percentual_meta_ytd?: number; // MOCKADO - Não está na API
+  meta_vendas_mensal?: number; // MOCKADO - Não está na API
+  percentual_meta_mensal?: number; // MOCKADO - Não está na API
+}
+
+export interface DashboardFilters {
+  data_inicio?: string;
+  data_fim?: string;
+  empreendimento_id?: number;
+  periodo?: 'mensal' | 'ytd' | 'ultimos_12_meses' | 'personalizado';
 }
 
 export interface DashboardResumo {
