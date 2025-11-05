@@ -31,7 +31,7 @@ export const ConversaoPorEmpreendimentoChart = ({ data }: ConversaoPorEmpreendim
               : label;
           }}
         />
-        <Bar dataKey="taxa_conversao" name="Taxa de Conversão" fill="#1f9f7a" />
+        <Bar dataKey="taxa_conversao" name="Taxa de Conversão" fill="#0B2D5C" />
       </BarChart>
     </ResponsiveContainer>
   );

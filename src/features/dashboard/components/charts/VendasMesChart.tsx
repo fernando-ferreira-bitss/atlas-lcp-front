@@ -71,13 +71,13 @@ export const VendasMesChart = ({ data }: VendasMesChartProps) => {
         <Legend
           wrapperStyle={{ paddingTop: '20px' }}
           formatter={(value) => {
-            if (value === 'vendas') return 'Vendas Realizadas';
             if (value === 'meta') return 'Meta';
+            if (value === 'vendas') return 'Realizado';            
             return value;
           }}
         />
-        <Bar dataKey="vendas" fill="#1f9f7a" radius={[8, 8, 0, 0]} />
-        <Bar dataKey="meta" fill="#0b2d5c" radius={[8, 8, 0, 0]} />
+        <Bar dataKey="vendas" fill="#20B187" radius={[8, 8, 0, 0]} />
+        <Bar dataKey="meta" fill="#0B2D5C" radius={[8, 8, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );

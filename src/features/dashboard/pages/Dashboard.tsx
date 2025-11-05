@@ -173,13 +173,11 @@ export const Dashboard = () => {
       </div>
 
       {/* Primeira linha: Atendimento de Metas | Meta vs. Realizado (Mensal) */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Atendimento de Metas (Gauges) */}
-        <div className="rounded-lg border-none bg-card p-4 shadow-md sm:p-6">
-          <h2 className="mb-4 text-base font-semibold text-lcp-blue sm:text-lg">
-            Atendimento de Metas
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
+        {/* Atendimento de Metas (Gauges) - 33% */}
+        <div className="rounded-lg border-none bg-card p-4 shadow-md sm:p-6 md:col-span-1">
+          <h2 className="mb-3 text-base font-semibold text-lcp-blue">Atendimento de Metas</h2>
+          <div className="grid grid-cols-2 gap-2">
             <MetaGaugeChart
               percentual={kpis.percentual_meta_mensal}
               title="Meta Mensal"
@@ -193,8 +191,8 @@ export const Dashboard = () => {
           </div>
         </div>
 
-        {/* Meta vs. Realizado (Mensal) */}
-        <div className="rounded-lg border-none bg-card p-4 shadow-md sm:p-6">
+        {/* Meta vs. Realizado (Mensal) - 67% */}
+        <div className="rounded-lg border-none bg-card p-4 shadow-md sm:p-6 md:col-span-2">
           <h2 className="mb-4 text-base font-semibold text-lcp-blue sm:text-lg">
             Meta vs. Realizado (Mensal)
           </h2>

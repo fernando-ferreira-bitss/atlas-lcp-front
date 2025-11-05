@@ -13,11 +13,11 @@ export const MetaGaugeChart = ({ percentual, title, subtitle }: MetaGaugeChartPr
     { name: 'Restante', value: 100 - value },
   ];
 
-  const COLORS = ['#1f9f7a', '#e5e7eb']; // Verde e gray-200
+  const COLORS = ['#20B187', '#e5e7eb']; // Verde LCP e gray-200
 
   return (
     <div className="flex flex-col items-center">
-      <ResponsiveContainer width="100%" height={200}>
+      <ResponsiveContainer width="100%" height={140}>
         <PieChart>
           <Pie
             data={data}
@@ -25,8 +25,8 @@ export const MetaGaugeChart = ({ percentual, title, subtitle }: MetaGaugeChartPr
             cy="50%"
             startAngle={180}
             endAngle={0}
-            innerRadius={60}
-            outerRadius={80}
+            innerRadius={45}
+            outerRadius={60}
             paddingAngle={0}
             dataKey="value"
           >
@@ -36,12 +36,12 @@ export const MetaGaugeChart = ({ percentual, title, subtitle }: MetaGaugeChartPr
           </Pie>
         </PieChart>
       </ResponsiveContainer>
-      <div className="mt-[-60px] text-center">
-        <p className="text-3xl font-bold" style={{ color: '#1f9f7a' }}>
+      <div className="mt-[-50px] text-center">
+        <p className="text-2xl font-bold text-lcp-green">
           {value.toFixed(1)}%
         </p>
-        <p className="text-sm font-medium text-gray-600">{title}</p>
-        {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
+        <p className="text-xs font-medium text-lcp-blue">{title}</p>
+        {subtitle && <p className="text-[10px] text-lcp-gray">{subtitle}</p>}
       </div>
     </div>
   );

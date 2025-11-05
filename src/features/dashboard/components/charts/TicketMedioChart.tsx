@@ -30,13 +30,13 @@ export const TicketMedioChart = ({ data }: TicketMedioChartProps) => {
         <Line
           type="monotone"
           dataKey="Ticket Médio Proposta"
-          stroke="#0b2d5c"
+          stroke="#0B2D5C"
           strokeWidth={2}
         />
         <Line
           type="monotone"
           dataKey="Ticket Médio Venda"
-          stroke="#1f9f7a"
+          stroke="#20B187"
           strokeWidth={2}
         />
       </LineChart>

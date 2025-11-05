@@ -23,8 +23,14 @@ export const ComparativoAnosChart = ({ data }: ComparativoAnosChartProps) => {
         <YAxis />
         <Tooltip />
         <Legend />
-        <Line type="monotone" dataKey="Ano Anterior" stroke="#f97316" strokeWidth={2} />
-        <Line type="monotone" dataKey="Ano Atual" stroke="#1f9f7a" strokeWidth={2} />
+        <Line
+          type="monotone"
+          dataKey="Ano Anterior"
+          stroke="#F45B32"
+          strokeWidth={2}
+          strokeDasharray="5 5"
+        />
+        <Line type="monotone" dataKey="Ano Atual" stroke="#0B2D5C" strokeWidth={2} />
       </LineChart>
     </ResponsiveContainer>
   );
