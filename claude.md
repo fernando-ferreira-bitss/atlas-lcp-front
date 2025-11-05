@@ -1170,7 +1170,112 @@ class Logger {
 export const logger = new Logger();
 ```
 
-## 20. Internacionalização (i18n) - Futuro
+## 20. Padrões de Loading
+
+**REGRA DE OURO:** Todo feedback visual melhora a UX. **SEMPRE mostre loading quando houver chamada à API**.
+
+### 20.1. Tipos de Loading
+
+#### 1. Loading de Página Completa
+```tsx
+import { Loading } from '@/shared/components/common';
+
+if (isLoading) return <Loading />;
+```
+
+#### 2. Loading em Botões de Ação
+```tsx
+import { Loader2 } from 'lucide-react';
+
+const [loadingId, setLoadingId] = useState<number | null>(null);
+
+const handleAction = async (id: number) => {
+  setLoadingId(id);
+  try {
+    await mutation.mutateAsync({ id });
+  } finally {
+    setLoadingId(null);
+  }
+};
+
+<Button disabled={loadingId === item.id}>
+  {loadingId === item.id ? (
+    <Loader2 className="h-4 w-4 animate-spin text-lcp-gray" />
+  ) : (
+    <ActionIcon />
+  )}
+</Button>
+```
+
+#### 3. Loading em Formulários
+```tsx
+const isLoading = createMutation.isPending || updateMutation.isPending;
+
+<Input {...register('field')} disabled={isLoading} />
+<Button type="submit" disabled={isLoading}>
+  {isLoading ? 'Salvando...' : 'Salvar'}
+</Button>
+```
+
+#### 4. Loading Overlay (Tela Cheia)
+```tsx
+import { LoadingOverlay } from '@/shared/components/common';
+
+{isProcessing && <LoadingOverlay message="Processando dados..." />}
+```
+
+### 20.2. Componentes Disponíveis
+
+- **`<Loading />`** - Spinner centralizado para página completa
+- **`<LoadingOverlay />`** - Overlay de tela cheia com backdrop blur
+- **`<Loader2 />`** (Lucide) - Ícone inline com `animate-spin`
+
+### 20.3. Boas Práticas
+
+✅ **FAZER:**
+- Sempre desabilite botões durante loading (`disabled={isLoading}`)
+- Mude texto do botão ("Salvando...", "Carregando...")
+- Use `Loader2` com `animate-spin` para spinners
+- Trate erros com toast
+- Previna múltiplos cliques
+- Use `finally` para garantir reset do loading
+- Desabilite campos de formulário durante submit
+
+❌ **NÃO FAZER:**
+- Ação sem feedback visual
+- Formulário sem desabilitar campos
+- Botão sem estado de loading
+- Query sem verificar `isLoading`
+
+### 20.4. Padrão Visual
+
+**Cores:**
+- Loading principal: `text-lcp-blue` (#0B2D5C)
+- Loading secundário: `text-lcp-gray` (#6B7280)
+
+**Tamanhos:**
+- Botões: `h-4 w-4`
+- Médio: `h-6 w-6`
+- Página: `h-8 w-8`
+
+**Animação:**
+```tsx
+className="animate-spin"
+```
+
+### 20.5. Checklist
+
+- [ ] Loading no carregamento inicial
+- [ ] Loading nos botões de ação
+- [ ] Desabilitar campos durante submit
+- [ ] Texto do botão muda
+- [ ] Ícones substituídos por spinner
+- [ ] Prevenir múltiplos cliques
+- [ ] Erro tratado com toast
+
+**Documentação completa:** `/docs/LOADING_PATTERNS.md`
+
+## 21. Internacionalização (i18n) - Futuro
 
 ```typescript
 // src/shared/i18n/index.ts
@@ -1200,9 +1305,9 @@ function MyComponent() {
 }
 ```
 
-## 21. Build e Deploy
+## 22. Build e Deploy
 
-### 21.1. Build Otimizado
+### 22.1. Build Otimizado
 
 ```typescript
 // vite.config.ts
@@ -1236,7 +1341,7 @@ export default defineConfig({
 });
 ```
 
-### 21.2. Scripts Package.json
+### 22.2. Scripts Package.json
 
 ```json
 {
@@ -1259,9 +1364,9 @@ export default defineConfig({
 }
 ```
 
-## 22. Checklist de Desenvolvimento
+## 23. Checklist de Desenvolvimento
 
-### 22.1. Antes de Iniciar uma Feature
+### 23.1. Antes de Iniciar uma Feature
 
 - [ ] Criar branch a partir de `develop`
 - [ ] Ler requisitos completamente
@@ -1269,7 +1374,7 @@ export default defineConfig({
 - [ ] Definir types/interfaces
 - [ ] Planejar estrutura de pastas
 
-### 22.2. Durante o Desenvolvimento
+### 23.2. Durante o Desenvolvimento
 
 - [ ] Seguir convenções de nomenclatura
 - [ ] Escrever código TypeScript strict
@@ -1281,7 +1386,7 @@ export default defineConfig({
 - [ ] Adicionar acessibilidade
 - [ ] Testar responsividade
 
-### 22.3. Antes do Commit
+### 23.3. Antes do Commit
 
 - [ ] Executar `npm run lint:fix`
 - [ ] Executar `npm run format`
@@ -1290,7 +1395,7 @@ export default defineConfig({
 - [ ] Verificar no browser
 - [ ] Commit com mensagem conventional
 
-### 22.4. Antes do PR
+### 23.4. Antes do PR
 
 - [ ] Testes passando
 - [ ] Build funcionando
@@ -1299,9 +1404,9 @@ export default defineConfig({
 - [ ] Atualizar documentação se necessário
 - [ ] Screenshots se for UI
 
-## 23. Resources e Referências
+## 24. Resources e Referências
 
-### 23.1. Documentação Oficial
+### 24.1. Documentação Oficial
 - [React](https://react.dev)
 - [TypeScript](https://www.typescriptlang.org)
 - [Vite](https://vitejs.dev)
@@ -1312,11 +1417,11 @@ export default defineConfig({
 - [React Hook Form](https://react-hook-form.com)
 - [Zod](https://zod.dev)
 
-### 23.2. Guias de Estilo
+### 24.2. Guias de Estilo
 - [Airbnb JavaScript Style Guide](https://github.com/airbnb/javascript)
 - [Google TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html)
 
-### 23.3. Ferramentas Úteis
+### 24.3. Ferramentas Úteis
 - [Can I Use](https://caniuse.com) - Compatibilidade de browsers
 - [Bundlephobia](https://bundlephobia.com) - Tamanho de pacotes npm
 - [npm trends](https://npmtrends.com) - Comparar pacotes

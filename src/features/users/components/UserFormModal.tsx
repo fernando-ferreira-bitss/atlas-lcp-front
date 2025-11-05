@@ -22,7 +22,7 @@ import { Label } from '@/shared/components/ui/label';
 const userSchema = z.object({
   nome: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
   email: z.string().email('Email inválido'),
-  password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres').optional().or(z.literal('')),
+  password: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres').optional().or(z.literal('')),
   is_admin: z.boolean(),
   is_active: z.boolean(),
 });
@@ -38,6 +38,8 @@ interface UserFormModalProps {
 export const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => {
   const createUser = useCreateUser();
   const updateUser = useUpdateUser();
+
+  const isLoading = createUser.isPending || updateUser.isPending;
 
   const {
     register,
@@ -128,7 +130,12 @@ export const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => 
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="nome">Nome</Label>
-              <Input id="nome" {...register('nome')} placeholder="Nome completo" />
+              <Input
+                id="nome"
+                {...register('nome')}
+                placeholder="Nome completo"
+                disabled={isLoading}
+              />
               {errors.nome && (
                 <p className="text-sm text-red-600">{errors.nome.message}</p>
               )}
@@ -136,7 +143,13 @@ export const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => 
 
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" {...register('email')} placeholder="email@exemplo.com" />
+              <Input
+                id="email"
+                type="email"
+                {...register('email')}
+                placeholder="email@exemplo.com"
+                disabled={isLoading}
+              />
               {errors.email && (
                 <p className="text-sm text-red-600">{errors.email.message}</p>
               )}
@@ -151,6 +164,7 @@ export const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => 
                 type="password"
                 {...register('password')}
                 placeholder={user ? 'Nova senha (opcional)' : 'Senha'}
+                disabled={isLoading}
               />
               {errors.password && (
                 <p className="text-sm text-red-600">{errors.password.message}</p>
@@ -164,6 +178,7 @@ export const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => 
                   type="checkbox"
                   {...register('is_admin')}
                   className="h-4 w-4 rounded border-gray-300"
+                  disabled={isLoading}
                 />
                 <Label htmlFor="is_admin" className="cursor-pointer">
                   Administrador
@@ -176,6 +191,7 @@ export const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => 
                   type="checkbox"
                   {...register('is_active')}
                   className="h-4 w-4 rounded border-gray-300"
+                  disabled={isLoading}
                 />
                 <Label htmlFor="is_active" className="cursor-pointer">
                   Ativo
@@ -185,18 +201,11 @@ export const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => 
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose}>
+            <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
               Cancelar
             </Button>
-            <Button
-              type="submit"
-              disabled={createUser.isPending || updateUser.isPending}
-            >
-              {(() => {
-                if (createUser.isPending || updateUser.isPending) return 'Salvando...';
-                if (user) return 'Atualizar';
-                return 'Criar';
-              })()}
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? 'Salvando...' : user ? 'Atualizar' : 'Criar'}
             </Button>
           </DialogFooter>
         </form>

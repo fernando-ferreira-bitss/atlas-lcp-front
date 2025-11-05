@@ -22,7 +22,7 @@ import { useToast } from '@/shared/hooks/use-toast';
 const changePasswordSchema = z
   .object({
     current_password: z.string().min(1, 'Senha atual é obrigatória'),
-    new_password: z.string().min(6, 'Nova senha deve ter no mínimo 6 caracteres'),
+    new_password: z.string().min(8, 'Nova senha deve ter no mínimo 8 caracteres'),
     confirm_password: z.string().min(1, 'Confirmação de senha é obrigatória'),
   })
   .refine((data) => data.new_password === data.confirm_password, {

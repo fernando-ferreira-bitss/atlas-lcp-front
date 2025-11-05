@@ -1,4 +1,4 @@
-import { Edit, Plus, UserCheck, UserX } from 'lucide-react';
+import { Edit, Loader2, Plus, UserCheck, UserX } from 'lucide-react';
 import { useState } from 'react';
 
 import { UserFormModal } from '../components/UserFormModal';
@@ -20,12 +20,18 @@ import {
 export const Users = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loadingUserId, setLoadingUserId] = useState<number | null>(null);
 
   const { data: users, isLoading, error } = useUsers();
   const toggleActive = useToggleUserActive();
 
-  const handleToggleActive = (id: number, currentStatus: boolean) => {
-    toggleActive.mutate({ id, is_active: !currentStatus });
+  const handleToggleActive = async (id: number, currentStatus: boolean) => {
+    setLoadingUserId(id);
+    try {
+      await toggleActive.mutateAsync({ id, is_active: !currentStatus });
+    } finally {
+      setLoadingUserId(null);
+    }
   };
 
   const handleEdit = (user: User) => {
@@ -118,6 +124,7 @@ export const Users = () => {
                           onClick={() => handleEdit(user)}
                           className="h-8 w-8"
                           title="Editar usuário"
+                          disabled={loadingUserId === user.id}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -127,8 +134,11 @@ export const Users = () => {
                           onClick={() => handleToggleActive(user.id, user.is_active)}
                           className="h-8 w-8"
                           title={user.is_active ? 'Desativar usuário' : 'Ativar usuário'}
+                          disabled={loadingUserId === user.id}
                         >
-                          {user.is_active ? (
+                          {loadingUserId === user.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-lcp-gray" />
+                          ) : user.is_active ? (
                             <UserX className="h-4 w-4 text-red-600" />
                           ) : (
                             <UserCheck className="h-4 w-4 text-green-600" />
