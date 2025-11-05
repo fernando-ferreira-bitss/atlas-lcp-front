@@ -415,7 +415,7 @@ import { dashboardService } from '../services/dashboardService';
 export function useDashboardData(filters: DashboardFilters) {
   return useQuery({
     queryKey: ['dashboard', filters],
-    queryFn: () => dashboardService.getIndicators(filters),
+    queryFn: () => dashboardService.getKPIs(filters),
     staleTime: 1000 * 60 * 5, // 5 minutos
     gcTime: 1000 * 60 * 10, // 10 minutos
     retry: 3,
@@ -487,8 +487,8 @@ import type { DashboardData, DashboardFilters } from '../types';
 class DashboardService {
   private readonly baseURL = '/api/dashboard';
 
-  async getIndicators(filters: DashboardFilters): Promise<DashboardData> {
-    return apiClient.get(`${this.baseURL}/indicadores`, { params: filters });
+  async getKPIs(filters: DashboardFilters): Promise<DashboardData> {
+    return apiClient.get(`${this.baseURL}/kpis`, { params: filters });
   }
 
   async getCharts(filters: DashboardFilters) {

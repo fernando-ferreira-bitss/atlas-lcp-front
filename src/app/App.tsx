@@ -1,12 +1,14 @@
 import { RouterProvider } from 'react-router-dom';
 
+
 import { Providers } from './providers';
 import { router } from './router';
 
-export const App = () => {
-  return (
-    <Providers>
-      <RouterProvider router={router} />
-    </Providers>
-  );
-};
+import { Toaster } from '@/shared/components/ui/toaster';
+
+export const App = () => (
+  <Providers>
+    <RouterProvider router={router} />
+    <Toaster />
+  </Providers>
+);

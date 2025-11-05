@@ -6,6 +6,4 @@ import { twMerge } from 'tailwind-merge';
  * @param inputs - Classes CSS a serem combinadas
  * @returns String com classes CSS combinadas
  */
-export const cn = (...inputs: ClassValue[]) => {
-  return twMerge(clsx(inputs));
-};
+export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));

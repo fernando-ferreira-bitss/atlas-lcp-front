@@ -38,7 +38,7 @@ A aplicação será desenvolvida em arquitetura **web modular**, com separação
 
 | Método | Endpoint                     | Descrição                                                   |
 | ------ | ---------------------------- | ----------------------------------------------------------- |
-| `GET`  | `/api/dashboard/indicadores` | Retorna métricas gerais (propostas, vendas, metas).         |
+| `GET`  | `/api/dashboard/kpis`        | Retorna métricas gerais (propostas, vendas, metas).         |
 | `GET`  | `/api/dashboard/graficos`    | Retorna dados para os gráficos de desempenho.               |
 | `GET`  | `/api/dashboard/vendas`      | Lista últimas vendas.                                       |
 | `GET`  | `/api/empreendimentos`       | Retorna lista de empreendimentos disponíveis.               |

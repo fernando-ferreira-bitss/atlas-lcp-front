@@ -1,141 +1,260 @@
-import type { UserRole, SaleStatus, PaymentCondition } from '@/shared/constants/app';
-
-// === User Types ===
+// === User & Auth Types ===
 export interface User {
-  id: string;
-  name: string;
+  id: number;
   email: string;
-  role: UserRole;
-  active: boolean;
-  createdAt: string;
-  updatedAt: string;
+  nome: string;
+  is_active: boolean;
+  is_admin: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
-// === Auth Types ===
 export interface LoginCredentials {
   email: string;
   password: string;
 }
 
+export interface RegisterData {
+  email: string;
+  nome: string;
+  password: string;
+  is_admin?: boolean;
+}
+
 export interface AuthResponse {
-  user: User;
-  token: string;
-}
-
-// === API Response Types ===
-export interface ApiResponse<T> {
-  data: T;
-  message?: string;
-  success: boolean;
-}
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
-
-export interface ApiError {
-  message: string;
-  statusCode: number;
-  errors?: Record<string, string[]>;
+  access_token: string;
+  token_type: string;
 }
 
 // === Empreendimento Types ===
 export interface Empreendimento {
-  id: string;
-  name: string;
-  status: 'active' | 'inactive';
-  location?: string;
+  id: number;
+  codigo_mega: number;
+  nome: string;
+  endereco?: string | null;
+  cidade?: string | null;
+  estado?: string | null;
+  filial?: string | null;
+  status: string;
+  data_lancamento?: string | null;
+  total_unidades: number;
+  unidades_disponiveis: number;
+  unidades_vendidas: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EmpreendimentoStats {
+  total_empreendimentos: number;
+  total_unidades: number;
+  unidades_disponiveis: number;
+  unidades_vendidas: number;
+  unidades_reservadas: number;
+  valor_total_vendas: number;
+  ticket_medio: number;
 }
 
 // === Proposta Types ===
 export interface Proposta {
-  id: string;
-  empreendimentoId: string;
-  value: number;
-  date: string;
-  status: 'pending' | 'approved' | 'rejected';
+  id: number;
+  codigo_mega: number;
+  empreendimento_id: number;
+  empreendimento_nome?: string;
+  cliente_nome: string;
+  cliente_cpf?: string | null;
+  unidade: string;
+  bloco: string;
+  valor_proposta: number;
+  data_proposta: string;
+  status: 'Aberta' | 'Aprovada' | 'Reprovada' | 'Cancelada';
+  vendedor?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PropostaFilters {
+  skip?: number;
+  limit?: number;
+  empreendimento_id?: number;
+  status?: string;
 }
 
 // === Venda Types ===
 export interface Venda {
-  id: string;
-  propostaId: string;
-  empreendimentoId: string;
-  empreendimentoName?: string;
-  value: number;
-  condition: PaymentCondition;
-  date: string;
-  status: SaleStatus;
+  id: number;
+  codigo_mega: number;
+  empreendimento_id: number;
+  empreendimento_nome?: string;
+  cliente_nome: string;
+  unidade: string;
+  bloco: string;
+  valor_venda: number;
+  data_venda: string;
+  status: 'Ativa' | 'Cancelada' | 'Distratada';
+  forma_pagamento?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface VendaFilters {
+  skip?: number;
+  limit?: number;
+  empreendimento_id?: number;
+  status?: string;
+  data_inicio?: string;
+  data_fim?: string;
 }
 
 // === Meta Types ===
 export interface Meta {
-  id: string;
-  empreendimentoId: string;
-  type: 'monthly' | 'yearly';
-  targetValue: number;
-  period: string;
-  year: number;
+  id: number;
+  nome: string;
+  tipo: string;
+  valor_meta: number;
+  valor_realizado: number;
+  percentual_atingido: number;
+  periodo_inicio: string;
+  periodo_fim: string;
+  ativo: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
-// === Dashboard Filter Types ===
-export interface DashboardFilters {
-  period: 'mensal' | 'ytd' | 'ultimos_12_meses' | 'personalizado';
-  empreendimentoId?: string;
-  startDate?: string;
-  endDate?: string;
+export interface CreateMetaData {
+  nome: string;
+  tipo: string;
+  valor_meta: number;
+  periodo_inicio: string;
+  periodo_fim: string;
+  ativo?: boolean;
 }
 
-// === Dashboard Indicator Types ===
-export interface DashboardIndicators {
-  volumePropostas: number;
-  volumeVendas: number;
-  conversaoQtd: number;
-  conversaoValor: number;
-  ticketMedioProposta: number;
-  ticketMedioVenda: number;
-  metaVgvMensal: number;
-  metaVgvYtd: number;
+export interface UpdateMetaData {
+  valor_meta?: number;
+  ativo?: boolean;
 }
 
-// === Chart Data Types ===
-export interface ChartDataPoint {
-  label: string;
-  value: number;
-  [key: string]: string | number;
+// === Dashboard Types ===
+export interface TopEmpreendimento {
+  empreendimento_id: number;
+  empreendimento_nome: string;
+  total_vendas: number;
+  valor_total: number;
+  ticket_medio: number;
 }
 
-export interface MetaRealizadoData {
-  month: string;
-  meta: number;
-  realizado: number;
+export interface VendasPorPeriodo {
+  periodo: string;
+  total_vendas: number;
+  valor_total: number;
+  ticket_medio: number;
 }
 
-export interface EvolucaoVendasData {
-  month: string;
-  ano2024: number;
-  ano2025: number;
+export interface DashboardKPIs {
+  vendas_mes_atual: {
+    quantidade: number;
+    valor_total: number;
+    variacao_mes_anterior: number;
+  };
+  propostas_abertas: {
+    quantidade: number;
+    valor_total: number;
+  };
+  taxa_conversao: {
+    percentual: number;
+    propostas_aprovadas: number;
+    total_propostas: number;
+  };
+  ticket_medio: {
+    valor: number;
+    variacao_mes_anterior: number;
+  };
+  empreendimentos_ativos: number;
+  unidades_disponiveis: number;
 }
 
-export interface ConversaoPorEmpreendimentoData {
-  empreendimento: string;
-  taxa: number;
+export interface DashboardResumo {
+  kpis: {
+    total_empreendimentos: number;
+    total_vendas_mes: number;
+    valor_vendas_mes: number;
+    propostas_abertas: number;
+    taxa_conversao: number;
+  };
+  top_empreendimentos: Array<{
+    nome: string;
+    vendas: number;
+    valor: number;
+  }>;
+  vendas_por_mes: Array<{
+    mes: string;
+    vendas: number;
+    valor: number;
+  }>;
 }
 
-export interface VendasPorEmpreendimentoData {
-  empreendimento: string;
-  propostas: number;
-  vendas: number;
+export interface VendasPorPeriodoFilters {
+  data_inicio?: string;
+  data_fim?: string;
+  agrupamento?: 'dia' | 'semana' | 'mes';
 }
 
-export interface TicketMedioData {
-  month: string;
-  proposta: number;
-  venda: number;
+// === Sync Types ===
+export interface SyncResponse {
+  status: string;
+  mensagem: string;
+  criados?: number;
+  atualizados?: number;
+  erros?: number;
+  tempo_execucao?: number;
+  propostas_criadas?: number;
+  propostas_atualizadas?: number;
+  vendas_criadas?: number;
+  vendas_atualizadas?: number;
+  empreendimentos?: {
+    criados: number;
+    atualizados: number;
+  };
+  propostas?: {
+    criadas: number;
+    atualizadas: number;
+  };
+  vendas?: {
+    criadas: number;
+    atualizadas: number;
+  };
+}
+
+export interface SyncLog {
+  id: number;
+  tipo_sync: string;
+  status: string;
+  total_registros: number;
+  registros_criados: number;
+  registros_atualizados: number;
+  registros_erro: number;
+  tempo_execucao_segundos: number;
+  mensagem: string;
+  data_inicio: string;
+  data_fim: string;
+}
+
+export interface SyncStatusResponse {
+  logs: SyncLog[];
+}
+
+// === API Response Types ===
+export interface ApiError {
+  detail: string | Array<{
+    type: string;
+    loc: string[];
+    msg: string;
+    input: Record<string, unknown>;
+  }>;
+}
+
+// === Pagination ===
+export interface PaginationParams {
+  skip?: number;
+  limit?: number;
 }
