@@ -1,5 +1,6 @@
 import type {
   AuthResponse,
+  ChangePasswordData,
   LoginCredentials,
   RegisterData,
   User,
@@ -36,6 +37,15 @@ class AuthService {
    */
   async getCurrentUser(): Promise<User> {
     return apiClient.get<never, User>('/auth/me');
+  }
+
+  /**
+   * Altera a senha do usuário autenticado
+   * @param data - Senha atual e nova senha
+   * @returns Mensagem de confirmação
+   */
+  async changePassword(data: ChangePasswordData): Promise<{ message: string }> {
+    return apiClient.post<never, { message: string }>('/auth/change-password', data);
   }
 
   /**

@@ -69,13 +69,31 @@ class UserService {
   }
 
   /**
+   * Ativa um usuário
+   * @param id - ID do usuário
+   * @returns Usuário atualizado
+   */
+  async activate(id: number): Promise<User> {
+    return apiClient.post<never, User>(`${this.baseURL}/${id}/activate`);
+  }
+
+  /**
+   * Desativa um usuário
+   * @param id - ID do usuário
+   * @returns Usuário atualizado
+   */
+  async deactivate(id: number): Promise<User> {
+    return apiClient.post<never, User>(`${this.baseURL}/${id}/deactivate`);
+  }
+
+  /**
    * Ativa/desativa um usuário
    * @param id - ID do usuário
    * @param is_active - Status ativo
    * @returns Usuário atualizado
    */
   async toggleActive(id: number, is_active: boolean): Promise<User> {
-    return this.update(id, { is_active });
+    return is_active ? this.activate(id) : this.deactivate(id);
   }
 }
 

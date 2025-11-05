@@ -11,31 +11,37 @@ const menuItems = [
     title: 'Dashboard',
     href: '/',
     icon: Home,
+    adminOnly: false,
   },
   {
     title: 'Propostas',
     href: '/propostas',
     icon: FileText,
+    adminOnly: false,
   },
   {
     title: 'Vendas',
     href: '/vendas',
     icon: TrendingUp,
+    adminOnly: false,
   },
   {
     title: 'Relatórios',
     href: '/relatorios',
     icon: BarChart3,
+    adminOnly: false,
   },
   {
     title: 'Usuários',
     href: '/usuarios',
     icon: Users,
+    adminOnly: true,
   },
   {
     title: 'Configurações',
     href: '/configuracoes',
     icon: Settings,
+    adminOnly: false,
   },
 ];
 
@@ -76,27 +82,29 @@ export const Sidebar = () => {
 
         <nav className="flex h-[calc(100%-3rem)] flex-col justify-between md:h-full">
           <div className="flex flex-col gap-2 p-4">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.href;
+            {menuItems
+              .filter((item) => !item.adminOnly || user?.is_admin)
+              .map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.href;
 
-              return (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  onClick={handleLinkClick}
-                  className={cn(
-                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-orange-500 text-white'
-                      : 'text-blue-100 hover:bg-blue-600 hover:text-white'
-                  )}
-                >
-                  <Icon className="h-4 w-4" />
-                  {item.title}
-                </Link>
-              );
-            })}
+                return (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    onClick={handleLinkClick}
+                    className={cn(
+                      'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                      isActive
+                        ? 'bg-orange-500 text-white'
+                        : 'text-blue-100 hover:bg-blue-600 hover:text-white'
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.title}
+                  </Link>
+                );
+              })}
           </div>
 
           {user && (

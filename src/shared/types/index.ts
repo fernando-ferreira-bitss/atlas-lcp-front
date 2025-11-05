@@ -26,6 +26,11 @@ export interface AuthResponse {
   token_type: string;
 }
 
+export interface ChangePasswordData {
+  current_password: string;
+  new_password: string;
+}
+
 // === Empreendimento Types ===
 export interface Empreendimento {
   id: number;
