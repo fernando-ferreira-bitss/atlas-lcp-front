@@ -156,34 +156,52 @@ export const DashboardFilters = ({ onFilterChange }: DashboardFiltersProps) => {
           <Label htmlFor="dataInicio" className="mb-2 block">
             Data Início
           </Label>
-          <input
-            id="dataInicio"
-            type="date"
-            value={dataInicio}
-            onChange={(e) => {
-              setDataInicio(e.target.value);
-              setPeriodo('personalizado');
+          <div
+            className="relative cursor-pointer"
+            onClick={() => {
+              if (periodo === 'personalizado') {
+                document.getElementById('dataInicio')?.showPicker?.();
+              }
             }}
-            disabled={periodo !== 'personalizado'}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          />
+          >
+            <input
+              id="dataInicio"
+              type="date"
+              value={dataInicio}
+              onChange={(e) => {
+                setDataInicio(e.target.value);
+                setPeriodo('personalizado');
+              }}
+              disabled={periodo !== 'personalizado'}
+              className="w-full cursor-pointer rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            />
+          </div>
         </div>
 
         <div>
           <Label htmlFor="dataFim" className="mb-2 block">
             Data Fim
           </Label>
-          <input
-            id="dataFim"
-            type="date"
-            value={dataFim}
-            onChange={(e) => {
-              setDataFim(e.target.value);
-              setPeriodo('personalizado');
+          <div
+            className="relative cursor-pointer"
+            onClick={() => {
+              if (periodo === 'personalizado') {
+                document.getElementById('dataFim')?.showPicker?.();
+              }
             }}
-            disabled={periodo !== 'personalizado'}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          />
+          >
+            <input
+              id="dataFim"
+              type="date"
+              value={dataFim}
+              onChange={(e) => {
+                setDataFim(e.target.value);
+                setPeriodo('personalizado');
+              }}
+              disabled={periodo !== 'personalizado'}
+              className="w-full cursor-pointer rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            />
+          </div>
         </div>
 
         <div>
