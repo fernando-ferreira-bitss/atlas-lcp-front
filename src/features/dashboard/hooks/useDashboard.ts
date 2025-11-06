@@ -31,8 +31,8 @@ export const useDashboardKPIs = (
   useQuery({
     queryKey: ['dashboard-kpis', filters],
     queryFn: () => dashboardService.getKPIs(filters),
-    staleTime: 1000 * 60 * 2, // 2 minutos
-    refetchInterval: 1000 * 60 * 5, // Atualiza a cada 5 minutos
+    staleTime: 1000 * 30, // 30 segundos
+    refetchInterval: 1000 * 60, // Atualiza a cada 1 minuto (TESTE)
   });
 
 /**
@@ -48,7 +48,8 @@ export const useGraficoVendasMes = (
   useQuery({
     queryKey: ['grafico-vendas-mes', ano, empreendimento_id],
     queryFn: () => dashboardService.getGraficoVendasMes(ano, empreendimento_id),
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 1000 * 30, // 30 segundos
+    refetchInterval: 1000 * 60, // Atualiza a cada 1 minuto (TESTE)
   });
 
 /**
@@ -75,7 +76,8 @@ export const useTopEmpreendimentos = (filters?: {
   useQuery({
     queryKey: ['top-empreendimentos', filters],
     queryFn: () => dashboardService.getTopEmpreendimentos(filters),
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 1000 * 30, // 30 segundos
+    refetchInterval: 1000 * 60, // Atualiza a cada 1 minuto (TESTE)
   });
 
 /**
@@ -107,7 +109,8 @@ export const useComparativoAnos = (
   useQuery({
     queryKey: ['comparativo-anos', ano_atual, ano_anterior, empreendimento_id],
     queryFn: () => dashboardService.getComparativoAnos(ano_atual, ano_anterior, empreendimento_id),
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 1000 * 30, // 30 segundos
+    refetchInterval: 1000 * 60, // Atualiza a cada 1 minuto (TESTE)
   });
 
 /**
@@ -123,7 +126,8 @@ export const useConversaoPorEmpreendimento = (filters?: {
   useQuery({
     queryKey: ['conversao-por-empreendimento', filters],
     queryFn: () => dashboardService.getConversaoPorEmpreendimento(filters),
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 1000 * 30, // 30 segundos
+    refetchInterval: 1000 * 60, // Atualiza a cada 1 minuto (TESTE)
   });
 
 /**

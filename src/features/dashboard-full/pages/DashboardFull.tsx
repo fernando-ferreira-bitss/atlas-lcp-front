@@ -50,14 +50,6 @@ export const DashboardFull = () => {
     filters.empreendimento_id
   );
 
-  // Auto-refresh a cada 1 hora
-  useEffect(() => {
-    const interval = setInterval(() => {
-      window.location.reload();
-    }, 60 * 60 * 1000); // 1 hora
-
-    return () => clearInterval(interval);
-  }, []);
 
   // Atualiza relógio a cada minuto
   useEffect(() => {
@@ -73,10 +65,12 @@ export const DashboardFull = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen();
       setIsFullscreen(true);
+      localStorage.setItem('dashboardFullscreen', 'true');
       document.body.classList.add('hide-sidebar');
     } else {
       document.exitFullscreen();
       setIsFullscreen(false);
+      localStorage.setItem('dashboardFullscreen', 'false');
       document.body.classList.remove('hide-sidebar');
     }
   };
@@ -86,6 +80,9 @@ export const DashboardFull = () => {
     const handleFullscreenChange = () => {
       const inFullscreen = !!document.fullscreenElement;
       setIsFullscreen(inFullscreen);
+
+      // Atualizar localStorage quando usuário sair via ESC
+      localStorage.setItem('dashboardFullscreen', String(inFullscreen));
 
       if (inFullscreen) {
         document.body.classList.add('hide-sidebar');

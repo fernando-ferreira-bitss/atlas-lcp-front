@@ -9,7 +9,8 @@ export const useVendas = (filters?: VendaFilters): UseQueryResult<Venda[], Error
   useQuery({
     queryKey: ['vendas', filters],
     queryFn: () => vendaService.getAll(filters),
-    staleTime: 1000 * 60 * 2, // 2 minutos
+    staleTime: 1000 * 30, // 30 segundos
+    refetchInterval: 1000 * 60, // Atualiza a cada 1 minuto (TESTE)
   });
 
 export const useVenda = (id: number): UseQueryResult<Venda, Error> =>
