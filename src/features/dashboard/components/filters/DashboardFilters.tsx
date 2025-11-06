@@ -160,7 +160,8 @@ export const DashboardFilters = ({ onFilterChange }: DashboardFiltersProps) => {
             className="relative cursor-pointer"
             onClick={() => {
               if (periodo === 'personalizado') {
-                document.getElementById('dataInicio')?.showPicker?.();
+                const input = document.getElementById('dataInicio') as HTMLInputElement | null;
+                input?.showPicker?.();
               }
             }}
           >
@@ -186,7 +187,8 @@ export const DashboardFilters = ({ onFilterChange }: DashboardFiltersProps) => {
             className="relative cursor-pointer"
             onClick={() => {
               if (periodo === 'personalizado') {
-                document.getElementById('dataFim')?.showPicker?.();
+                const input = document.getElementById('dataFim') as HTMLInputElement | null;
+                input?.showPicker?.();
               }
             }}
           >
