@@ -6,6 +6,7 @@ services:
   # ============================================
   lcp-front:
     image: node:18-alpine
+    container_name: lcp-front
     working_dir: /app
     environment:
       # Git config
@@ -21,31 +22,12 @@ services:
       # Node environment
       - NODE_ENV=production
       - HUSKY=0
-    # ports:
-    #   - "3001:80"  # Porta comentada para Swarm mode - Traefik acessa via rede interna
+    ports:
+      - "3001:80"  # Porta comentada para Swarm mode - Traefik acessa via rede interna
     networks:
       - lcp-network
       - n8n_traefik_proxy
     restart: unless-stopped
-    deploy:
-      mode: replicated
-      replicas: 1
-      update_config:
-        parallelism: 1
-        delay: 10s
-        failure_action: rollback
-        monitor: 60s
-        order: start-first
-      rollback_config:
-        parallelism: 1
-        delay: 5s
-        failure_action: pause
-        monitor: 30s
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
     command:
       - /bin/sh
       - -c
