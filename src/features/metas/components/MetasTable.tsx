@@ -3,9 +3,11 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { useDeleteMeta } from '../hooks/useMetas';
-import type { MetaWithEmpreendimento } from '../types';
 
 import { MetaFormModal } from './MetaFormModal';
+
+import type { MetaWithEmpreendimento } from '../types';
+
 
 import { Button } from '@/shared/components/ui/button';
 import {

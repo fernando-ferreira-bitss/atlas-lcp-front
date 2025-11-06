@@ -16,8 +16,7 @@ export const FunnelChart = ({
   taxaConversao,
   valorPropostas,
   valorVendas,
-}: FunnelChartProps) => {
-  return (
+}: FunnelChartProps) => (
     <div className="flex h-full items-center justify-center gap-6">
       {/* Propostas */}
       <div className="flex h-24 w-80 items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg">
@@ -46,4 +45,3 @@ export const FunnelChart = ({
       </div>
     </div>
   );
-};

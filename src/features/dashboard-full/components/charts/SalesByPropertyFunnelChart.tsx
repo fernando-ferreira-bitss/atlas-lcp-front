@@ -47,7 +47,7 @@ export const SalesByPropertyFunnelChart = ({ data }: SalesByPropertyFunnelChartP
         layout="vertical"
         margin={{ top: 10, right: 120, left: 10, bottom: 10 }}
       >
-        <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" horizontal={true} vertical={false} />
+        <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" horizontal vertical={false} />
         <XAxis type="number" hide />
         <YAxis
           type="category"

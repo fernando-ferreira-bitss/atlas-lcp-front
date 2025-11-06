@@ -5,6 +5,7 @@ import { MetaFormModal } from '../components/MetaFormModal';
 import { MetaImportForm } from '../components/MetaImportForm';
 import { MetasTable } from '../components/MetasTable';
 import { useMetas } from '../hooks/useMetas';
+
 import type { MetaFilters, MetaWithEmpreendimento } from '../types';
 
 import { useEmpreendimentos } from '@/features/empreendimentos/hooks/useEmpreendimentos';

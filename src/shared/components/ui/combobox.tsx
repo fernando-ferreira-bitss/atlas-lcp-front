@@ -1,7 +1,6 @@
-import * as React from 'react';
 import { Check, ChevronsUpDown } from 'lucide-react';
+import * as React from 'react';
 
-import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/components/ui/button';
 import {
   Command,
@@ -16,6 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/shared/components/ui/popover';
+import { cn } from '@/shared/lib/utils';
 
 export interface ComboboxOption {
   value: string;
@@ -32,7 +32,7 @@ interface ComboboxProps {
   className?: string;
 }
 
-export function Combobox({
+export const Combobox = ({
   options,
   value,
   onValueChange,
@@ -40,7 +40,7 @@ export function Combobox({
   searchPlaceholder = 'Buscar...',
   emptyText = 'Nenhum resultado encontrado.',
   className,
-}: ComboboxProps) {
+}: ComboboxProps) => {
   const [open, setOpen] = React.useState(false);
 
   const selectedOption = options.find((option) => option.value === value);

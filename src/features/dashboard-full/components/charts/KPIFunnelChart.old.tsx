@@ -18,8 +18,7 @@ export const KPIFunnelChart = ({
   valorVendas,
   taxaConversao,
   ticketMedio,
-}: KPIFunnelChartProps) => {
-  return (
+}: KPIFunnelChartProps) => (
     <div className="flex items-center justify-center gap-3 overflow-x-auto">
       {/* ETAPA 1 - Propostas */}
       <div className="flex flex-col items-center">
@@ -95,4 +94,3 @@ export const KPIFunnelChart = ({
       </div>
     </div>
   );
-};

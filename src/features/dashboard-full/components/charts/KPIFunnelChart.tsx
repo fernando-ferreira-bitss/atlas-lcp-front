@@ -22,8 +22,7 @@ export const KPIFunnelChart = ({
   valorVendas,
   taxaConversao,
   ticketMedio,
-}: KPIFunnelChartProps) => {
-  return (
+}: KPIFunnelChartProps) => (
     <div className="flex h-full flex-col justify-between gap-3">
       {/* FUNIL: Apenas etapas sequenciais - Layout Vertical */}
       <div className="flex flex-1 flex-col items-center justify-center gap-2">
@@ -96,4 +95,3 @@ export const KPIFunnelChart = ({
       </div>
     </div>
   );
-};

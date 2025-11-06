@@ -1,5 +1,3 @@
-import { apiClient } from '@/shared/services/api/client';
-
 import type {
   Meta,
   MetaCreate,
@@ -8,6 +6,9 @@ import type {
   MetaImportResult,
   MetaUpdate,
 } from '../types';
+
+import { apiClient } from '@/shared/services/api/client';
+
 
 /**
  * Service para gerenciamento de metas de vendas

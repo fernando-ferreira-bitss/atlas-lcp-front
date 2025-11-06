@@ -5,6 +5,9 @@ import { KPIFunnelChart } from '../components/charts/KPIFunnelChart';
 import { UnifiedSalesChart } from '../components/charts/UnifiedSalesChart';
 import { VendasConversaoBarChart } from '../components/charts/VendasConversaoBarChart';
 import { UltimasVendasCompactTable } from '../components/tables/UltimasVendasCompactTable';
+
+import type { DashboardFilters as IFilters } from '@/shared/types';
+
 import { MetaGaugeChart } from '@/features/dashboard/components/charts/MetaGaugeChart';
 import { VendasPorEmpreendimentoChart } from '@/features/dashboard/components/charts/VendasPorEmpreendimentoChart';
 import {
@@ -15,9 +18,6 @@ import {
   useTopEmpreendimentos,
 } from '@/features/dashboard/hooks/useDashboard';
 import { useEmpreendimentos } from '@/features/empreendimentos/hooks/useEmpreendimentos';
-
-import type { DashboardFilters as IFilters } from '@/shared/types';
-
 import { Loading } from '@/shared/components/common';
 import { formatCurrency } from '@/shared/utils/format';
 
