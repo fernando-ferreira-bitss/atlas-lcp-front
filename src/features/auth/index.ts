@@ -11,3 +11,4 @@ export * from './stores/authStore';
 export * from './components/ChangePasswordModal';
 export * from './components/AdminRoute';
 export * from './components/PrivateRoute';
+export * from './components/PrivateRouteNoLayout';

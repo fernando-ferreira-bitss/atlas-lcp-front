@@ -1,4 +1,4 @@
-import { BarChart3, FileText, Home, Settings, TrendingUp, User, Users, X } from 'lucide-react';
+import { BarChart3, FileText, Home, Monitor, Settings, TrendingUp, User, Users, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 import { useCurrentUser } from '@/features/auth';
@@ -11,6 +11,12 @@ const menuItems = [
     title: 'Dashboard',
     href: '/',
     icon: Home,
+    adminOnly: false,
+  },
+  {
+    title: 'Dashboard 2',
+    href: '/dashboard-full',
+    icon: Monitor,
     adminOnly: false,
   },
   {

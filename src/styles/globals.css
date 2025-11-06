@@ -64,3 +64,38 @@
     text-wrap: balance;
   }
 }
+
+/* Oculta sidebar, header e ajusta layout em fullscreen */
+body.hide-sidebar aside {
+  display: none !important;
+}
+
+body.hide-sidebar header {
+  display: none !important;
+}
+
+/* Remove todos os paddings e margins do layout em fullscreen */
+body.hide-sidebar main {
+  margin: 0 !important;
+  padding: 0 !important;
+  padding-top: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  min-height: 100vh !important;
+}
+
+body.hide-sidebar main > div {
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: 100vw !important;
+}
+
+body.hide-sidebar .md\:pl-64 {
+  padding-left: 0 !important;
+}
+
+body.hide-sidebar .container {
+  max-width: 100vw !important;
+  padding: 0 !important;
+}
