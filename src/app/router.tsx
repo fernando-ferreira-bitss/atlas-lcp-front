@@ -5,6 +5,7 @@ import { Login } from '@/features/auth/pages/Login';
 import { Configuracoes } from '@/features/configuracoes';
 import { Dashboard } from '@/features/dashboard/pages/Dashboard';
 import { DashboardFull } from '@/features/dashboard-full';
+import { Metas } from '@/features/metas';
 import { Propostas } from '@/features/propostas';
 import { Relatorios } from '@/features/relatorios';
 import { Users } from '@/features/users/pages/Users';
@@ -38,6 +39,16 @@ export const router = createBrowserRouter([
       {
         path: 'relatorios',
         element: <Relatorios />,
+      },
+      {
+        path: 'metas',
+        element: <AdminRoute />,
+        children: [
+          {
+            index: true,
+            element: <Metas />,
+          },
+        ],
       },
       {
         path: 'usuarios',

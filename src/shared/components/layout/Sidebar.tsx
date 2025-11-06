@@ -1,4 +1,4 @@
-import { BarChart3, FileText, Home, Monitor, Settings, TrendingUp, User, Users, X } from 'lucide-react';
+import { BarChart3, FileText, Home, Monitor, Settings, Target, TrendingUp, User, Users, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 import { useCurrentUser } from '@/features/auth';
@@ -36,6 +36,12 @@ const menuItems = [
     href: '/relatorios',
     icon: BarChart3,
     adminOnly: false,
+  },
+  {
+    title: 'Metas',
+    href: '/metas',
+    icon: Target,
+    adminOnly: true,
   },
   {
     title: 'Usuários',
