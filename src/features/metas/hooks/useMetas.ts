@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { metaService } from '../services/metaService';
 import type {
-  Meta,
   MetaCreate,
   MetaFilters,
   MetaImportParams,

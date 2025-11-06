@@ -93,7 +93,7 @@ class MetaService {
       responseType: 'blob',
     });
 
-    return response;
+    return response.data;
   }
 
   /**

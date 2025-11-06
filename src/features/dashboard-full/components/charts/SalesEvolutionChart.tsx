@@ -7,11 +7,13 @@ interface SalesEvolutionChartProps {
 }
 
 export const SalesEvolutionChart = ({ data }: SalesEvolutionChartProps) => {
+  const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+
   // Transforma os dados para o formato do Recharts
   const chartData = data.map((item) => ({
-    mes: item.mes_nome?.substring(0, 3) || item.mes.toString(), // Jan, Fev, Mar...
-    vendas: item.total_vendas / 1000000, // Converte para milhões
-    meta: item.meta / 1000000, // Converte para milhões
+    mes: mesesNomes[item.mes - 1] || item.mes.toString(), // Jan, Fev, Mar...
+    vendas: item.valor_vendas / 1000000, // Converte para milhões
+    meta: item.meta_vendas / 1000000, // Converte para milhões
   }));
 
   return (

@@ -1,6 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 
-import { AdminRoute, PrivateRoute, PrivateRouteNoLayout } from '@/features/auth';
+import { AdminRoute, PrivateRoute } from '@/features/auth';
 import { Login } from '@/features/auth/pages/Login';
 import { Configuracoes } from '@/features/configuracoes';
 import { Dashboard } from '@/features/dashboard/pages/Dashboard';
