@@ -55,6 +55,24 @@ export const formatCompactNumber = (value: number): string => new Intl.NumberFor
   }).format(value);
 
 /**
+ * Formata moeda de forma compacta para valores grandes
+ * @param value - Valor numérico a ser formatado
+ * @returns String formatada como moeda compacta (ex: R$ 1,5 mi)
+ * @example
+ * ```ts
+ * formatCompactCurrency(1500000) // "R$ 1,5 mi"
+ * formatCompactCurrency(2500) // "R$ 2,5 mil"
+ * ```
+ */
+export const formatCompactCurrency = (value: number): string => {
+  const compact = new Intl.NumberFormat('pt-BR', {
+    notation: 'compact',
+    compactDisplay: 'short',
+  }).format(value);
+  return `R$ ${compact}`;
+};
+
+/**
  * Formata uma data no formato brasileiro (DD/MM/YYYY)
  * @param dateString - String de data no formato ISO ou Date object
  * @param includeTime - Se true, inclui horas e minutos (padrão: false)

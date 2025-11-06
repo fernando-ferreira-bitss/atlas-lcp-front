@@ -1,9 +1,12 @@
 import { Maximize, Minimize } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { FunnelChart } from '../components/charts/FunnelChart';
-import { SalesEvolutionChart } from '../components/charts/SalesEvolutionChart';
-import { SalesByPropertyFunnelChart } from '../components/charts/SalesByPropertyFunnelChart';
+import { KPIFunnelChart } from '../components/charts/KPIFunnelChart';
+import { UnifiedSalesChart } from '../components/charts/UnifiedSalesChart';
+import { VendasConversaoBarChart } from '../components/charts/VendasConversaoBarChart';
+import { UltimasVendasCompactTable } from '../components/tables/UltimasVendasCompactTable';
+import { MetaGaugeChart } from '@/features/dashboard/components/charts/MetaGaugeChart';
+import { VendasPorEmpreendimentoChart } from '@/features/dashboard/components/charts/VendasPorEmpreendimentoChart';
 import {
   useComparativoAnos,
   useConversaoPorEmpreendimento,
@@ -16,7 +19,7 @@ import { useEmpreendimentos } from '@/features/empreendimentos/hooks/useEmpreend
 import type { DashboardFilters as IFilters } from '@/shared/types';
 
 import { Loading } from '@/shared/components/common';
-import { formatCurrency, formatPercentage } from '@/shared/utils/format';
+import { formatCurrency } from '@/shared/utils/format';
 
 export const DashboardFull = () => {
   const [filters, setFilters] = useState<IFilters>({});
@@ -36,16 +39,16 @@ export const DashboardFull = () => {
     data_fim: filters.data_fim,
     limit: 5,
   });
-  const { data: comparativoAnos } = useComparativoAnos(
-    currentYear,
-    previousYear,
-    filters.empreendimento_id
-  );
   const { data: conversaoPorEmp } = useConversaoPorEmpreendimento({
     data_inicio: filters.data_inicio,
     data_fim: filters.data_fim,
     limit: 5,
   });
+  const { data: comparativoAnos } = useComparativoAnos(
+    currentYear,
+    previousYear,
+    filters.empreendimento_id
+  );
 
   // Auto-refresh a cada 1 hora
   useEffect(() => {
@@ -217,119 +220,100 @@ export const DashboardFull = () => {
         </div>
       )}
 
-      {/* Layout Responsivo */}
-      <div className={`${isFullscreen ? 'space-y-2 p-2' : 'space-y-3'}`}>
-        {/* LINHA 1 - Funil de Vendas */}
-        <div className="rounded-lg bg-white p-3 shadow-md sm:p-4">
-          <h2 className="mb-2 text-center text-sm font-bold text-lcp-blue sm:text-lg">
-            Funil de Vendas - Propostas → Vendas
-          </h2>
-          <FunnelChart
+      {/* Layout para TV - TUDO EM UMA TELA */}
+      <div className={`space-y-3 ${isFullscreen ? 'h-screen overflow-hidden p-3' : 'p-4'}`}>
+        {/* LINHA 1 - Funil de KPIs */}
+        <div className="rounded-lg bg-white p-4 shadow-md">
+          <KPIFunnelChart
             totalPropostas={kpis.total_propostas}
-            totalVendas={kpis.total_vendas}
-            taxaConversao={kpis.taxa_conversao}
             valorPropostas={kpis.valor_total_propostas || 0}
+            totalVendas={kpis.total_vendas}
             valorVendas={kpis.valor_total_vendas}
+            taxaConversao={kpis.taxa_conversao}
+            ticketMedio={kpis.ticket_medio}
           />
         </div>
 
-        {/* LINHA 2 - Cards de KPIs (8 cards em 2 linhas mobile, 4 colunas desktop) */}
-        <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
-          {/* Propostas */}
-          <div className="rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 p-3 text-white shadow-md">
-            <p className="text-xs font-medium opacity-90">Propostas</p>
-            <p className="mt-1 text-xl font-bold sm:text-2xl">{kpis.total_propostas}</p>
-            <p className="mt-1 text-xs opacity-80">{formatCurrency(kpis.valor_total_propostas || 0)}</p>
+        {/* LINHA 2 - Grid Principal: Gráfico Unificado + Gauges */}
+        <div className="grid gap-2 lg:grid-cols-3">
+          {/* COLUNA 1 - Gráfico Unificado (Meta vs Realizado + Comparativo Anos) */}
+          <div className="rounded-lg bg-white p-3 shadow-md lg:col-span-2">
+            <h2 className="mb-2 text-xs font-bold text-lcp-blue">
+              Meta vs. Realizado + Evolução ({previousYear} vs {currentYear})
+            </h2>
+            {graficoData && graficoData.length > 0 && comparativoAnos && comparativoAnos.length > 0 ? (
+              <div className="h-56">
+                <UnifiedSalesChart vendasMesData={graficoData} comparativoData={comparativoAnos} />
+              </div>
+            ) : (
+              <div className="flex h-56 items-center justify-center">
+                <p className="text-xs text-gray-500">Nenhum dado disponível</p>
+              </div>
+            )}
           </div>
 
-          {/* Vendas */}
-          <div className="rounded-lg bg-gradient-to-br from-green-500 to-green-600 p-3 text-white shadow-md">
-            <p className="text-xs font-medium opacity-90">Vendas</p>
-            <p className="mt-1 text-xl font-bold sm:text-2xl">{kpis.total_vendas}</p>
-            <p className="mt-1 text-xs opacity-80">{formatCurrency(kpis.valor_total_vendas)}</p>
-          </div>
+          {/* COLUNA 2 - Gauges de Metas */}
+          <div className="rounded-lg bg-white p-3 shadow-md">
+            <h2 className="mb-2 text-center text-xs font-bold text-lcp-blue">Atendimento de Metas</h2>
 
-          {/* Conversão (Qtd) */}
-          <div className="rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 p-3 text-white shadow-md">
-            <p className="text-xs font-medium opacity-90">Conversão (Qtd)</p>
-            <p className="mt-1 text-xl font-bold sm:text-2xl">{formatPercentage(kpis.taxa_conversao, 1)}</p>
-            <p className="mt-1 text-xs opacity-80">
-              {kpis.total_vendas} de {kpis.total_propostas}
-            </p>
-          </div>
+            {/* Meta Mensal */}
+            <div className="mb-2">
+              <MetaGaugeChart
+                percentual={kpis.percentual_meta_mensal}
+                title="Meta Mensal"
+                subtitle={formatCurrency(kpis.meta_vendas_mensal)}
+              />
+            </div>
 
-          {/* Conversão (R$) */}
-          <div className="rounded-lg bg-gradient-to-br from-pink-500 to-pink-600 p-3 text-white shadow-md">
-            <p className="text-xs font-medium opacity-90">Conversão (R$)</p>
-            <p className="mt-1 text-xl font-bold sm:text-2xl">{formatPercentage(kpis.taxa_conversao_valor, 1)}</p>
-            <p className="mt-1 text-xs opacity-80">Financeira</p>
-          </div>
-
-          {/* Ticket Médio Proposta */}
-          <div className="rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 p-3 text-white shadow-md">
-            <p className="text-xs font-medium opacity-90">Ticket Médio (Prop.)</p>
-            <p className="mt-1 text-xl font-bold sm:text-2xl">{formatCurrency(kpis.ticket_medio_proposta)}</p>
-            <p className="mt-1 text-xs opacity-80">Por proposta</p>
-          </div>
-
-          {/* Ticket Médio Venda */}
-          <div className="rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 p-3 text-white shadow-md">
-            <p className="text-xs font-medium opacity-90">Ticket Médio (Venda)</p>
-            <p className="mt-1 text-xl font-bold sm:text-2xl">{formatCurrency(kpis.ticket_medio)}</p>
-            <p className="mt-1 text-xs opacity-80">Por venda</p>
-          </div>
-
-          {/* Meta Mensal */}
-          <div className="rounded-lg bg-gradient-to-br from-teal-500 to-teal-600 p-3 text-white shadow-md">
-            <p className="text-xs font-medium opacity-90">Meta Mensal</p>
-            <p className="mt-1 text-xl font-bold sm:text-2xl">
-              {formatPercentage(kpis.percentual_meta_mensal, 1)}
-            </p>
-            <p className="mt-1 text-xs opacity-80">{formatCurrency(kpis.meta_vendas_mensal)}</p>
-          </div>
-
-          {/* Meta YTD */}
-          <div className="rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 p-3 text-white shadow-md">
-            <p className="text-xs font-medium opacity-90">Meta YTD</p>
-            <p className="mt-1 text-xl font-bold sm:text-2xl">
-              {formatPercentage(kpis.percentual_meta_ytd, 1)}
-            </p>
-            <p className="mt-1 text-xs opacity-80">{formatCurrency(kpis.meta_vendas_ytd)}</p>
+            {/* Meta YTD */}
+            <div className="-mt-4">
+              <MetaGaugeChart
+                percentual={kpis.percentual_meta_ytd}
+                title="Meta YTD"
+                subtitle={formatCurrency(kpis.meta_vendas_ytd)}
+              />
+            </div>
           </div>
         </div>
 
-        {/* LINHA 3 - Gráficos */}
-        <div className="grid gap-3 lg:grid-cols-3">
-          {/* Evolução de Vendas + Metas */}
-          <div className="rounded-lg bg-white p-3 shadow-md lg:col-span-2">
-            <h2 className="mb-3 text-sm font-bold text-lcp-blue sm:text-lg">
-              Evolução de Vendas vs Metas ({currentYear})
-            </h2>
-            {graficoData && graficoData.length > 0 ? (
-              <div className="h-64 sm:h-80">
-                <SalesEvolutionChart data={graficoData} />
+        {/* LINHA 3 - Vendas + Conversão por Empreendimento (Barras Horizontais) */}
+        <div className="rounded-lg bg-white p-3 shadow-md">
+          <h2 className="mb-2 text-xs font-bold text-lcp-blue">
+            Vendas por Empreendimento + Taxa de Conversão
+          </h2>
+          {conversaoPorEmp && conversaoPorEmp.length > 0 ? (
+            <div className="h-48 overflow-auto">
+              <VendasConversaoBarChart data={conversaoPorEmp} />
+            </div>
+          ) : (
+            <div className="flex h-48 items-center justify-center">
+              <p className="text-xs text-gray-500">Nenhum dado disponível</p>
+            </div>
+          )}
+        </div>
+
+        {/* LINHA 4 - Grid: Top 5 Empreendimentos + Últimas Vendas */}
+        <div className="grid gap-2 lg:grid-cols-2">
+          {/* Top 5 Empreendimentos (Pizza) */}
+          <div className="rounded-lg bg-white p-3 shadow-md">
+            <h2 className="mb-2 text-xs font-bold text-lcp-blue">Top 5 Empreendimentos - Vendas</h2>
+            {topEmpreendimentos && topEmpreendimentos.length > 0 ? (
+              <div className="h-48">
+                <VendasPorEmpreendimentoChart data={topEmpreendimentos} />
               </div>
             ) : (
-              <div className="flex h-64 items-center justify-center sm:h-80">
-                <p className="text-sm text-gray-500">Nenhum dado disponível</p>
+              <div className="flex h-48 items-center justify-center">
+                <p className="text-xs text-gray-500">Nenhum dado disponível</p>
               </div>
             )}
           </div>
 
-          {/* Vendas por Empreendimento + Conversão */}
+          {/* Últimas Vendas */}
           <div className="rounded-lg bg-white p-3 shadow-md">
-            <h2 className="mb-3 text-sm font-bold text-lcp-blue sm:text-lg">
-              Vendas por Empreendimento + Conversão
-            </h2>
-            {conversaoPorEmp && conversaoPorEmp.length > 0 ? (
-              <div className="h-64 sm:h-80">
-                <SalesByPropertyFunnelChart data={conversaoPorEmp} />
-              </div>
-            ) : (
-              <div className="flex h-64 items-center justify-center sm:h-80">
-                <p className="text-sm text-gray-500">Nenhum dado disponível</p>
-              </div>
-            )}
+            <h2 className="mb-2 text-xs font-bold text-lcp-blue">Últimas Vendas</h2>
+            <div className="h-48 overflow-auto">
+              <UltimasVendasCompactTable />
+            </div>
           </div>
         </div>
       </div>
