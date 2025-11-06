@@ -17,7 +17,7 @@ export const MetaGaugeChart = ({ percentual, title, subtitle }: MetaGaugeChartPr
 
   return (
     <div className="flex flex-col items-center">
-      <ResponsiveContainer width="100%" height={140}>
+      <ResponsiveContainer width="100%" height={250}>
         <PieChart>
           <Pie
             data={data}
@@ -25,8 +25,8 @@ export const MetaGaugeChart = ({ percentual, title, subtitle }: MetaGaugeChartPr
             cy="50%"
             startAngle={180}
             endAngle={0}
-            innerRadius={45}
-            outerRadius={60}
+            innerRadius={80}
+            outerRadius={110}
             paddingAngle={0}
             dataKey="value"
           >
@@ -36,12 +36,12 @@ export const MetaGaugeChart = ({ percentual, title, subtitle }: MetaGaugeChartPr
           </Pie>
         </PieChart>
       </ResponsiveContainer>
-      <div className="mt-[-50px] text-center">
-        <p className="text-2xl font-bold text-lcp-green">
+      <div className="mt-[-85px] text-center">
+        <p className="text-5xl font-bold text-lcp-green">
           {value.toFixed(1)}%
         </p>
-        <p className="text-xs font-medium text-lcp-blue">{title}</p>
-        {subtitle && <p className="text-[10px] text-lcp-gray">{subtitle}</p>}
+        <p className="text-base font-semibold text-lcp-blue">{title}</p>
+        {subtitle && <p className="text-sm text-lcp-gray">{subtitle}</p>}
       </div>
     </div>
   );

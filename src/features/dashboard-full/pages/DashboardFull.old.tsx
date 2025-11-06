@@ -73,10 +73,12 @@ export const DashboardFull = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen();
       setIsFullscreen(true);
+      // Adiciona classe ao body para ocultar sidebar
       document.body.classList.add('hide-sidebar');
     } else {
       document.exitFullscreen();
       setIsFullscreen(false);
+      // Remove classe do body
       document.body.classList.remove('hide-sidebar');
     }
   };
@@ -87,6 +89,7 @@ export const DashboardFull = () => {
       const inFullscreen = !!document.fullscreenElement;
       setIsFullscreen(inFullscreen);
 
+      // Gerencia classe do body
       if (inFullscreen) {
         document.body.classList.add('hide-sidebar');
       } else {
@@ -96,6 +99,7 @@ export const DashboardFull = () => {
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
 
+    // Cleanup ao desmontar
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
       document.body.classList.remove('hide-sidebar');
@@ -116,11 +120,12 @@ export const DashboardFull = () => {
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         setShowControls(false);
-      }, 3000);
+      }, 3000); // Oculta após 3 segundos de inatividade
     };
 
     document.addEventListener('mousemove', handleMouseMove);
 
+    // Inicia o timer para ocultar
     timeout = setTimeout(() => {
       setShowControls(false);
     }, 3000);
@@ -147,7 +152,7 @@ export const DashboardFull = () => {
 
   return (
     <div className={`min-h-screen overflow-auto bg-gray-50 ${isFullscreen ? 'p-0' : 'p-2 sm:p-4'}`}>
-      {/* Botão Fullscreen Flutuante */}
+      {/* Botão Fullscreen Flutuante (auto-hide em fullscreen) */}
       <button
         onClick={toggleFullscreen}
         className={`fixed right-4 top-20 z-50 flex items-center gap-2 rounded-lg bg-lcp-blue px-3 py-2 text-xs text-white shadow-lg transition-all hover:bg-lcp-blue/90 sm:px-4 sm:text-sm ${
@@ -172,6 +177,7 @@ export const DashboardFull = () => {
       {!isFullscreen && (
         <div className="mb-3 flex flex-col gap-3 sm:mb-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+            {/* Dropdown Empreendimento */}
             <select
               value={filters.empreendimento_id || ''}
               onChange={(e) =>
@@ -214,81 +220,44 @@ export const DashboardFull = () => {
         </div>
       )}
 
-      {/* LAYOUT GRID 3x3 para TV */}
-      <div
-        className={`grid h-[calc(100vh-2rem)] gap-3 ${isFullscreen ? 'p-3' : 'p-0'}`}
-        style={{
-          gridTemplateRows: '1fr 1fr 1fr',
-          gridTemplateColumns: '1fr 1fr 1fr',
-        }}
-      >
-        {/* ============== LINHA 1 ============== */}
+      {/* Layout para TV - TUDO EM UMA TELA */}
+      <div className={`space-y-3 ${isFullscreen ? 'h-screen overflow-hidden p-3' : 'p-4'}`}>
+        {/* LINHA 1 - Funil de KPIs */}
+        <div className="rounded-lg bg-white p-4 shadow-md">
+          <KPIFunnelChart
+            totalPropostas={kpis.total_propostas}
+            valorPropostas={kpis.valor_total_propostas || 0}
+            totalVendas={kpis.total_vendas}
+            valorVendas={kpis.valor_total_vendas}
+            taxaConversao={kpis.taxa_conversao}
+            ticketMedio={kpis.ticket_medio}
+          />
+        </div>
 
-        {/* [1,1] - Funil de Vendas */}
-        <div className="flex flex-col overflow-hidden rounded-lg bg-white p-4 shadow-md">
-          <h2 className="mb-3 text-sm font-bold text-lcp-blue">Funil de Vendas</h2>
-          <div className="flex-1 overflow-hidden">
-            <KPIFunnelChart
-              totalReservas={0} // TODO: Adicionar dados de reservas do backend
-              valorReservas={0}
-              totalPropostas={kpis.total_propostas}
-              valorPropostas={kpis.valor_total_propostas || 0}
-              totalVendas={kpis.total_vendas}
-              valorVendas={kpis.valor_total_vendas}
-              taxaConversao={kpis.taxa_conversao}
-              ticketMedio={kpis.ticket_medio}
-            />
+        {/* LINHA 2 - Grid Principal: Gráfico Unificado + Gauges */}
+        <div className="grid gap-2 lg:grid-cols-3">
+          {/* COLUNA 1 - Gráfico Unificado (Meta vs Realizado + Comparativo Anos) */}
+          <div className="rounded-lg bg-white p-3 shadow-md lg:col-span-2">
+            <h2 className="mb-2 text-xs font-bold text-lcp-blue">
+              Meta vs. Realizado + Evolução ({previousYear} vs {currentYear})
+            </h2>
+            {graficoData && graficoData.length > 0 && comparativoAnos && comparativoAnos.length > 0 ? (
+              <div className="h-56">
+                <UnifiedSalesChart vendasMesData={graficoData} comparativoData={comparativoAnos} />
+              </div>
+            ) : (
+              <div className="flex h-56 items-center justify-center">
+                <p className="text-xs text-gray-500">Nenhum dado disponível</p>
+              </div>
+            )}
           </div>
-        </div>
 
-        {/* [1,2] - Últimas Vendas */}
-        <div className="overflow-auto rounded-lg bg-white p-4 shadow-md">
-          <h2 className="mb-3 text-sm font-bold text-lcp-blue">Últimas Vendas</h2>
-          <div className="h-[calc(100%-2rem)] overflow-auto">
-            <UltimasVendasCompactTable />
-          </div>
-        </div>
+          {/* COLUNA 2 - Gauges de Metas */}
+          <div className="rounded-lg bg-white p-3 shadow-md">
+            <h2 className="mb-2 text-center text-xs font-bold text-lcp-blue">Atendimento de Metas</h2>
 
-        {/* [1,3] - Top 5 Empreendimentos */}
-        <div className="overflow-auto rounded-lg bg-white p-4 shadow-md">
-          <h2 className="mb-3 text-sm font-bold text-lcp-blue">Top 5 Empreendimentos</h2>
-          {topEmpreendimentos && topEmpreendimentos.length > 0 ? (
-            <div className="h-[calc(100%-2rem)]">
-              <VendasPorEmpreendimentoChart data={topEmpreendimentos} />
-            </div>
-          ) : (
-            <div className="flex h-[calc(100%-2rem)] items-center justify-center">
-              <p className="text-xs text-gray-500">Nenhum dado disponível</p>
-            </div>
-          )}
-        </div>
-
-        {/* ============== LINHA 2 ============== */}
-
-        {/* [2,1] - Vendas por Empreendimento + Taxa de Conversão */}
-        <div className="overflow-auto rounded-lg bg-white p-4 shadow-md">
-          <h2 className="mb-3 text-sm font-bold text-lcp-blue">Vendas por Empreendimento</h2>
-          {conversaoPorEmp && conversaoPorEmp.length > 0 ? (
-            <div className="h-[calc(100%-2rem)] overflow-auto">
-              <VendasConversaoBarChart data={conversaoPorEmp} />
-            </div>
-          ) : (
-            <div className="flex h-[calc(100%-2rem)] items-center justify-center">
-              <p className="text-xs text-gray-500">Nenhum dado disponível</p>
-            </div>
-          )}
-        </div>
-
-        {/* [2,2] - ⭐ VELOCÍMETROS (DESTAQUE CENTRAL) */}
-        <div className="flex flex-col overflow-hidden rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 p-4 shadow-xl ring-2 ring-lcp-blue ring-opacity-30">
-          <h2 className="mb-4 text-center text-base font-bold text-lcp-blue">
-            🎯 Atendimento de Metas
-          </h2>
-
-          {/* Velocímetros lado a lado */}
-          <div className="flex flex-1 items-center justify-center gap-4">
             {/* Meta Mensal */}
-            <div className="flex-1">
+            <div className="mb-2">
               <MetaGaugeChart
                 percentual={kpis.percentual_meta_mensal}
                 title="Meta Mensal"
@@ -297,7 +266,7 @@ export const DashboardFull = () => {
             </div>
 
             {/* Meta YTD */}
-            <div className="flex-1">
+            <div className="-mt-4">
               <MetaGaugeChart
                 percentual={kpis.percentual_meta_ytd}
                 title="Meta YTD"
@@ -307,51 +276,45 @@ export const DashboardFull = () => {
           </div>
         </div>
 
-        {/* [2,3] - Espaço Disponível */}
-        <div className="overflow-auto rounded-lg bg-white p-4 shadow-md">
-          <h2 className="mb-3 text-sm font-bold text-lcp-blue">Métricas Adicionais</h2>
-          <div className="flex h-[calc(100%-2rem)] flex-col items-center justify-center gap-4">
-            {/* Card Meta Anual */}
-            <div className="w-full rounded-lg border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 p-4 text-center shadow-sm">
-              <p className="text-xs font-medium uppercase text-blue-700">Meta Anual</p>
-              <p className="text-3xl font-bold text-blue-900">
-                {formatCurrency(kpis.meta_vendas_ytd)}
-              </p>
-              <p className="text-sm text-blue-600">
-                Realizado: {formatCurrency(kpis.valor_total_vendas)}
-              </p>
-            </div>
-
-            {/* Card Propostas em Aberto */}
-            <div className="w-full rounded-lg border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-amber-100 p-4 text-center shadow-sm">
-              <p className="text-xs font-medium uppercase text-amber-700">Propostas Total</p>
-              <p className="text-3xl font-bold text-amber-900">{kpis.total_propostas}</p>
-              <p className="text-sm text-amber-600">
-                Valor: {formatCurrency(kpis.valor_total_propostas || 0)}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* ============== LINHA 3 (Largura Completa) ============== */}
-
-        {/* [3,1-3] - Gráfico de Evolução (ocupa todas as 3 colunas) */}
-        <div
-          className="overflow-auto rounded-lg bg-white p-4 shadow-md"
-          style={{ gridColumn: '1 / 4' }}
-        >
-          <h2 className="mb-3 text-sm font-bold text-lcp-blue">
-            📈 Evolução de Vendas - Meta vs Realizado ({previousYear} vs {currentYear})
+        {/* LINHA 3 - Vendas + Conversão por Empreendimento (Barras Horizontais) */}
+        <div className="rounded-lg bg-white p-3 shadow-md">
+          <h2 className="mb-2 text-xs font-bold text-lcp-blue">
+            Vendas por Empreendimento + Taxa de Conversão
           </h2>
-          {graficoData && graficoData.length > 0 && comparativoAnos && comparativoAnos.length > 0 ? (
-            <div className="h-[calc(100%-2rem)]">
-              <UnifiedSalesChart vendasMesData={graficoData} comparativoData={comparativoAnos} />
+          {conversaoPorEmp && conversaoPorEmp.length > 0 ? (
+            <div className="h-48 overflow-auto">
+              <VendasConversaoBarChart data={conversaoPorEmp} />
             </div>
           ) : (
-            <div className="flex h-[calc(100%-2rem)] items-center justify-center">
+            <div className="flex h-48 items-center justify-center">
               <p className="text-xs text-gray-500">Nenhum dado disponível</p>
             </div>
           )}
+        </div>
+
+        {/* LINHA 4 - Grid: Top 5 Empreendimentos + Últimas Vendas */}
+        <div className="grid gap-2 lg:grid-cols-2">
+          {/* Top 5 Empreendimentos (Pizza) */}
+          <div className="rounded-lg bg-white p-3 shadow-md">
+            <h2 className="mb-2 text-xs font-bold text-lcp-blue">Top 5 Empreendimentos - Vendas</h2>
+            {topEmpreendimentos && topEmpreendimentos.length > 0 ? (
+              <div className="h-48">
+                <VendasPorEmpreendimentoChart data={topEmpreendimentos} />
+              </div>
+            ) : (
+              <div className="flex h-48 items-center justify-center">
+                <p className="text-xs text-gray-500">Nenhum dado disponível</p>
+              </div>
+            )}
+          </div>
+
+          {/* Últimas Vendas */}
+          <div className="rounded-lg bg-white p-3 shadow-md">
+            <h2 className="mb-2 text-xs font-bold text-lcp-blue">Últimas Vendas</h2>
+            <div className="h-48 overflow-auto">
+              <UltimasVendasCompactTable />
+            </div>
+          </div>
         </div>
       </div>
     </div>
