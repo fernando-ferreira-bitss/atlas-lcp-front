@@ -21,6 +21,18 @@ export const apiClient = axios.create({
   },
 });
 
+// Interceptor para adicionar trailing slash automaticamente
+apiClient.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    // Adiciona trailing slash se não existir (exceto URLs com query params ou hash)
+    if (config.url && !config.url.endsWith('/') && !config.url.includes('?') && !config.url.includes('#')) {
+      config.url = `${config.url}/`;
+    }
+    return config;
+  },
+  (error: AxiosError) => Promise.reject(error)
+);
+
 // Request interceptor - adiciona token de autenticação
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
