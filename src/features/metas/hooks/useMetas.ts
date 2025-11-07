@@ -2,12 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { metaService } from '../services/metaService';
 
-import type {
-  MetaCreate,
-  MetaFilters,
-  MetaImportParams,
-  MetaUpdate,
-} from '../types';
+import type { MetaCreate, MetaFilters, MetaImportParams, MetaUpdate } from '../types';
 
 /**
  * Query keys para cache do React Query
@@ -72,8 +67,7 @@ export function useUpdateMeta() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: MetaUpdate }) =>
-      metaService.update(id, data),
+    mutationFn: ({ id, data }: { id: number; data: MetaUpdate }) => metaService.update(id, data),
     onSuccess: (_, variables) => {
       // Invalidar cache da meta específica
       queryClient.invalidateQueries({ queryKey: metaKeys.detail(variables.id) });

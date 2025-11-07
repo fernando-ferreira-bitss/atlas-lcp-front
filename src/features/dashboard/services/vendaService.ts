@@ -2,7 +2,6 @@ import type { Venda, VendaFilters } from '@/shared/types';
 
 import { apiClient } from '@/shared/services/api/client';
 
-
 /**
  * Service para gerenciar vendas
  */
@@ -33,9 +32,7 @@ class VendaService {
    * @returns Lista de vendas do empreendimento
    */
   async getByEmpreendimento(empreendimentoId: number): Promise<Venda[]> {
-    return apiClient.get<never, Venda[]>(
-      `${this.baseURL}/por-empreendimento/${empreendimentoId}`
-    );
+    return apiClient.get<never, Venda[]>(`${this.baseURL}/por-empreendimento/${empreendimentoId}`);
   }
 
   /**

@@ -9,9 +9,8 @@ import type { Proposta, PropostaFilters } from '@/shared/types';
  * @param filters - Filtros de paginação, empreendimento e status
  * @returns Query result com lista de propostas
  */
-export const usePropostas = (
-  filters?: PropostaFilters
-): UseQueryResult<Proposta[], Error> => useQuery({
+export const usePropostas = (filters?: PropostaFilters): UseQueryResult<Proposta[], Error> =>
+  useQuery({
     queryKey: ['propostas', filters],
     queryFn: () => propostaService.getAll(filters),
     staleTime: 1000 * 60 * 2, // 2 minutos
@@ -23,10 +22,8 @@ export const usePropostas = (
  * @param enabled - Se a query deve ser executada
  * @returns Query result com dados da proposta
  */
-export const useProposta = (
-  id: number,
-  enabled = true
-): UseQueryResult<Proposta, Error> => useQuery({
+export const useProposta = (id: number, enabled = true): UseQueryResult<Proposta, Error> =>
+  useQuery({
     queryKey: ['proposta', id],
     queryFn: () => propostaService.getById(id),
     enabled,
@@ -42,7 +39,8 @@ export const useProposta = (
 export const usePropostasPorEmpreendimento = (
   empreendimentoId: number,
   enabled = true
-): UseQueryResult<Proposta[], Error> => useQuery({
+): UseQueryResult<Proposta[], Error> =>
+  useQuery({
     queryKey: ['propostas-empreendimento', empreendimentoId],
     queryFn: () => propostaService.getByEmpreendimento(empreendimentoId),
     enabled,

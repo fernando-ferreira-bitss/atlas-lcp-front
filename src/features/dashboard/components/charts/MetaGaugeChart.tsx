@@ -7,7 +7,12 @@ interface MetaGaugeChartProps {
   isFullscreen?: boolean;
 }
 
-export const MetaGaugeChart = ({ percentual, title, subtitle, isFullscreen = false }: MetaGaugeChartProps) => {
+export const MetaGaugeChart = ({
+  percentual,
+  title,
+  subtitle,
+  isFullscreen = false,
+}: MetaGaugeChartProps) => {
   const value = Math.min(Math.max(percentual, 0), 100);
   const data = [
     { name: 'Atingido', value },
@@ -44,11 +49,23 @@ export const MetaGaugeChart = ({ percentual, title, subtitle, isFullscreen = fal
         </PieChart>
       </ResponsiveContainer>
       <div className={`${marginTop} text-center`}>
-        <p className={`font-bold text-lcp-green ${isFullscreen ? 'text-4xl lg:text-5xl' : 'text-2xl sm:text-3xl lg:text-4xl'}`}>
+        <p
+          className={`font-bold text-lcp-green ${isFullscreen ? 'text-4xl lg:text-5xl' : 'text-2xl sm:text-3xl lg:text-4xl'}`}
+        >
           {value.toFixed(1)}%
         </p>
-        <p className={`font-semibold text-lcp-blue ${isFullscreen ? 'text-base lg:text-lg' : 'text-xs sm:text-sm lg:text-base'}`}>{title}</p>
-        {subtitle && <p className={`text-lcp-gray ${isFullscreen ? 'text-sm lg:text-base' : 'text-[10px] sm:text-xs lg:text-sm'}`}>{subtitle}</p>}
+        <p
+          className={`font-semibold text-lcp-blue ${isFullscreen ? 'text-base lg:text-lg' : 'text-xs sm:text-sm lg:text-base'}`}
+        >
+          {title}
+        </p>
+        {subtitle && (
+          <p
+            className={`text-lcp-gray ${isFullscreen ? 'text-sm lg:text-base' : 'text-[10px] sm:text-xs lg:text-sm'}`}
+          >
+            {subtitle}
+          </p>
+        )}
       </div>
     </div>
   );

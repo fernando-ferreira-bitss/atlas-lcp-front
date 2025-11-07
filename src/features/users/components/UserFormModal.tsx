@@ -121,9 +121,7 @@ export const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => 
           <DialogHeader>
             <DialogTitle>{user ? 'Editar Usuário' : 'Novo Usuário'}</DialogTitle>
             <DialogDescription>
-              {user
-                ? 'Atualize os dados do usuário abaixo.'
-                : 'Preencha os dados do novo usuário.'}
+              {user ? 'Atualize os dados do usuário abaixo.' : 'Preencha os dados do novo usuário.'}
             </DialogDescription>
           </DialogHeader>
 
@@ -136,9 +134,7 @@ export const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => 
                 placeholder="Nome completo"
                 disabled={isLoading}
               />
-              {errors.nome && (
-                <p className="text-sm text-red-600">{errors.nome.message}</p>
-              )}
+              {errors.nome && <p className="text-sm text-red-600">{errors.nome.message}</p>}
             </div>
 
             <div className="grid gap-2">
@@ -150,14 +146,17 @@ export const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => 
                 placeholder="email@exemplo.com"
                 disabled={isLoading}
               />
-              {errors.email && (
-                <p className="text-sm text-red-600">{errors.email.message}</p>
-              )}
+              {errors.email && <p className="text-sm text-red-600">{errors.email.message}</p>}
             </div>
 
             <div className="grid gap-2">
               <Label htmlFor="password">
-                Senha {user && <span className="text-sm font-normal text-muted-foreground">(deixe em branco para manter a atual)</span>}
+                Senha{' '}
+                {user && (
+                  <span className="text-sm font-normal text-muted-foreground">
+                    (deixe em branco para manter a atual)
+                  </span>
+                )}
               </Label>
               <Input
                 id="password"
@@ -166,9 +165,7 @@ export const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => 
                 placeholder={user ? 'Nova senha (opcional)' : 'Senha'}
                 disabled={isLoading}
               />
-              {errors.password && (
-                <p className="text-sm text-red-600">{errors.password.message}</p>
-              )}
+              {errors.password && <p className="text-sm text-red-600">{errors.password.message}</p>}
             </div>
 
             <div className="flex items-center gap-4">
@@ -205,7 +202,11 @@ export const UserFormModal = ({ isOpen, onClose, user }: UserFormModalProps) => 
               Cancelar
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Salvando...' : user ? 'Atualizar' : 'Criar'}
+              {(() => {
+                if (isLoading) return 'Salvando...';
+                if (user) return 'Atualizar';
+                return 'Criar';
+              })()}
             </Button>
           </DialogFooter>
         </form>

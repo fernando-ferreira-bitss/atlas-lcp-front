@@ -32,7 +32,10 @@ export const VendasConversaoBarChart = ({ data }: VendasConversaoBarChartProps) 
           <div key={item.empreendimento_id} className="flex items-center gap-3">
             {/* Nome do Empreendimento */}
             <div className="w-32 flex-shrink-0">
-              <p className="truncate text-xs font-medium text-gray-700" title={item.empreendimento_nome}>
+              <p
+                className="truncate text-xs font-medium text-gray-700"
+                title={item.empreendimento_nome}
+              >
                 {item.empreendimento_nome}
               </p>
             </div>

@@ -1,4 +1,13 @@
-import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 import type { TopEmpreendimento } from '@/shared/types';
 
@@ -9,9 +18,10 @@ interface VendasPorEmpreendimentoChartProps {
 export const VendasPorEmpreendimentoChart = ({ data }: VendasPorEmpreendimentoChartProps) => {
   const chartData = data.map((item) => ({
     nomeCompleto: item.empreendimento_nome,
-    nomeAbreviado: item.empreendimento_nome.length > 20
-      ? `${item.empreendimento_nome.substring(0, 20)}...`
-      : item.empreendimento_nome,
+    nomeAbreviado:
+      item.empreendimento_nome.length > 20
+        ? `${item.empreendimento_nome.substring(0, 20)}...`
+        : item.empreendimento_nome,
     propostas: Math.round(item.total_vendas * 1.5), // Mockado: estimativa de propostas
     vendas: item.total_vendas,
   }));

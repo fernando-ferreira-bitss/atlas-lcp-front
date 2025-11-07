@@ -44,10 +44,7 @@ export const Header = () => {
         </div>
       </header>
 
-      <ChangePasswordModal
-        open={changePasswordOpen}
-        onOpenChange={setChangePasswordOpen}
-      />
+      <ChangePasswordModal open={changePasswordOpen} onOpenChange={setChangePasswordOpen} />
     </>
   );
 };

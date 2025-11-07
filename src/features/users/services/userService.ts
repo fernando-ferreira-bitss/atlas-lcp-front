@@ -94,10 +94,7 @@ class UserService {
    * @param newPassword - Nova senha
    * @returns Mensagem de confirmação
    */
-  async resetPassword(
-    id: number,
-    newPassword: string
-  ): Promise<{ message: string; user: User }> {
+  async resetPassword(id: number, newPassword: string): Promise<{ message: string; user: User }> {
     return apiClient.post<{ new_password: string }, { message: string; user: User }>(
       `${this.baseURL}/${id}/reset-password`,
       { new_password: newPassword }

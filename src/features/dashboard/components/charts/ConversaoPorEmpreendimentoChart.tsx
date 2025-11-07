@@ -8,9 +8,10 @@ interface ConversaoPorEmpreendimentoChartProps {
 
 export const ConversaoPorEmpreendimentoChart = ({ data }: ConversaoPorEmpreendimentoChartProps) => {
   const chartData = data.map((item) => ({
-    nome: item.empreendimento_nome.length > 30
-      ? `${item.empreendimento_nome.substring(0, 30)}...`
-      : item.empreendimento_nome,
+    nome:
+      item.empreendimento_nome.length > 30
+        ? `${item.empreendimento_nome.substring(0, 30)}...`
+        : item.empreendimento_nome,
     taxa_conversao: item.taxa_conversao,
     total_propostas: item.total_propostas,
     total_vendas: item.total_vendas,

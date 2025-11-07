@@ -285,12 +285,14 @@ export interface SyncStatusResponse {
 
 // === API Response Types ===
 export interface ApiError {
-  detail: string | Array<{
-    type: string;
-    loc: string[];
-    msg: string;
-    input: Record<string, unknown>;
-  }>;
+  detail:
+    | string
+    | Array<{
+        type: string;
+        loc: string[];
+        msg: string;
+        input: Record<string, unknown>;
+      }>;
 }
 
 // === Pagination ===

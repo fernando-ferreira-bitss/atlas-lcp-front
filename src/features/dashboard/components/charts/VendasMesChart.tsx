@@ -47,11 +47,7 @@ export const VendasMesChart = ({ data }: VendasMesChartProps) => {
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-        <XAxis
-          dataKey="mes"
-          className="text-xs"
-          tick={{ fill: 'hsl(var(--muted-foreground))' }}
-        />
+        <XAxis dataKey="mes" className="text-xs" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
         <YAxis
           className="text-xs"
           tick={{ fill: 'hsl(var(--muted-foreground))' }}
@@ -72,7 +68,7 @@ export const VendasMesChart = ({ data }: VendasMesChartProps) => {
           wrapperStyle={{ paddingTop: '20px' }}
           formatter={(value) => {
             if (value === 'meta') return 'Meta';
-            if (value === 'vendas') return 'Realizado';            
+            if (value === 'vendas') return 'Realizado';
             return value;
           }}
         />

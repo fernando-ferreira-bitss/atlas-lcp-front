@@ -1,4 +1,14 @@
-import { Bar, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import {
+  Bar,
+  CartesianGrid,
+  ComposedChart,
+  Legend,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 import type { GraficoVendasMes } from '@/shared/types';
 
@@ -7,7 +17,20 @@ interface SalesEvolutionChartProps {
 }
 
 export const SalesEvolutionChart = ({ data }: SalesEvolutionChartProps) => {
-  const mesesNomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+  const mesesNomes = [
+    'Jan',
+    'Fev',
+    'Mar',
+    'Abr',
+    'Mai',
+    'Jun',
+    'Jul',
+    'Ago',
+    'Set',
+    'Out',
+    'Nov',
+    'Dez',
+  ];
 
   // Transforma os dados para o formato do Recharts
   const chartData = data.map((item) => ({
@@ -20,11 +43,7 @@ export const SalesEvolutionChart = ({ data }: SalesEvolutionChartProps) => {
     <ResponsiveContainer width="100%" height="100%">
       <ComposedChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-        <XAxis
-          dataKey="mes"
-          tick={{ fill: '#666', fontSize: 12 }}
-          axisLine={{ stroke: '#ccc' }}
-        />
+        <XAxis dataKey="mes" tick={{ fill: '#666', fontSize: 12 }} axisLine={{ stroke: '#ccc' }} />
         <YAxis
           tick={{ fill: '#666', fontSize: 12 }}
           axisLine={{ stroke: '#ccc' }}
@@ -43,10 +62,7 @@ export const SalesEvolutionChart = ({ data }: SalesEvolutionChartProps) => {
           }}
           formatter={(value: number) => `R$ ${value.toFixed(2)}M`}
         />
-        <Legend
-          wrapperStyle={{ fontSize: '14px' }}
-          iconType="line"
-        />
+        <Legend wrapperStyle={{ fontSize: '14px' }} iconType="line" />
 
         {/* Barras de Vendas */}
         <Bar

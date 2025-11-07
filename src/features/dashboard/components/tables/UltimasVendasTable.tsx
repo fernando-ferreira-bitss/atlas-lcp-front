@@ -16,78 +16,78 @@ import {
 } from '@/shared/components/ui/table';
 import { formatCurrency, formatDate } from '@/shared/utils/format';
 
+const getStatusClassName = (status: string) => {
+  if (status === 'Ativa') return 'bg-green-100 text-green-700';
+  if (status === 'Cancelada') return 'bg-red-100 text-red-700';
+  return 'bg-yellow-100 text-yellow-700';
+};
+
 interface VendaDetalhesModalProps {
   venda: Venda;
   onClose: () => void;
 }
 
 const VendaDetalhesModal = ({ venda, onClose }: VendaDetalhesModalProps) => (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6 shadow-xl">
-        <h2 className="mb-4 text-2xl font-bold">Detalhes da Venda</h2>
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6 shadow-xl">
+      <h2 className="mb-4 text-2xl font-bold">Detalhes da Venda</h2>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <p className="text-sm text-gray-500">Cliente</p>
-            <p className="font-medium">{venda.cliente_nome}</p>
-          </div>
-
-          <div>
-            <p className="text-sm text-gray-500">Código Mega</p>
-            <p className="font-medium">{venda.codigo_mega}</p>
-          </div>
-
-          <div>
-            <p className="text-sm text-gray-500">Unidade</p>
-            <p className="font-medium">{venda.unidade}</p>
-          </div>
-
-          <div>
-            <p className="text-sm text-gray-500">Bloco</p>
-            <p className="font-medium">{venda.bloco}</p>
-          </div>
-
-          <div>
-            <p className="text-sm text-gray-500">Valor (VGV)</p>
-            <p className="font-medium">{formatCurrency(venda.valor_venda)}</p>
-          </div>
-
-          <div>
-            <p className="text-sm text-gray-500">Data da Venda</p>
-            <p className="font-medium">{formatDate(venda.data_venda)}</p>
-          </div>
-
-          <div>
-            <p className="text-sm text-gray-500">Status</p>
-            <p className="font-medium">
-              <span
-                className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                  venda.status === 'Ativa'
-                    ? 'bg-green-100 text-green-700'
-                    : venda.status === 'Cancelada'
-                      ? 'bg-red-100 text-red-700'
-                      : 'bg-yellow-100 text-yellow-700'
-                }`}
-              >
-                {venda.status}
-              </span>
-            </p>
-          </div>
-
-          <div>
-            <p className="text-sm text-gray-500">Forma de Pagamento</p>
-            <p className="font-medium">{venda.forma_pagamento || 'Não informado'}</p>
-          </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <p className="text-sm text-gray-500">Cliente</p>
+          <p className="font-medium">{venda.cliente_nome}</p>
         </div>
 
-        <div className="mt-6 flex justify-end">
-          <Button onClick={onClose} variant="outline">
-            Fechar
-          </Button>
+        <div>
+          <p className="text-sm text-gray-500">Código Mega</p>
+          <p className="font-medium">{venda.codigo_mega}</p>
+        </div>
+
+        <div>
+          <p className="text-sm text-gray-500">Unidade</p>
+          <p className="font-medium">{venda.unidade}</p>
+        </div>
+
+        <div>
+          <p className="text-sm text-gray-500">Bloco</p>
+          <p className="font-medium">{venda.bloco}</p>
+        </div>
+
+        <div>
+          <p className="text-sm text-gray-500">Valor (VGV)</p>
+          <p className="font-medium">{formatCurrency(venda.valor_venda)}</p>
+        </div>
+
+        <div>
+          <p className="text-sm text-gray-500">Data da Venda</p>
+          <p className="font-medium">{formatDate(venda.data_venda)}</p>
+        </div>
+
+        <div>
+          <p className="text-sm text-gray-500">Status</p>
+          <p className="font-medium">
+            <span
+              className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${getStatusClassName(venda.status)}`}
+            >
+              {venda.status}
+            </span>
+          </p>
+        </div>
+
+        <div>
+          <p className="text-sm text-gray-500">Forma de Pagamento</p>
+          <p className="font-medium">{venda.forma_pagamento || 'Não informado'}</p>
         </div>
       </div>
+
+      <div className="mt-6 flex justify-end">
+        <Button onClick={onClose} variant="outline">
+          Fechar
+        </Button>
+      </div>
     </div>
-  );
+  </div>
+);
 
 export const UltimasVendasTable = () => {
   const [selectedVenda, setSelectedVenda] = useState<Venda | null>(null);
@@ -146,11 +146,7 @@ export const UltimasVendasTable = () => {
                   {formatDate(venda.data_venda)}
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedVenda(venda)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedVenda(venda)}>
                     <Eye className="h-4 w-4" />
                     <span className="ml-2 hidden sm:inline">Detalhes</span>
                   </Button>

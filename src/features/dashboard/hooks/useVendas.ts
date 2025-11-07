@@ -9,7 +9,8 @@ import type { Venda, VendaFilters } from '@/shared/types';
  * @param filters - Filtros de paginação, empreendimento, status e datas
  * @returns Query result com lista de vendas
  */
-export const useVendas = (filters?: VendaFilters): UseQueryResult<Venda[], Error> => useQuery({
+export const useVendas = (filters?: VendaFilters): UseQueryResult<Venda[], Error> =>
+  useQuery({
     queryKey: ['vendas', filters],
     queryFn: () => vendaService.getAll(filters),
     staleTime: 1000 * 60, // 1 minuto
@@ -22,7 +23,8 @@ export const useVendas = (filters?: VendaFilters): UseQueryResult<Venda[], Error
  * @param enabled - Se a query deve ser executada
  * @returns Query result com dados da venda
  */
-export const useVenda = (id: number, enabled = true): UseQueryResult<Venda, Error> => useQuery({
+export const useVenda = (id: number, enabled = true): UseQueryResult<Venda, Error> =>
+  useQuery({
     queryKey: ['venda', id],
     queryFn: () => vendaService.getById(id),
     enabled,
@@ -38,7 +40,8 @@ export const useVenda = (id: number, enabled = true): UseQueryResult<Venda, Erro
 export const useVendasPorEmpreendimento = (
   empreendimentoId: number,
   enabled = true
-): UseQueryResult<Venda[], Error> => useQuery({
+): UseQueryResult<Venda[], Error> =>
+  useQuery({
     queryKey: ['vendas-empreendimento', empreendimentoId],
     queryFn: () => vendaService.getByEmpreendimento(empreendimentoId),
     enabled,

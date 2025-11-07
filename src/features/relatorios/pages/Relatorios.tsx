@@ -6,11 +6,13 @@ import { Card, CardContent } from '@/shared/components/ui/card';
 export const Relatorios = () => {
   const handleExportPropostas = () => {
     // TODO: Implementar exportação de relatório de propostas
+    // eslint-disable-next-line no-console
     console.log('Exportar Relatório de Propostas');
   };
 
   const handleExportVendas = () => {
     // TODO: Implementar exportação de relatório de vendas
+    // eslint-disable-next-line no-console
     console.log('Exportar Relatório de Vendas');
   };
 
@@ -30,8 +32,8 @@ export const Relatorios = () => {
 
             {/* Texto Descritivo */}
             <p className="text-base text-lcp-gray">
-              Selecione um tipo de relatório para exportar em formato CSV/XLSX. Os filtros
-              aplicados no dashboard serão considerados.
+              Selecione um tipo de relatório para exportar em formato CSV/XLSX. Os filtros aplicados
+              no dashboard serão considerados.
             </p>
 
             {/* Botões de Exportação */}

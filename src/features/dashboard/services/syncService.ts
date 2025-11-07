@@ -2,7 +2,6 @@ import type { SyncResponse, SyncStatusResponse } from '@/shared/types';
 
 import { apiClient } from '@/shared/services/api/client';
 
-
 /**
  * Service para gerenciar sincronização de dados
  */

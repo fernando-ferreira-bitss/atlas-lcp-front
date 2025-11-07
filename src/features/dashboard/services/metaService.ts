@@ -2,7 +2,6 @@ import type { CreateMetaData, Meta, UpdateMetaData } from '@/shared/types';
 
 import { apiClient } from '@/shared/services/api/client';
 
-
 /**
  * Service para gerenciar metas
  */

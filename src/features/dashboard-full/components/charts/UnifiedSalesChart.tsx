@@ -86,9 +86,8 @@ export const UnifiedSalesChart = ({ vendasMesData, comparativoData }: UnifiedSal
               anoAtual: 'Ano Atual (Qtd)',
             };
             // Only format as currency for meta and realizado
-            const formattedValue = (name === 'meta' || name === 'realizado')
-              ? formatCurrency(value)
-              : value;
+            const formattedValue =
+              name === 'meta' || name === 'realizado' ? formatCurrency(value) : value;
             return [formattedValue, labels[name] || name];
           }}
         />
@@ -105,7 +104,13 @@ export const UnifiedSalesChart = ({ vendasMesData, comparativoData }: UnifiedSal
           }}
         />
         {/* Barras para Meta e Realizado - Eixo Esquerdo (R$) */}
-        <Bar yAxisId="left" dataKey="realizado" fill="#20B187" radius={[4, 4, 0, 0]} name="Realizado (R$)" />
+        <Bar
+          yAxisId="left"
+          dataKey="realizado"
+          fill="#20B187"
+          radius={[4, 4, 0, 0]}
+          name="Realizado (R$)"
+        />
         <Bar yAxisId="left" dataKey="meta" fill="#0B2D5C" radius={[4, 4, 0, 0]} name="Meta (R$)" />
         {/* Linhas para comparativo de anos - Eixo Direito (Quantidade) */}
         <Line

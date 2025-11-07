@@ -15,7 +15,8 @@ import type { CreateMetaData, Meta, UpdateMetaData } from '@/shared/types';
  * @param ativo - Filtrar apenas metas ativas (opcional)
  * @returns Query result com lista de metas
  */
-export const useMetas = (ativo?: boolean): UseQueryResult<Meta[], Error> => useQuery({
+export const useMetas = (ativo?: boolean): UseQueryResult<Meta[], Error> =>
+  useQuery({
     queryKey: ['metas', ativo],
     queryFn: () => metaService.getAll(ativo),
     staleTime: 1000 * 60 * 5, // 5 minutos

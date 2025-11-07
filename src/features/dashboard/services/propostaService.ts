@@ -2,7 +2,6 @@ import type { Proposta, PropostaFilters } from '@/shared/types';
 
 import { apiClient } from '@/shared/services/api/client';
 
-
 /**
  * Service para gerenciar propostas
  */

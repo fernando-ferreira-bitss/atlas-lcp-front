@@ -33,30 +33,34 @@ export const DashboardFilters = ({ onFilterChange }: DashboardFiltersProps) => {
     const mes = hoje.getMonth();
 
     switch (tipo) {
-      case 'mensal':
+      case 'mensal': {
         // Primeiro dia do mês atual até hoje
         return {
           data_inicio: new Date(ano, mes, 1).toISOString().split('T')[0],
           data_fim: hoje.toISOString().split('T')[0],
         };
-      case 'ytd':
+      }
+      case 'ytd': {
         // Primeiro dia do ano até hoje
         return {
           data_inicio: `${ano}-01-01`,
           data_fim: hoje.toISOString().split('T')[0],
         };
-      case 'ultimos_12_meses':
+      }
+      case 'ultimos_12_meses': {
         // 12 meses atrás até hoje
         const umAnoAtras = new Date(ano - 1, mes, hoje.getDate());
         return {
           data_inicio: umAnoAtras.toISOString().split('T')[0],
           data_fim: hoje.toISOString().split('T')[0],
         };
-      case 'personalizado':
+      }
+      case 'personalizado': {
         return {
           data_inicio: dataInicio || undefined,
           data_fim: dataFim || undefined,
         };
+      }
       default:
         return {};
     }
@@ -76,6 +80,7 @@ export const DashboardFilters = ({ onFilterChange }: DashboardFiltersProps) => {
     const dates = calculateDates('mensal');
     setDataInicio(dates.data_inicio || '');
     setDataFim(dates.data_fim || '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Fecha o dropdown ao clicar fora
@@ -158,8 +163,17 @@ export const DashboardFilters = ({ onFilterChange }: DashboardFiltersProps) => {
           </Label>
           <div
             className="relative cursor-pointer"
+            role="button"
+            tabIndex={0}
+            aria-label="Selecionar data de início"
             onClick={() => {
               if (periodo === 'personalizado') {
+                const input = document.getElementById('dataInicio') as HTMLInputElement | null;
+                input?.showPicker?.();
+              }
+            }}
+            onKeyDown={(e) => {
+              if ((e.key === 'Enter' || e.key === ' ') && periodo === 'personalizado') {
                 const input = document.getElementById('dataInicio') as HTMLInputElement | null;
                 input?.showPicker?.();
               }
@@ -185,8 +199,17 @@ export const DashboardFilters = ({ onFilterChange }: DashboardFiltersProps) => {
           </Label>
           <div
             className="relative cursor-pointer"
+            role="button"
+            tabIndex={0}
+            aria-label="Selecionar data de fim"
             onClick={() => {
               if (periodo === 'personalizado') {
+                const input = document.getElementById('dataFim') as HTMLInputElement | null;
+                input?.showPicker?.();
+              }
+            }}
+            onKeyDown={(e) => {
+              if ((e.key === 'Enter' || e.key === ' ') && periodo === 'personalizado') {
                 const input = document.getElementById('dataFim') as HTMLInputElement | null;
                 input?.showPicker?.();
               }
@@ -223,11 +246,20 @@ export const DashboardFilters = ({ onFilterChange }: DashboardFiltersProps) => {
             {showEmpList && (
               <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-background shadow-lg">
                 <div
+                  role="button"
+                  tabIndex={0}
                   className="cursor-pointer px-3 py-2 text-sm hover:bg-gray-100"
                   onClick={() => {
                     setEmpreendimentoId(undefined);
                     setEmpSearch('');
                     setShowEmpList(false);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      setEmpreendimentoId(undefined);
+                      setEmpSearch('');
+                      setShowEmpList(false);
+                    }
                   }}
                 >
                   Todos
@@ -235,6 +267,8 @@ export const DashboardFilters = ({ onFilterChange }: DashboardFiltersProps) => {
                 {empreendimentosFiltrados?.map((emp) => (
                   <div
                     key={emp.id}
+                    role="button"
+                    tabIndex={0}
                     className={`cursor-pointer px-3 py-2 text-sm hover:bg-gray-100 ${
                       empreendimentoId === emp.id ? 'bg-blue-100' : ''
                     }`}
@@ -242,6 +276,13 @@ export const DashboardFilters = ({ onFilterChange }: DashboardFiltersProps) => {
                       setEmpreendimentoId(emp.id);
                       setEmpSearch(emp.nome);
                       setShowEmpList(false);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        setEmpreendimentoId(emp.id);
+                        setEmpSearch(emp.nome);
+                        setShowEmpList(false);
+                      }
                     }}
                   >
                     {emp.nome}

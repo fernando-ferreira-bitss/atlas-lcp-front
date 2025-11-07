@@ -41,16 +41,10 @@ class DashboardService {
    * @param empreendimento_id - ID do empreendimento (opcional)
    * @returns Lista de vendas por mês
    */
-  async getGraficoVendasMes(
-    ano: number,
-    empreendimento_id?: number
-  ): Promise<GraficoVendasMes[]> {
-    return apiClient.get<never, GraficoVendasMes[]>(
-      `${this.baseURL}/grafico-vendas-mes`,
-      {
-        params: { ano, empreendimento_id },
-      }
-    );
+  async getGraficoVendasMes(ano: number, empreendimento_id?: number): Promise<GraficoVendasMes[]> {
+    return apiClient.get<never, GraficoVendasMes[]>(`${this.baseURL}/grafico-vendas-mes`, {
+      params: { ano, empreendimento_id },
+    });
   }
 
   /**
@@ -71,10 +65,9 @@ class DashboardService {
     data_fim?: string;
     limit?: number;
   }): Promise<TopEmpreendimento[]> {
-    return apiClient.get<never, TopEmpreendimento[]>(
-      `${this.baseURL}/top-empreendimentos`,
-      { params: filters }
-    );
+    return apiClient.get<never, TopEmpreendimento[]>(`${this.baseURL}/top-empreendimentos`, {
+      params: filters,
+    });
   }
 
   /**
@@ -82,13 +75,10 @@ class DashboardService {
    * @param filters - Filtros de data e agrupamento (dia/semana/mês)
    * @returns Vendas agrupadas por período
    */
-  async getVendasPorPeriodo(
-    filters?: VendasPorPeriodoFilters
-  ): Promise<VendasPorPeriodo[]> {
-    return apiClient.get<never, VendasPorPeriodo[]>(
-      `${this.baseURL}/vendas-por-periodo`,
-      { params: filters }
-    );
+  async getVendasPorPeriodo(filters?: VendasPorPeriodoFilters): Promise<VendasPorPeriodo[]> {
+    return apiClient.get<never, VendasPorPeriodo[]>(`${this.baseURL}/vendas-por-periodo`, {
+      params: filters,
+    });
   }
 
   /**
@@ -103,12 +93,9 @@ class DashboardService {
     ano_anterior: number,
     empreendimento_id?: number
   ): Promise<ComparativoAnos[]> {
-    return apiClient.get<never, ComparativoAnos[]>(
-      `${this.baseURL}/comparativo-anos`,
-      {
-        params: { ano_atual, ano_anterior, empreendimento_id },
-      }
-    );
+    return apiClient.get<never, ComparativoAnos[]>(`${this.baseURL}/comparativo-anos`, {
+      params: { ano_atual, ano_anterior, empreendimento_id },
+    });
   }
 
   /**
@@ -137,12 +124,9 @@ class DashboardService {
     ano: number,
     empreendimento_id?: number
   ): Promise<EvolucaoTicketMedio[]> {
-    return apiClient.get<never, EvolucaoTicketMedio[]>(
-      `${this.baseURL}/evolucao-ticket-medio`,
-      {
-        params: { ano, empreendimento_id },
-      }
-    );
+    return apiClient.get<never, EvolucaoTicketMedio[]>(`${this.baseURL}/evolucao-ticket-medio`, {
+      params: { ano, empreendimento_id },
+    });
   }
 }
 

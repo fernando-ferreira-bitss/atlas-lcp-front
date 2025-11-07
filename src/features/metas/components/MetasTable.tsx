@@ -8,7 +8,6 @@ import { MetaFormModal } from './MetaFormModal';
 
 import type { MetaWithEmpreendimento } from '../types';
 
-
 import { Button } from '@/shared/components/ui/button';
 import {
   Table,
@@ -53,6 +52,7 @@ export const MetasTable = ({ metas, isLoading }: MetasTableProps) => {
   };
 
   const handleDelete = async (id: number, descricao: string) => {
+    // eslint-disable-next-line no-alert, no-restricted-globals
     if (!confirm(`Confirma a exclusão da meta ${descricao}?`)) {
       return;
     }
@@ -60,9 +60,13 @@ export const MetasTable = ({ metas, isLoading }: MetasTableProps) => {
     try {
       await deleteMeta.mutateAsync(id);
       toast.success('Meta excluída com sucesso!');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao excluir meta:', error);
-      toast.error(error.response?.data?.detail || 'Erro ao excluir meta');
+      const errorMessage =
+        error && typeof error === 'object' && 'response' in error
+          ? (error as { response?: { data?: { detail?: string } } }).response?.data?.detail
+          : 'Erro ao excluir meta';
+      toast.error(errorMessage || 'Erro ao excluir meta');
     }
   };
 
@@ -120,9 +124,7 @@ export const MetasTable = ({ metas, isLoading }: MetasTableProps) => {
                   <TableCell className="text-right font-medium text-lcp-green">
                     {formatCurrency(Number(meta.meta_vendas))}
                   </TableCell>
-                  <TableCell className="text-right font-medium">
-                    {meta.meta_unidades}
-                  </TableCell>
+                  <TableCell className="text-right font-medium">{meta.meta_unidades}</TableCell>
                   <TableCell>
                     <div className="flex items-center justify-center gap-2">
                       <Button
@@ -152,11 +154,7 @@ export const MetasTable = ({ metas, isLoading }: MetasTableProps) => {
       </div>
 
       {/* Modal de Edição */}
-      <MetaFormModal
-        open={isModalOpen}
-        onOpenChange={handleModalClose}
-        meta={metaToEdit}
-      />
+      <MetaFormModal open={isModalOpen} onOpenChange={handleModalClose} meta={metaToEdit} />
     </>
   );
 };

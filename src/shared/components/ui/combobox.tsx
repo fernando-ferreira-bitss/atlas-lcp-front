@@ -10,11 +10,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/shared/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/shared/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/components/ui/popover';
 import { cn } from '@/shared/lib/utils';
 
 export interface ComboboxOption {
@@ -88,4 +84,4 @@ export const Combobox = ({
       </PopoverContent>
     </Popover>
   );
-}
+};

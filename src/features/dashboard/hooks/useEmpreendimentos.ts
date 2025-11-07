@@ -11,7 +11,8 @@ import type { Empreendimento, EmpreendimentoStats, PaginationParams } from '@/sh
  */
 export const useEmpreendimentos = (
   params?: PaginationParams
-): UseQueryResult<Empreendimento[], Error> => useQuery({
+): UseQueryResult<Empreendimento[], Error> =>
+  useQuery({
     queryKey: ['empreendimentos', params],
     queryFn: () => empreendimentoService.getAll(params),
     staleTime: 1000 * 60 * 5, // 5 minutos
@@ -26,7 +27,8 @@ export const useEmpreendimentos = (
 export const useEmpreendimento = (
   id: number,
   enabled = true
-): UseQueryResult<Empreendimento, Error> => useQuery({
+): UseQueryResult<Empreendimento, Error> =>
+  useQuery({
     queryKey: ['empreendimento', id],
     queryFn: () => empreendimentoService.getById(id),
     enabled,
@@ -37,10 +39,8 @@ export const useEmpreendimento = (
  * Hook para buscar estatísticas dos empreendimentos
  * @returns Query result com estatísticas
  */
-export const useEmpreendimentoStats = (): UseQueryResult<
-  EmpreendimentoStats,
-  Error
-> => useQuery({
+export const useEmpreendimentoStats = (): UseQueryResult<EmpreendimentoStats, Error> =>
+  useQuery({
     queryKey: ['empreendimento-stats'],
     queryFn: () => empreendimentoService.getStats(),
     staleTime: 1000 * 60 * 5, // 5 minutos

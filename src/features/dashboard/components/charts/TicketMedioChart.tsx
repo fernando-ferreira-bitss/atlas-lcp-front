@@ -1,4 +1,13 @@
-import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import {
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 import type { EvolucaoTicketMedio } from '@/shared/types';
 
@@ -27,18 +36,8 @@ export const TicketMedioChart = ({ data }: TicketMedioChartProps) => {
         <YAxis tickFormatter={formatThousands} />
         <Tooltip formatter={(value: number) => formatCurrency(value)} />
         <Legend />
-        <Line
-          type="monotone"
-          dataKey="Ticket Médio Proposta"
-          stroke="#0B2D5C"
-          strokeWidth={2}
-        />
-        <Line
-          type="monotone"
-          dataKey="Ticket Médio Venda"
-          stroke="#20B187"
-          strokeWidth={2}
-        />
+        <Line type="monotone" dataKey="Ticket Médio Proposta" stroke="#0B2D5C" strokeWidth={2} />
+        <Line type="monotone" dataKey="Ticket Médio Venda" stroke="#20B187" strokeWidth={2} />
       </LineChart>
     </ResponsiveContainer>
   );

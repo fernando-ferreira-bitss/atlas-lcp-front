@@ -15,7 +15,8 @@ import type { AuthResponse, LoginCredentials, RegisterData, User } from '@/share
  * @param enabled - Se a query deve ser executada
  * @returns Query result com dados do usuário
  */
-export const useCurrentUser = (enabled = true): UseQueryResult<User, Error> => useQuery({
+export const useCurrentUser = (enabled = true): UseQueryResult<User, Error> =>
+  useQuery({
     queryKey: ['current-user'],
     queryFn: () => authService.getCurrentUser(),
     enabled: enabled && !!authService.getToken(),
@@ -58,7 +59,8 @@ export const useLogout = () => {
  * Hook para registrar novo usuário
  * @returns Mutation result
  */
-export const useRegister = (): UseMutationResult<User, Error, RegisterData> => useMutation({
+export const useRegister = (): UseMutationResult<User, Error, RegisterData> =>
+  useMutation({
     mutationFn: (data: RegisterData) => authService.register(data),
   });
 

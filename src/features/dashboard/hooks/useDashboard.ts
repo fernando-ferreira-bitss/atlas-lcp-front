@@ -87,7 +87,8 @@ export const useTopEmpreendimentos = (filters?: {
  */
 export const useVendasPorPeriodo = (
   filters?: VendasPorPeriodoFilters
-): UseQueryResult<VendasPorPeriodo[], Error> => useQuery({
+): UseQueryResult<VendasPorPeriodo[], Error> =>
+  useQuery({
     queryKey: ['vendas-por-periodo', filters],
     queryFn: () => dashboardService.getVendasPorPeriodo(filters),
     staleTime: 1000 * 60 * 5, // 5 minutos

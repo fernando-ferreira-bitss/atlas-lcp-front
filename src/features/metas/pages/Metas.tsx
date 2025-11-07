@@ -163,9 +163,7 @@ export const Metas = () => {
             <Filter className="h-5 w-5 text-lcp-blue" />
             Metas Cadastradas
           </CardTitle>
-          <CardDescription>
-            Visualize e gerencie todas as metas cadastradas
-          </CardDescription>
+          <CardDescription>Visualize e gerencie todas as metas cadastradas</CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-4">
@@ -173,10 +171,7 @@ export const Metas = () => {
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="filter-ano">Ano</Label>
-              <Select
-                value={filters.ano?.toString() || 'all'}
-                onValueChange={handleAnoChange}
-              >
+              <Select value={filters.ano?.toString() || 'all'} onValueChange={handleAnoChange}>
                 <SelectTrigger id="filter-ano">
                   <SelectValue placeholder="Todos os anos" />
                 </SelectTrigger>
@@ -193,10 +188,7 @@ export const Metas = () => {
 
             <div className="space-y-2">
               <Label htmlFor="filter-emp">Empreendimento</Label>
-              <Select
-                value={selectedEmp}
-                onValueChange={handleEmpChange}
-              >
+              <Select value={selectedEmp} onValueChange={handleEmpChange}>
                 <SelectTrigger id="filter-emp">
                   <SelectValue placeholder="Todos os empreendimentos" />
                 </SelectTrigger>
@@ -228,11 +220,7 @@ export const Metas = () => {
       </Card>
 
       {/* Modal de Criação */}
-      <MetaFormModal
-        open={isCreateModalOpen}
-        onOpenChange={setIsCreateModalOpen}
-        meta={null}
-      />
+      <MetaFormModal open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen} meta={null} />
     </div>
   );
 };

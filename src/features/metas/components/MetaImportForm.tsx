@@ -48,6 +48,7 @@ export const MetaImportForm = () => {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
+    const inputElement = e.target;
 
     // Validar tipo de arquivo
     if (selectedFile) {
@@ -56,12 +57,14 @@ export const MetaImportForm = () => {
         'application/vnd.ms-excel', // .xls
       ];
 
-      if (!validTypes.includes(selectedFile.type) &&
-          !selectedFile.name.endsWith('.xlsx') &&
-          !selectedFile.name.endsWith('.xls')) {
+      if (
+        !validTypes.includes(selectedFile.type) &&
+        !selectedFile.name.endsWith('.xlsx') &&
+        !selectedFile.name.endsWith('.xls')
+      ) {
         toast.error('Por favor, selecione um arquivo Excel (.xlsx ou .xls)');
         setFile(null);
-        e.target.value = '';
+        inputElement.value = '';
         return;
       }
 
@@ -70,7 +73,7 @@ export const MetaImportForm = () => {
       if (selectedFile.size > maxSize) {
         toast.error('Arquivo muito grande! Tamanho máximo: 10MB');
         setFile(null);
-        e.target.value = '';
+        inputElement.value = '';
         return;
       }
     }
@@ -105,9 +108,13 @@ export const MetaImportForm = () => {
       setFile(null);
       const input = document.getElementById('file-input') as HTMLInputElement;
       if (input) input.value = '';
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao importar metas:', error);
-      toast.error(error.response?.data?.detail || 'Erro ao importar metas');
+      const errorMessage =
+        error && typeof error === 'object' && 'response' in error
+          ? (error as { response?: { data?: { detail?: string } } }).response?.data?.detail
+          : 'Erro ao importar metas';
+      toast.error(errorMessage || 'Erro ao importar metas');
     }
   };
 
@@ -186,11 +193,7 @@ export const MetaImportForm = () => {
             )}
           </div>
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={!file || importMetas.isPending}
-          >
+          <Button type="submit" className="w-full" disabled={!file || importMetas.isPending}>
             {importMetas.isPending ? (
               <>
                 <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -227,10 +230,12 @@ export const MetaImportForm = () => {
 
             {result.erros.length > 0 && (
               <div className="space-y-2 rounded border border-red-200 bg-red-50 p-3">
-                <h5 className="font-medium text-red-700">⚠️ Erros Encontrados ({result.erros.length})</h5>
+                <h5 className="font-medium text-red-700">
+                  ⚠️ Erros Encontrados ({result.erros.length})
+                </h5>
                 <ul className="list-inside list-disc space-y-1 text-sm text-red-600">
-                  {result.erros.map((erro, i) => (
-                    <li key={i}>{erro}</li>
+                  {result.erros.map((erro) => (
+                    <li key={erro}>{erro}</li>
                   ))}
                 </ul>
               </div>

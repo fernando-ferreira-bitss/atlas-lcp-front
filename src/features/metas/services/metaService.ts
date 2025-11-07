@@ -9,7 +9,6 @@ import type {
 
 import { apiClient } from '@/shared/services/api/client';
 
-
 /**
  * Service para gerenciamento de metas de vendas
  * Base URL: /metas (apiClient já inclui /api/v1)

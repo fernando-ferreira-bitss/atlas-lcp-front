@@ -108,9 +108,7 @@ export const Users = () => {
                     <TableCell className="hidden md:table-cell">
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                          user.is_active
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-red-100 text-red-700'
+                          user.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                         }`}
                       >
                         {user.is_active ? 'Ativo' : 'Inativo'}
@@ -136,13 +134,15 @@ export const Users = () => {
                           title={user.is_active ? 'Desativar usuário' : 'Ativar usuário'}
                           disabled={loadingUserId === user.id}
                         >
-                          {loadingUserId === user.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-lcp-gray" />
-                          ) : user.is_active ? (
-                            <UserX className="h-4 w-4 text-red-600" />
-                          ) : (
-                            <UserCheck className="h-4 w-4 text-green-600" />
-                          )}
+                          {(() => {
+                            if (loadingUserId === user.id) {
+                              return <Loader2 className="h-4 w-4 animate-spin text-lcp-gray" />;
+                            }
+                            if (user.is_active) {
+                              return <UserX className="h-4 w-4 text-red-600" />;
+                            }
+                            return <UserCheck className="h-4 w-4 text-green-600" />;
+                          })()}
                         </Button>
                       </div>
                     </TableCell>

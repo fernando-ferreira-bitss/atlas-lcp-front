@@ -1,11 +1,6 @@
-import type {
-  Empreendimento,
-  EmpreendimentoStats,
-  PaginationParams,
-} from '@/shared/types';
+import type { Empreendimento, EmpreendimentoStats, PaginationParams } from '@/shared/types';
 
 import { apiClient } from '@/shared/services/api/client';
-
 
 /**
  * Service para gerenciar empreendimentos

@@ -83,9 +83,7 @@ export const ChangePasswordModal = ({ open, onOpenChange }: ChangePasswordModalP
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
             <DialogTitle>Alterar Senha</DialogTitle>
-            <DialogDescription>
-              Digite sua senha atual e escolha uma nova senha
-            </DialogDescription>
+            <DialogDescription>Digite sua senha atual e escolha uma nova senha</DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">

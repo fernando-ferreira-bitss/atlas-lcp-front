@@ -8,7 +8,6 @@ import type {
 
 import { apiClient } from '@/shared/services/api/client';
 
-
 /**
  * Service para gerenciar autenticação e usuários
  */

@@ -148,15 +148,12 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
       // Converter meta_vendas de string formatada para número
       // Remove R$, espaços, pontos (separador de milhar) e substitui vírgula por ponto
       const metaVendasNumber = Number(
-        data.meta_vendas
-          .replace('R$', '')
-          .replace(/\s/g, '')
-          .replace(/\./g, '')
-          .replace(',', '.')
+        data.meta_vendas.replace('R$', '').replace(/\s/g, '').replace(/\./g, '').replace(',', '.')
       );
 
       const payload = {
-        empreendimento_id: data.empreendimento_id === 'consolidado' ? null : Number(data.empreendimento_id),
+        empreendimento_id:
+          data.empreendimento_id === 'consolidado' ? null : Number(data.empreendimento_id),
         mes: data.mes,
         ano: data.ano,
         meta_vendas: metaVendasNumber,
@@ -172,15 +169,18 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
       }
 
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao salvar meta:', error);
 
       // Tentar extrair a mensagem de erro da API
       let errorMessage = 'Erro ao salvar meta';
 
-      if (error.response?.data?.detail) {
-        errorMessage = error.response.data.detail;
-      } else if (error.message) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const apiError = error as { response?: { data?: { detail?: string } } };
+        if (apiError.response?.data?.detail) {
+          errorMessage = apiError.response.data.detail;
+        }
+      } else if (error instanceof Error && error.message) {
         errorMessage = error.message;
       }
 
@@ -227,11 +227,20 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
                 {showEmpList && (
                   <div className="emp-dropdown absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-background shadow-lg">
                     <div
+                      role="button"
+                      tabIndex={0}
                       className="cursor-pointer px-3 py-2 text-sm hover:bg-gray-100"
                       onClick={() => {
                         setValue('empreendimento_id', 'consolidado');
                         setEmpSearch('Consolidado (Geral)');
                         setShowEmpList(false);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          setValue('empreendimento_id', 'consolidado');
+                          setEmpSearch('Consolidado (Geral)');
+                          setShowEmpList(false);
+                        }
                       }}
                     >
                       Consolidado (Geral)
@@ -239,6 +248,8 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
                     {empreendimentosFiltrados?.map((emp) => (
                       <div
                         key={emp.id}
+                        role="button"
+                        tabIndex={0}
                         className={`cursor-pointer px-3 py-2 text-sm hover:bg-gray-100 ${
                           empValue === String(emp.id) ? 'bg-blue-100' : ''
                         }`}
@@ -246,6 +257,13 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
                           setValue('empreendimento_id', String(emp.id));
                           setEmpSearch(emp.nome);
                           setShowEmpList(false);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            setValue('empreendimento_id', String(emp.id));
+                            setEmpSearch(emp.nome);
+                            setShowEmpList(false);
+                          }
                         }}
                       >
                         {emp.nome}
@@ -356,18 +374,18 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
             >
               Cancelar
             </Button>
-            <Button
-              type="submit"
-              disabled={createMeta.isPending || updateMeta.isPending}
-            >
-              {createMeta.isPending || updateMeta.isPending ? (
-                <>
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  Salvando...
-                </>
-              ) : (
-                <>{isEditing ? 'Atualizar' : 'Criar'}</>
-              )}
+            <Button type="submit" disabled={createMeta.isPending || updateMeta.isPending}>
+              {(() => {
+                if (createMeta.isPending || updateMeta.isPending) {
+                  return (
+                    <>
+                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      Salvando...
+                    </>
+                  );
+                }
+                return isEditing ? 'Atualizar' : 'Criar';
+              })()}
             </Button>
           </DialogFooter>
         </form>

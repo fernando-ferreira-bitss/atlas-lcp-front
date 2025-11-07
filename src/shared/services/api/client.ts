@@ -25,7 +25,12 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // Adiciona trailing slash se não existir (exceto URLs com query params ou hash)
-    if (config.url && !config.url.endsWith('/') && !config.url.includes('?') && !config.url.includes('#')) {
+    if (
+      config.url &&
+      !config.url.endsWith('/') &&
+      !config.url.includes('?') &&
+      !config.url.includes('#')
+    ) {
       config.url = `${config.url}/`;
     }
     return config;
