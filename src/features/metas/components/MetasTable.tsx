@@ -109,22 +109,39 @@ export const MetasTable = ({ metas, isLoading }: MetasTableProps) => {
             {metas.map((meta) => {
               const empNome = meta.empreendimento_nome || 'Consolidado';
               const descricao = `${empNome} - ${MESES[meta.mes]}/${meta.ano}`;
+              const isConsolidado = !meta.empreendimento_id;
 
               return (
-                <TableRow key={meta.id}>
+                <TableRow
+                  key={meta.id}
+                  className={isConsolidado ? 'bg-blue-50 hover:bg-blue-100' : ''}
+                >
                   <TableCell className="font-medium">
                     {meta.empreendimento_id ? (
                       meta.empreendimento_nome || `ID: ${meta.empreendimento_id}`
                     ) : (
-                      <span className="font-bold text-lcp-blue">Consolidado (Geral)</span>
+                      <span className="flex items-center gap-2 font-bold text-lcp-blue">
+                        <span className="flex h-2 w-2 rounded-full bg-lcp-blue" />
+                        Consolidado (Geral)
+                      </span>
                     )}
                   </TableCell>
-                  <TableCell>{MESES[meta.mes]}</TableCell>
-                  <TableCell>{meta.ano}</TableCell>
-                  <TableCell className="text-right font-medium text-lcp-green">
+                  <TableCell className={isConsolidado ? 'font-semibold' : ''}>
+                    {MESES[meta.mes]}
+                  </TableCell>
+                  <TableCell className={isConsolidado ? 'font-semibold' : ''}>
+                    {meta.ano}
+                  </TableCell>
+                  <TableCell
+                    className={`text-right font-medium ${isConsolidado ? 'text-lg font-bold text-lcp-green' : 'text-lcp-green'}`}
+                  >
                     {formatCurrency(Number(meta.meta_vendas))}
                   </TableCell>
-                  <TableCell className="text-right font-medium">{meta.meta_unidades}</TableCell>
+                  <TableCell
+                    className={`text-right ${isConsolidado ? 'text-lg font-bold' : 'font-medium'}`}
+                  >
+                    {meta.meta_unidades}
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-center gap-2">
                       <Button
