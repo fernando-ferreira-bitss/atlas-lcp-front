@@ -176,6 +176,8 @@ export interface DashboardKPIs {
   percentual_meta_ytd: number;
   meta_vendas_mensal: number;
   percentual_meta_mensal: number;
+  valor_vendas_mensal: number;
+  valor_vendas_ytd: number;
 }
 
 export interface ComparativoAnos {

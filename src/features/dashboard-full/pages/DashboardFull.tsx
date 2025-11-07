@@ -276,9 +276,37 @@ export const DashboardFull = () => {
           )}
         </div>
 
-        {/* [2,2] - ⭐ VELOCÍMETROS (DESTAQUE CENTRAL) */}
+        {/* [2,2] - ⭐ MÉTRICAS ADICIONAIS (DESTAQUE CENTRAL) */}
         <div className="flex flex-col overflow-hidden rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 p-4 shadow-xl ring-2 ring-lcp-blue ring-opacity-30">
-          <h2 className="mb-4 text-center text-base font-bold text-lcp-blue">
+          <h2 className="mb-3 text-center text-base font-bold text-lcp-blue">Métricas Adicionais</h2>
+          <div className="flex h-[calc(100%-2rem)] flex-col items-center justify-center gap-4">
+            {/* Card Venda do Mês */}
+            <div className="w-full rounded-lg border-2 border-green-200 bg-gradient-to-br from-green-50 to-green-100 p-4 text-center shadow-sm">
+              <p className="text-xs font-medium uppercase text-green-700">Venda do Mês</p>
+              <p className="text-3xl font-bold text-green-900">
+                {formatCurrency(kpis.valor_vendas_mensal)}
+              </p>
+              <p className="text-sm text-green-600">
+                Previsto: {formatCurrency(kpis.meta_vendas_mensal)}
+              </p>
+            </div>
+
+            {/* Card Venda do Ano */}
+            <div className="w-full rounded-lg border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 p-4 text-center shadow-sm">
+              <p className="text-xs font-medium uppercase text-blue-700">Venda do Ano</p>
+              <p className="text-3xl font-bold text-blue-900">
+                {formatCurrency(kpis.valor_vendas_ytd)}
+              </p>
+              <p className="text-sm text-blue-600">
+                Previsto: {formatCurrency(kpis.meta_vendas_ytd)}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* [2,3] - Atendimento de Metas */}
+        <div className="overflow-auto rounded-lg bg-white p-4 shadow-md">
+          <h2 className="mb-4 text-center text-sm font-bold text-lcp-blue">
             🎯 Atendimento de Metas
           </h2>
 
@@ -300,32 +328,6 @@ export const DashboardFull = () => {
                 title="Meta YTD"
                 subtitle={formatCurrency(kpis.meta_vendas_ytd)}
               />
-            </div>
-          </div>
-        </div>
-
-        {/* [2,3] - Espaço Disponível */}
-        <div className="overflow-auto rounded-lg bg-white p-4 shadow-md">
-          <h2 className="mb-3 text-sm font-bold text-lcp-blue">Métricas Adicionais</h2>
-          <div className="flex h-[calc(100%-2rem)] flex-col items-center justify-center gap-4">
-            {/* Card Meta Anual */}
-            <div className="w-full rounded-lg border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 p-4 text-center shadow-sm">
-              <p className="text-xs font-medium uppercase text-blue-700">Meta Anual</p>
-              <p className="text-3xl font-bold text-blue-900">
-                {formatCurrency(kpis.meta_vendas_ytd)}
-              </p>
-              <p className="text-sm text-blue-600">
-                Realizado: {formatCurrency(kpis.valor_total_vendas)}
-              </p>
-            </div>
-
-            {/* Card Propostas em Aberto */}
-            <div className="w-full rounded-lg border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-amber-100 p-4 text-center shadow-sm">
-              <p className="text-xs font-medium uppercase text-amber-700">Propostas Total</p>
-              <p className="text-3xl font-bold text-amber-900">{kpis.total_propostas}</p>
-              <p className="text-sm text-amber-600">
-                Valor: {formatCurrency(kpis.valor_total_propostas || 0)}
-              </p>
             </div>
           </div>
         </div>
