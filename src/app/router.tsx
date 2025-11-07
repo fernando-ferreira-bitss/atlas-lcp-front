@@ -2,14 +2,11 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 import { AdminRoute, PrivateRoute } from '@/features/auth';
 import { Login } from '@/features/auth/pages/Login';
-import { Configuracoes } from '@/features/configuracoes';
 import { Dashboard } from '@/features/dashboard/pages/Dashboard';
 import { DashboardFull } from '@/features/dashboard-full';
 import { Metas } from '@/features/metas';
-import { Propostas } from '@/features/propostas';
 import { Relatorios } from '@/features/relatorios';
 import { Users } from '@/features/users/pages/Users';
-import { Vendas } from '@/features/vendas';
 
 export const router = createBrowserRouter([
   {
@@ -27,14 +24,6 @@ export const router = createBrowserRouter([
       {
         path: 'dashboard-full',
         element: <DashboardFull />,
-      },
-      {
-        path: 'propostas',
-        element: <Propostas />,
-      },
-      {
-        path: 'vendas',
-        element: <Vendas />,
       },
       {
         path: 'relatorios',
@@ -59,10 +48,6 @@ export const router = createBrowserRouter([
             element: <Users />,
           },
         ],
-      },
-      {
-        path: 'configuracoes',
-        element: <Configuracoes />,
       },
     ],
   },

@@ -1,4 +1,4 @@
-import { BarChart3, FileText, Home, Monitor, Settings, Target, TrendingUp, User, Users, X } from 'lucide-react';
+import { BarChart3, Home, Monitor, Target, User, Users, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 import { useCurrentUser } from '@/features/auth';
@@ -20,18 +20,6 @@ const menuItems = [
     adminOnly: false,
   },
   {
-    title: 'Propostas',
-    href: '/propostas',
-    icon: FileText,
-    adminOnly: false,
-  },
-  {
-    title: 'Vendas',
-    href: '/vendas',
-    icon: TrendingUp,
-    adminOnly: false,
-  },
-  {
     title: 'Relatórios',
     href: '/relatorios',
     icon: BarChart3,
@@ -48,12 +36,6 @@ const menuItems = [
     href: '/usuarios',
     icon: Users,
     adminOnly: true,
-  },
-  {
-    title: 'Configurações',
-    href: '/configuracoes',
-    icon: Settings,
-    adminOnly: false,
   },
 ];
 

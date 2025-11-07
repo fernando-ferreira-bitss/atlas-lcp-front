@@ -12,7 +12,8 @@ import type { Venda, VendaFilters } from '@/shared/types';
 export const useVendas = (filters?: VendaFilters): UseQueryResult<Venda[], Error> => useQuery({
     queryKey: ['vendas', filters],
     queryFn: () => vendaService.getAll(filters),
-    staleTime: 1000 * 60 * 2, // 2 minutos
+    staleTime: 1000 * 60, // 1 minuto
+    refetchInterval: 1000 * 60 * 10, // Atualiza a cada 10 minutos
   });
 
 /**

@@ -1,6 +1,6 @@
 import type { Venda } from '@/shared/types';
 
-import { useVendas } from '@/features/vendas/hooks/useVendas';
+import { useVendas } from '@/features/dashboard/hooks/useVendas';
 import { Loading } from '@/shared/components/common';
 import { formatCurrency, formatDate } from '@/shared/utils/format';
 
