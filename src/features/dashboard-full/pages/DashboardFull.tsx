@@ -103,7 +103,7 @@ export const DashboardFull = () => {
   useEffect(() => {
     if (!isFullscreen) {
       setShowControls(true);
-      return;
+      return undefined;
     }
 
     let timeout: NodeJS.Timeout;
@@ -146,6 +146,7 @@ export const DashboardFull = () => {
     <div className={`bg-gray-50 ${isFullscreen ? 'h-screen overflow-hidden p-0' : 'min-h-screen overflow-y-auto p-2 sm:p-4'}`}>
       {/* Botão Fullscreen Flutuante */}
       <button
+        type="button"
         onClick={toggleFullscreen}
         className={`fixed right-4 top-20 z-50 flex items-center gap-2 rounded-lg bg-lcp-blue px-3 py-2 text-xs text-white shadow-lg transition-all hover:bg-lcp-blue/90 sm:px-4 sm:text-sm ${
           isFullscreen && !showControls ? 'translate-y-[-200%] opacity-0' : 'translate-y-0 opacity-100'
@@ -305,28 +306,30 @@ export const DashboardFull = () => {
         </div>
 
         {/* [2,3] - Atendimento de Metas */}
-        <div className={`overflow-auto rounded-lg bg-white shadow-md ${isFullscreen ? 'p-4' : 'p-2 min-h-[200px]'} lg:p-4`}>
-          <h2 className={`text-center font-bold text-lcp-blue ${isFullscreen ? 'text-sm mb-4' : 'text-xs mb-2'} lg:text-sm lg:mb-4`}>
+        <div className={`flex flex-col overflow-hidden rounded-lg bg-white shadow-md ${isFullscreen ? 'p-4' : 'p-3 min-h-[320px]'} lg:p-4`}>
+          <h2 className={`text-center font-bold text-lcp-blue ${isFullscreen ? 'text-sm mb-2' : 'text-xs mb-1'} lg:text-sm lg:mb-2`}>
             🎯 Atendimento de Metas
           </h2>
 
           {/* Velocímetros lado a lado */}
-          <div className={`flex flex-1 items-center justify-center ${isFullscreen ? 'gap-4' : 'gap-2'} lg:gap-4`}>
+          <div className={`flex flex-1 items-center justify-center overflow-hidden ${isFullscreen ? 'gap-4' : 'gap-2'} lg:gap-4`}>
             {/* Meta Mensal */}
-            <div className="flex-1">
+            <div className="flex h-full flex-1">
               <MetaGaugeChart
                 percentual={kpis.percentual_meta_mensal}
                 title="Meta Mensal"
                 subtitle={formatCurrency(kpis.meta_vendas_mensal)}
+                isFullscreen={isFullscreen}
               />
             </div>
 
             {/* Meta YTD */}
-            <div className="flex-1">
+            <div className="flex h-full flex-1">
               <MetaGaugeChart
                 percentual={kpis.percentual_meta_ytd}
                 title="Meta YTD"
                 subtitle={formatCurrency(kpis.meta_vendas_ytd)}
+                isFullscreen={isFullscreen}
               />
             </div>
           </div>
