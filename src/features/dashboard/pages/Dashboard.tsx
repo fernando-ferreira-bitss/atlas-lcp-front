@@ -311,7 +311,7 @@ export const Dashboard = () => {
       {/* Tabela de Últimas Vendas */}
       <div className="rounded-lg border-none bg-card p-4 shadow-md sm:p-6">
         <h2 className="mb-4 text-base font-semibold text-lcp-blue sm:text-lg">Últimas Vendas</h2>
-        <UltimasVendasTable />
+        <UltimasVendasTable empreendimentoId={filters.empreendimento_id} />
       </div>
     </div>
   );

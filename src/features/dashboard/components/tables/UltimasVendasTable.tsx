@@ -89,10 +89,17 @@ const VendaDetalhesModal = ({ venda, onClose }: VendaDetalhesModalProps) => (
   </div>
 );
 
-export const UltimasVendasTable = () => {
+interface UltimasVendasTableProps {
+  empreendimentoId?: number;
+}
+
+export const UltimasVendasTable = ({ empreendimentoId }: UltimasVendasTableProps = {}) => {
   const [selectedVenda, setSelectedVenda] = useState<Venda | null>(null);
 
-  const { data: vendas, isLoading, error } = useVendas({ limit: 10 });
+  const { data: vendas, isLoading, error } = useVendas({
+    limit: 10,
+    empreendimento_id: empreendimentoId,
+  });
 
   if (isLoading) {
     return <Loading />;

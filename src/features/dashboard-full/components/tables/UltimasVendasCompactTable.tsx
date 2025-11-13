@@ -4,8 +4,17 @@ import { useVendas } from '@/features/dashboard/hooks/useVendas';
 import { Loading } from '@/shared/components/common';
 import { formatCurrency, formatDate } from '@/shared/utils/format';
 
-export const UltimasVendasCompactTable = () => {
-  const { data: vendas, isLoading, error } = useVendas({ limit: 5 });
+interface UltimasVendasCompactTableProps {
+  empreendimentoId?: number;
+}
+
+export const UltimasVendasCompactTable = ({
+  empreendimentoId,
+}: UltimasVendasCompactTableProps = {}) => {
+  const { data: vendas, isLoading, error } = useVendas({
+    limit: 5,
+    empreendimento_id: empreendimentoId,
+  });
 
   if (isLoading) {
     return (

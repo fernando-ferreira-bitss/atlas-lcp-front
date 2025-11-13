@@ -334,7 +334,7 @@ export const DashboardFull = () => {
           <div
             className={`overflow-auto ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'max-h-[180px]'}`}
           >
-            <UltimasVendasCompactTable />
+            <UltimasVendasCompactTable empreendimentoId={filters.empreendimento_id} />
           </div>
         </div>
 
