@@ -71,6 +71,19 @@ export const SyncLogsTable: FC<SyncLogsTableProps> = ({ logs }) => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
+              {/* Data/Hora de Início */}
+              {log.data_inicio && (
+                <div className="rounded-lg border bg-blue-50 p-3">
+                  <div className="text-xs text-gray-600">Iniciado em</div>
+                  <div className="mt-1 text-sm font-semibold text-gray-900">
+                    {new Date(log.data_inicio).toLocaleString('pt-BR', {
+                      dateStyle: 'short',
+                      timeStyle: 'medium',
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Estatísticas */}
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
                 <div className="rounded-lg border bg-gray-50 p-2">
