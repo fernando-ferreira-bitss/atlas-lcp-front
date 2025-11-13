@@ -143,7 +143,9 @@ export interface UpdateMetaData {
 export interface TopEmpreendimento {
   empreendimento_id: number;
   empreendimento_nome: string;
+  total_propostas: number;
   total_vendas: number;
+  valor_propostas: number;
   valor_vendas: number;
 }
 
@@ -162,6 +164,8 @@ export interface VendasPorPeriodo {
 }
 
 export interface DashboardKPIs {
+  total_reservas: number;
+  valor_reservas: number;
   total_propostas: number;
   total_vendas: number;
   valor_total_vendas: number;

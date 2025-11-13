@@ -22,7 +22,7 @@ export const VendasPorEmpreendimentoChart = ({ data }: VendasPorEmpreendimentoCh
       item.empreendimento_nome.length > 20
         ? `${item.empreendimento_nome.substring(0, 20)}...`
         : item.empreendimento_nome,
-    propostas: Math.round(item.total_vendas * 1.5), // Mockado: estimativa de propostas
+    propostas: item.total_propostas,
     vendas: item.total_vendas,
   }));
 

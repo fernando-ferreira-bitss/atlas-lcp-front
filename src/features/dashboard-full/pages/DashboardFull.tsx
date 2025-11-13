@@ -239,8 +239,8 @@ export const DashboardFull = () => {
           </h2>
           <div className="flex-1 overflow-hidden">
             <KPIFunnelChart
-              totalReservas={0} // TODO: Adicionar dados de reservas do backend
-              valorReservas={0}
+              totalReservas={kpis.total_reservas || 0}
+              valorReservas={kpis.valor_reservas || 0}
               totalPropostas={kpis.total_propostas}
               valorPropostas={kpis.valor_total_propostas || 0}
               totalVendas={kpis.total_vendas}
