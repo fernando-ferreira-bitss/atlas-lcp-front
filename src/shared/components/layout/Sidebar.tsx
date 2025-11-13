@@ -1,4 +1,4 @@
-import { BarChart3, Home, Monitor, Target, User, Users, X } from 'lucide-react';
+import { BarChart3, Home, Monitor, RefreshCw, Target, User, Users, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 import { useCurrentUser } from '@/features/auth';
@@ -35,6 +35,12 @@ const menuItems = [
     title: 'Usuários',
     href: '/usuarios',
     icon: Users,
+    adminOnly: true,
+  },
+  {
+    title: 'Sincronização',
+    href: '/sincronizacao',
+    icon: RefreshCw,
     adminOnly: true,
   },
 ];

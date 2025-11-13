@@ -6,6 +6,7 @@ import { Dashboard } from '@/features/dashboard/pages/Dashboard';
 import { DashboardFull } from '@/features/dashboard-full';
 import { Metas } from '@/features/metas';
 import { Relatorios } from '@/features/relatorios';
+import { Sincronizacao } from '@/features/sincronizacao';
 import { Users } from '@/features/users/pages/Users';
 
 export const router = createBrowserRouter([
@@ -46,6 +47,16 @@ export const router = createBrowserRouter([
           {
             index: true,
             element: <Users />,
+          },
+        ],
+      },
+      {
+        path: 'sincronizacao',
+        element: <AdminRoute />,
+        children: [
+          {
+            index: true,
+            element: <Sincronizacao />,
           },
         ],
       },
