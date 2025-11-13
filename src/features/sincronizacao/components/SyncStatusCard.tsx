@@ -24,7 +24,25 @@ export const SyncStatusCard: FC<SyncStatusCardProps> = ({
   const formatDate = (date: string | null) => {
     if (!date) return 'Nunca executado';
     try {
-      return formatDistanceToNow(new Date(date), {
+      // Backend retorna string ISO em UTC (ex: "2025-11-13T22:28:01.494822")
+      // Garantir que tem 'Z' no final para ser interpretado como UTC
+      const utcDateString = date.endsWith('Z') ? date : `${date}Z`;
+      const localDate = new Date(utcDateString);
+      const now = new Date();
+      const diffInMinutes = Math.floor((now.getTime() - localDate.getTime()) / (1000 * 60));
+
+      // Se a diferença for negativa, a data está no futuro (erro)
+      if (diffInMinutes < 0) return 'Data inválida';
+
+      // Se foi há menos de 1 hora, mostra em minutos
+      if (diffInMinutes < 60) {
+        if (diffInMinutes === 0) return 'agora mesmo';
+        if (diffInMinutes === 1) return 'há 1 minuto';
+        return `há ${diffInMinutes} minutos`;
+      }
+
+      // Senão, mostra a formatação relativa normal
+      return formatDistanceToNow(localDate, {
         addSuffix: true,
         locale: ptBR,
       });
