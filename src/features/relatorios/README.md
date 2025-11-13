@@ -100,14 +100,14 @@ await exportService.exportRelatorioCompleto({
 
 #### Retorno
 
-| Propriedade | Tipo | Descrição |
-|------------|------|-----------|
-| `isExporting` | `boolean` | `true` quando há exportação em andamento |
-| `error` | `string \| null` | Mensagem de erro ou `null` |
-| `exportVendas` | `(params) => Promise<boolean>` | Exporta vendas |
-| `exportPropostas` | `(params) => Promise<boolean>` | Exporta propostas |
-| `exportRelatorioCompleto` | `(params) => Promise<boolean>` | Exporta relatório completo |
-| `clearError` | `() => void` | Limpa o erro atual |
+| Propriedade               | Tipo                           | Descrição                                |
+| ------------------------- | ------------------------------ | ---------------------------------------- |
+| `isExporting`             | `boolean`                      | `true` quando há exportação em andamento |
+| `error`                   | `string \| null`               | Mensagem de erro ou `null`               |
+| `exportVendas`            | `(params) => Promise<boolean>` | Exporta vendas                           |
+| `exportPropostas`         | `(params) => Promise<boolean>` | Exporta propostas                        |
+| `exportRelatorioCompleto` | `(params) => Promise<boolean>` | Exporta relatório completo               |
+| `clearError`              | `() => void`                   | Limpa o erro atual                       |
 
 ### Parâmetros de Exportação
 
@@ -115,9 +115,9 @@ await exportService.exportRelatorioCompleto({
 
 ```typescript
 interface ExportBaseParams {
-  formato?: 'csv' | 'xlsx';        // Default: 'xlsx'
-  data_inicio?: string;             // ISO 8601: "2024-01-01T00:00:00"
-  data_fim?: string;                // ISO 8601: "2024-12-31T23:59:59"
+  formato?: 'csv' | 'xlsx'; // Default: 'xlsx'
+  data_inicio?: string; // ISO 8601: "2024-01-01T00:00:00"
+  data_fim?: string; // ISO 8601: "2024-12-31T23:59:59"
   empreendimento_id?: number | null; // null = todos
 }
 ```
@@ -134,8 +134,8 @@ interface ExportPropostasParams extends ExportBaseParams {
 
 ```typescript
 interface ExportRelatorioCompletoParams {
-  data_inicio?: string;  // ISO 8601
-  data_fim?: string;     // ISO 8601
+  data_inicio?: string; // ISO 8601
+  data_fim?: string; // ISO 8601
 }
 ```
 
@@ -223,26 +223,30 @@ function ExportWithToast() {
 
 O hook `useExport` trata automaticamente os seguintes erros:
 
-| Status | Mensagem |
-|--------|----------|
-| 401 | "Sessão expirada. Faça login novamente." |
-| 403 | "Você não tem permissão para exportar dados." |
-| 422 | "Filtros inválidos. Verifique os dados e tente novamente." |
-| Outros | "Erro ao exportar dados." |
+| Status | Mensagem                                                   |
+| ------ | ---------------------------------------------------------- |
+| 401    | "Sessão expirada. Faça login novamente."                   |
+| 403    | "Você não tem permissão para exportar dados."              |
+| 422    | "Filtros inválidos. Verifique os dados e tente novamente." |
+| Outros | "Erro ao exportar dados."                                  |
 
 ## 📊 Formato de Datas
 
 ### Entrada (Parâmetros)
+
 ISO 8601: `YYYY-MM-DDTHH:MM:SS`
 
 Exemplos:
+
 - `2024-01-01T00:00:00`
 - `2024-12-31T23:59:59`
 
 ### Saída (Arquivos CSV/XLSX)
+
 Formato Brasileiro: `DD/MM/YYYY HH:MM`
 
 Exemplos:
+
 - `01/01/2024 10:30`
 - `31/12/2024 23:59`
 

@@ -129,9 +129,7 @@ export const MetasTable = ({ metas, isLoading }: MetasTableProps) => {
                   <TableCell className={isConsolidado ? 'font-semibold' : ''}>
                     {MESES[meta.mes]}
                   </TableCell>
-                  <TableCell className={isConsolidado ? 'font-semibold' : ''}>
-                    {meta.ano}
-                  </TableCell>
+                  <TableCell className={isConsolidado ? 'font-semibold' : ''}>{meta.ano}</TableCell>
                   <TableCell
                     className={`text-right font-medium ${isConsolidado ? 'text-lg font-bold text-lcp-green' : 'text-lcp-green'}`}
                   >

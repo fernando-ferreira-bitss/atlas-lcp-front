@@ -15,7 +15,6 @@ import {
 } from '@/shared/components/ui/select';
 import { useToast } from '@/shared/hooks/use-toast';
 
-
 type ExportType = 'propostas' | 'vendas' | 'relatorio-completo' | null;
 
 export const Relatorios = () => {
@@ -104,7 +103,10 @@ export const Relatorios = () => {
               {/* Seletor de Formato */}
               <div className="flex items-center gap-2">
                 <span className="text-sm text-lcp-gray">Formato:</span>
-                <Select value={formato} onValueChange={(value) => setFormato(value as ExportFormato)}>
+                <Select
+                  value={formato}
+                  onValueChange={(value) => setFormato(value as ExportFormato)}
+                >
                   <SelectTrigger className="w-[120px]">
                     <SelectValue />
                   </SelectTrigger>
@@ -188,7 +190,9 @@ export const Relatorios = () => {
               ) : (
                 <FileSpreadsheet className="mr-2 h-4 w-4" />
               )}
-              {loadingType === 'relatorio-completo' ? 'Exportando...' : 'Exportar Relatório Completo (XLSX)'}
+              {loadingType === 'relatorio-completo'
+                ? 'Exportando...'
+                : 'Exportar Relatório Completo (XLSX)'}
             </Button>
           </div>
         </CardContent>

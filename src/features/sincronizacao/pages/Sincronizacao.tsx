@@ -1,7 +1,6 @@
 import { Building2, Download, Loader2, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 
-
 import { SyncConfirmDialog } from '../components/SyncConfirmDialog';
 import { SyncResultCard } from '../components/SyncResultCard';
 import { SyncStatusCard } from '../components/SyncStatusCard';
@@ -27,7 +26,7 @@ export const Sincronizacao = () => {
     clearLastResult,
   } = useSync();
 
-  const { status, isLoading, error: statusError, refresh, autoRefreshEnabled, toggleAutoRefresh } = useSyncStatus();
+  const { status, isLoading, error: statusError, refresh } = useSyncStatus();
 
   const [syncingType, setSyncingType] = useState<SyncType>(null);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
@@ -89,7 +88,9 @@ export const Sincronizacao = () => {
     <div className="space-y-6">
       {/* Loading Overlay */}
       {isSyncing && (
-        <LoadingOverlay message={`Sincronizando ${syncingType}... Isso pode levar alguns minutos.`} />
+        <LoadingOverlay
+          message={`Sincronizando ${syncingType}... Isso pode levar alguns minutos.`}
+        />
       )}
 
       {/* Título da Página */}
@@ -107,8 +108,6 @@ export const Sincronizacao = () => {
         isLoading={isLoading}
         error={statusError}
         onRefresh={refresh}
-        autoRefreshEnabled={autoRefreshEnabled}
-        onToggleAutoRefresh={toggleAutoRefresh}
       />
 
       {/* Ações de Sincronização */}
@@ -163,9 +162,7 @@ export const Sincronizacao = () => {
                 <div className="text-left">
                   <div className="font-semibold">Vendas</div>
                   <div className="mt-1 text-xs opacity-90">
-                    {syncingType === 'vendas'
-                      ? 'Sincronizando...'
-                      : 'Atualiza vendas e propostas'}
+                    {syncingType === 'vendas' ? 'Sincronizando...' : 'Atualiza vendas e propostas'}
                   </div>
                 </div>
               </Button>

@@ -10,7 +10,9 @@ import type { SyncStatusGeral } from '../types';
  * Atualiza automaticamente a cada 30 segundos
  */
 export function useSyncStatus(autoRefresh = true) {
-  const [refreshInterval, setRefreshInterval] = useState<number | false>(autoRefresh ? 30000 : false);
+  const [refreshInterval, setRefreshInterval] = useState<number | false>(
+    autoRefresh ? 30000 : false
+  );
 
   const {
     data: status,

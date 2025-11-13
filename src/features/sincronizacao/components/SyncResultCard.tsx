@@ -5,7 +5,6 @@ import type { SyncResponse } from '../types';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 
-
 interface SyncResultCardProps {
   result: SyncResponse;
 }
@@ -66,7 +65,9 @@ export const SyncResultCard: FC<SyncResultCardProps> = ({ result }) => {
                 <AlertCircle className="h-4 w-4" />
                 Erros
               </div>
-              <div className={`mt-1 font-semibold ${result.total_erros > 0 ? 'text-red-600' : 'text-green-600'}`}>
+              <div
+                className={`mt-1 font-semibold ${result.total_erros > 0 ? 'text-red-600' : 'text-green-600'}`}
+              >
                 {result.total_erros}
               </div>
             </div>
@@ -108,9 +109,7 @@ export const SyncResultCard: FC<SyncResultCardProps> = ({ result }) => {
                           ) : (
                             <XCircle className="h-4 w-4 text-red-600" />
                           )}
-                          <span className="font-medium capitalize text-gray-900">
-                            {r.entidade}
-                          </span>
+                          <span className="font-medium capitalize text-gray-900">{r.entidade}</span>
                           {r.empreendimento_nome && (
                             <span className="text-sm text-gray-600">- {r.empreendimento_nome}</span>
                           )}
@@ -130,7 +129,9 @@ export const SyncResultCard: FC<SyncResultCardProps> = ({ result }) => {
                           </div>
                           <div>
                             <span className="text-gray-600">Erros:</span>{' '}
-                            <span className={`font-medium ${r.erros > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                            <span
+                              className={`font-medium ${r.erros > 0 ? 'text-red-600' : 'text-green-600'}`}
+                            >
                               {r.erros}
                             </span>
                           </div>

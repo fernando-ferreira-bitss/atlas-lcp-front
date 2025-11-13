@@ -11,7 +11,6 @@ import {
   DialogTitle,
 } from '@/shared/components/ui/dialog';
 
-
 interface SyncConfirmDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -30,8 +29,7 @@ export const SyncConfirmDialog: FC<SyncConfirmDialogProps> = ({
       case 'empreendimentos':
         return {
           title: 'Sincronizar Empreendimentos?',
-          description:
-            'Esta ação irá buscar e atualizar todos os empreendimentos da API externa.',
+          description: 'Esta ação irá buscar e atualizar todos os empreendimentos da API externa.',
         };
       case 'vendas':
         return {

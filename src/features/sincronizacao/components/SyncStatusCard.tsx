@@ -8,14 +8,11 @@ import type { SyncStatusGeral } from '../types';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
 
-
 interface SyncStatusCardProps {
   status: SyncStatusGeral | undefined;
   isLoading: boolean;
   error?: Error | null;
   onRefresh: () => void;
-  autoRefreshEnabled: boolean;
-  onToggleAutoRefresh: (enabled: boolean) => void;
 }
 
 export const SyncStatusCard: FC<SyncStatusCardProps> = ({
@@ -23,8 +20,6 @@ export const SyncStatusCard: FC<SyncStatusCardProps> = ({
   isLoading,
   error,
   onRefresh,
-  autoRefreshEnabled,
-  onToggleAutoRefresh,
 }) => {
   const formatDate = (date: string | null) => {
     if (!date) return 'Nunca executado';
@@ -42,31 +37,20 @@ export const SyncStatusCard: FC<SyncStatusCardProps> = ({
     <Card className="border bg-white shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <CardTitle className="text-xl font-bold text-lcp-blue">Status de Sincronização</CardTitle>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onRefresh}
-            disabled={isLoading}
-            className="gap-2"
-          >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="h-4 w-4" />
-            )}
-            Atualizar
-          </Button>
-          <Button
-            variant={autoRefreshEnabled ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => onToggleAutoRefresh(!autoRefreshEnabled)}
-            className="gap-2"
-          >
-            <Calendar className="h-4 w-4" />
-            Auto {autoRefreshEnabled ? 'Ativo' : 'Inativo'}
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onRefresh}
+          disabled={isLoading}
+          className="gap-2"
+        >
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="h-4 w-4" />
+          )}
+          Atualizar
+        </Button>
       </CardHeader>
       <CardContent>
         {(() => {
@@ -157,7 +141,8 @@ export const SyncStatusCard: FC<SyncStatusCardProps> = ({
                     Erro ao carregar status de sincronização
                   </h3>
                   <p className="text-sm text-red-700">
-                    {error?.message || 'Não foi possível carregar os dados de sincronização. Tente novamente.'}
+                    {error?.message ||
+                      'Não foi possível carregar os dados de sincronização. Tente novamente.'}
                   </p>
                   <Button
                     variant="outline"
