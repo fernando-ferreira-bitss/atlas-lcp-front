@@ -26,6 +26,8 @@ export const DashboardFull = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
+  const [empSearch, setEmpSearch] = useState('');
+  const [showEmpList, setShowEmpList] = useState(false);
 
   const currentYear = new Date().getFullYear();
   const previousYear = currentYear - 1;
@@ -33,6 +35,11 @@ export const DashboardFull = () => {
   // Hooks de dados
   const { data: kpis, isLoading } = useDashboardKPIs(filters);
   const { data: empreendimentos } = useEmpreendimentos();
+
+  // Filtra empreendimentos baseado na busca
+  const empreendimentosFiltrados = empreendimentos?.filter((emp) =>
+    emp.nome.toLowerCase().includes(empSearch.toLowerCase())
+  );
   const { data: graficoData } = useGraficoVendasMes(currentYear, filters.empreendimento_id);
   const { data: topEmpreendimentos } = useTopEmpreendimentos({
     data_inicio: filters.data_inicio,
@@ -127,6 +134,19 @@ export const DashboardFull = () => {
     };
   }, [isFullscreen]);
 
+  // Fecha o dropdown de empreendimentos ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('#empreendimento-search') && !target.closest('.emp-dropdown')) {
+        setShowEmpList(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   if (isLoading) {
     return <Loading />;
   }
@@ -173,26 +193,77 @@ export const DashboardFull = () => {
       {!isFullscreen && (
         <div className="mb-3 flex flex-col gap-3 sm:mb-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-            <select
-              value={filters.empreendimento_id || ''}
-              onChange={(e) => {
-                const newFilters = { ...filters };
-                if (e.target.value) {
-                  newFilters.empreendimento_id = Number(e.target.value);
-                } else {
-                  delete newFilters.empreendimento_id;
-                }
-                setFilters(newFilters);
-              }}
-              className="rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-lcp-blue sm:px-4 sm:text-sm"
-            >
-              <option value="">Geral - Todos os Empreendimentos</option>
-              {empreendimentos?.map((emp) => (
-                <option key={emp.id} value={emp.id}>
-                  {emp.nome}
-                </option>
-              ))}
-            </select>
+            <div className="relative min-w-[300px]">
+              <input
+                id="empreendimento-search"
+                type="text"
+                placeholder="Buscar empreendimento..."
+                value={empSearch}
+                onChange={(e) => setEmpSearch(e.target.value)}
+                onFocus={() => setShowEmpList(true)}
+                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-lcp-blue sm:px-4 sm:text-sm"
+              />
+              {showEmpList && (
+                <div className="emp-dropdown absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white shadow-lg">
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    className="cursor-pointer px-3 py-2 text-sm hover:bg-gray-100"
+                    onClick={() => {
+                      const newFilters = { ...filters };
+                      delete newFilters.empreendimento_id;
+                      setFilters(newFilters);
+                      setEmpSearch('');
+                      setShowEmpList(false);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        const newFilters = { ...filters };
+                        delete newFilters.empreendimento_id;
+                        setFilters(newFilters);
+                        setEmpSearch('');
+                        setShowEmpList(false);
+                      }
+                    }}
+                  >
+                    Todos os Empreendimentos
+                  </div>
+                  {empreendimentosFiltrados?.map((emp) => (
+                    <div
+                      key={emp.id}
+                      role="button"
+                      tabIndex={0}
+                      className={`cursor-pointer px-3 py-2 text-sm hover:bg-gray-100 ${
+                        filters.empreendimento_id === emp.id ? 'bg-blue-100' : ''
+                      }`}
+                      onClick={() => {
+                        const newFilters = { ...filters };
+                        newFilters.empreendimento_id = emp.id;
+                        setFilters(newFilters);
+                        setEmpSearch(emp.nome);
+                        setShowEmpList(false);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          const newFilters = { ...filters };
+                          newFilters.empreendimento_id = emp.id;
+                          setFilters(newFilters);
+                          setEmpSearch(emp.nome);
+                          setShowEmpList(false);
+                        }
+                      }}
+                    >
+                      {emp.nome}
+                    </div>
+                  ))}
+                  {empreendimentosFiltrados?.length === 0 && (
+                    <div className="px-3 py-2 text-sm text-gray-500">
+                      Nenhum empreendimento encontrado
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             <h1 className="text-lg font-bold text-lcp-blue sm:text-xl">
               Dashboard LCP {selectedEmp ? `- ${selectedEmp.nome}` : ''}
