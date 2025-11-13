@@ -96,7 +96,11 @@ interface UltimasVendasTableProps {
 export const UltimasVendasTable = ({ empreendimentoId }: UltimasVendasTableProps = {}) => {
   const [selectedVenda, setSelectedVenda] = useState<Venda | null>(null);
 
-  const { data: vendas, isLoading, error } = useVendas({
+  const {
+    data: vendas,
+    isLoading,
+    error,
+  } = useVendas({
     limit: 10,
     empreendimento_id: empreendimentoId,
   });

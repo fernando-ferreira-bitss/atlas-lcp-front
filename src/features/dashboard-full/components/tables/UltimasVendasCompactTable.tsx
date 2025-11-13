@@ -11,7 +11,11 @@ interface UltimasVendasCompactTableProps {
 export const UltimasVendasCompactTable = ({
   empreendimentoId,
 }: UltimasVendasCompactTableProps = {}) => {
-  const { data: vendas, isLoading, error } = useVendas({
+  const {
+    data: vendas,
+    isLoading,
+    error,
+  } = useVendas({
     limit: 5,
     empreendimento_id: empreendimentoId,
   });

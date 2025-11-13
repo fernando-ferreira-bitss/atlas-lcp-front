@@ -1,87 +1,58 @@
-import { Building2, Download, Loader2, RefreshCw } from 'lucide-react';
+import { History, Loader2, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 
 import { SyncConfirmDialog } from '../components/SyncConfirmDialog';
+import { SyncLogsTable } from '../components/SyncLogsTable';
 import { SyncResultCard } from '../components/SyncResultCard';
 import { SyncStatusCard } from '../components/SyncStatusCard';
 import { useSync } from '../hooks/useSync';
+import { useSyncLogs } from '../hooks/useSyncLogs';
 import { useSyncStatus } from '../hooks/useSyncStatus';
 
-import { LoadingOverlay } from '@/shared/components/common';
+import { Loading, LoadingOverlay } from '@/shared/components/common';
 import { Button } from '@/shared/components/ui/button';
 import { Card, CardContent } from '@/shared/components/ui/card';
 import { useToast } from '@/shared/hooks/use-toast';
 
-type SyncType = 'empreendimentos' | 'vendas' | 'full' | null;
-
 export const Sincronizacao = () => {
   const { toast } = useToast();
-  const {
-    isSyncing,
-    error,
-    lastResult,
-    syncEmpreendimentos,
-    syncVendas,
-    syncFull,
-    clearLastResult,
-  } = useSync();
+  const { isSyncing, error, lastResult, syncProgress, syncFull, clearLastResult } = useSync();
 
   const { status, isLoading, error: statusError, refresh } = useSyncStatus();
+  const {
+    data: logsData,
+    isLoading: isLoadingLogs,
+    refetch: refetchLogs,
+  } = useSyncLogs({ limit: 10, offset: 0 });
 
-  const [syncingType, setSyncingType] = useState<SyncType>(null);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-  const [pendingSyncType, setPendingSyncType] = useState<SyncType>(null);
 
-  const executeSync = async (type: SyncType) => {
-    if (!type) return;
-
-    setSyncingType(type);
+  const executeSync = async () => {
     clearLastResult();
 
-    let result = null;
+    const success = await syncFull();
 
-    switch (type) {
-      case 'empreendimentos':
-        result = await syncEmpreendimentos();
-        break;
-      case 'vendas':
-        result = await syncVendas();
-        break;
-      case 'full':
-        result = await syncFull();
-        break;
-      default:
-        break;
-    }
-
-    if (result) {
+    if (!success && error) {
       toast({
-        title: 'Sincronização concluída',
-        description: `${result.total_registros_processados} registros processados com sucesso.`,
-      });
-      refresh(); // Atualiza o status
-    } else if (error) {
-      toast({
-        title: 'Erro na sincronização',
+        title: 'Erro ao iniciar sincronização',
         description: error,
         variant: 'destructive',
       });
+    } else if (success) {
+      toast({
+        title: 'Sincronização iniciada',
+        description: 'Acompanhe o progresso em tempo real.',
+      });
     }
-
-    setSyncingType(null);
   };
 
-  const handleClickSync = (type: SyncType) => {
-    setPendingSyncType(type);
+  const handleClickSync = () => {
     setConfirmDialogOpen(true);
   };
 
   const handleConfirmSync = async () => {
     setConfirmDialogOpen(false);
-    if (pendingSyncType) {
-      await executeSync(pendingSyncType);
-      setPendingSyncType(null);
-    }
+    await executeSync();
   };
 
   return (
@@ -89,7 +60,7 @@ export const Sincronizacao = () => {
       {/* Loading Overlay */}
       {isSyncing && (
         <LoadingOverlay
-          message={`Sincronizando ${syncingType}... Isso pode levar alguns minutos.`}
+          message={syncProgress || 'Sincronizando dados... Isso pode levar alguns minutos.'}
         />
       )}
 
@@ -117,73 +88,29 @@ export const Sincronizacao = () => {
             <div>
               <h2 className="text-xl font-bold text-lcp-blue">Executar Sincronização Manual</h2>
               <p className="mt-1 text-sm text-lcp-gray">
-                Sincronizações automáticas ocorrem periodicamente. Use essas opções apenas quando
+                Sincronizações automáticas ocorrem periodicamente. Use essa opção apenas quando
                 necessário forçar uma atualização imediata.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              {/* Sync Empreendimentos */}
-              <Button
-                onClick={() => handleClickSync('empreendimentos')}
-                disabled={isSyncing}
-                className="flex h-auto flex-col items-start gap-2 bg-lcp-blue p-4 text-white hover:bg-lcp-blue/90 disabled:opacity-50"
-              >
-                <div className="flex w-full items-center justify-between">
-                  {syncingType === 'empreendimentos' ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <Building2 className="h-5 w-5" />
-                  )}
-                </div>
-                <div className="text-left">
-                  <div className="font-semibold">Empreendimentos</div>
-                  <div className="mt-1 text-xs opacity-90">
-                    {syncingType === 'empreendimentos'
-                      ? 'Sincronizando...'
-                      : 'Atualiza empreendimentos e contadores'}
-                  </div>
-                </div>
-              </Button>
-
-              {/* Sync Vendas */}
-              <Button
-                onClick={() => handleClickSync('vendas')}
-                disabled={isSyncing}
-                className="flex h-auto flex-col items-start gap-2 bg-lcp-green p-4 text-white hover:bg-lcp-green/90 disabled:opacity-50"
-              >
-                <div className="flex w-full items-center justify-between">
-                  {syncingType === 'vendas' ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <Download className="h-5 w-5" />
-                  )}
-                </div>
-                <div className="text-left">
-                  <div className="font-semibold">Vendas</div>
-                  <div className="mt-1 text-xs opacity-90">
-                    {syncingType === 'vendas' ? 'Sincronizando...' : 'Atualiza vendas e propostas'}
-                  </div>
-                </div>
-              </Button>
-
+            <div className="flex justify-center">
               {/* Sync Full */}
               <Button
-                onClick={() => handleClickSync('full')}
+                onClick={handleClickSync}
                 disabled={isSyncing}
-                className="flex h-auto flex-col items-start gap-2 bg-purple-600 p-4 text-white hover:bg-purple-700 disabled:opacity-50"
+                className="flex h-auto w-full max-w-md flex-col items-start gap-2 bg-lcp-blue p-6 text-white hover:bg-lcp-blue/90 disabled:opacity-50"
               >
                 <div className="flex w-full items-center justify-between">
-                  {syncingType === 'full' ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
+                  {isSyncing ? (
+                    <Loader2 className="h-6 w-6 animate-spin" />
                   ) : (
-                    <RefreshCw className="h-5 w-5" />
+                    <RefreshCw className="h-6 w-6" />
                   )}
                 </div>
                 <div className="text-left">
-                  <div className="font-semibold">Sincronização Completa</div>
-                  <div className="mt-1 text-xs opacity-90">
-                    {syncingType === 'full' ? 'Sincronizando...' : 'Atualiza tudo sequencialmente'}
+                  <div className="text-lg font-semibold">Sincronização Completa</div>
+                  <div className="mt-1 text-sm opacity-90">
+                    {isSyncing ? syncProgress || 'Sincronizando...' : 'Atualiza todos os dados'}
                   </div>
                 </div>
               </Button>
@@ -235,11 +162,41 @@ export const Sincronizacao = () => {
         </CardContent>
       </Card>
 
+      {/* Histórico de Sincronizações */}
+      <Card className="border bg-white shadow-sm">
+        <CardContent className="p-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <History className="h-5 w-5 text-lcp-blue" />
+                <h2 className="text-xl font-bold text-lcp-blue">Histórico de Sincronizações</h2>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => refetchLogs()}
+                disabled={isLoadingLogs}
+              >
+                <RefreshCw className={`h-4 w-4 ${isLoadingLogs ? 'animate-spin' : ''}`} />
+                <span className="ml-2">Atualizar</span>
+              </Button>
+            </div>
+
+            {isLoadingLogs ? (
+              <div className="flex items-center justify-center py-8">
+                <Loading />
+              </div>
+            ) : (
+              <SyncLogsTable logs={logsData?.logs || []} />
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Dialog de Confirmação */}
       <SyncConfirmDialog
         open={confirmDialogOpen}
         onOpenChange={setConfirmDialogOpen}
-        syncType={pendingSyncType}
         onConfirm={handleConfirmSync}
       />
     </div>

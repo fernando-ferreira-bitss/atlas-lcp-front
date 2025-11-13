@@ -1,18 +1,22 @@
 import { AxiosError } from 'axios';
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { syncService } from '../services/syncService';
 
-import type { SyncApiError, SyncResponse, SyncVendasParams } from '../types';
+import type { SyncApiError, SyncLog } from '../types';
 
 /**
  * Hook customizado para gerenciar sincronizações de dados
- * Fornece estados de loading e error, além de funções para executar sincronizações
+ * Implementa padrão assíncrono: dispara sync + polling de logs
  */
 export function useSync() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [lastResult, setLastResult] = useState<SyncResponse | null>(null);
+  const [lastResult, setLastResult] = useState<SyncLog | null>(null);
+  const [syncProgress, setSyncProgress] = useState<string | null>(null);
+
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const syncStartTimeRef = useRef<Date | null>(null);
 
   /**
    * Trata erros de API e retorna mensagem amigável
@@ -25,8 +29,8 @@ export function useSync() {
       if (err.response?.status === 403) {
         return 'Apenas administradores podem executar sincronizações.';
       }
-      if (err.response?.status === 504) {
-        return 'Sincronização demorou muito. Verifique o status mais tarde.';
+      if (err.response?.status === 409) {
+        return 'Já existe uma sincronização em andamento.';
       }
 
       const apiError = err.response?.data as SyncApiError;
@@ -37,62 +41,98 @@ export function useSync() {
   };
 
   /**
-   * Sincroniza empreendimentos
+   * Para o polling de logs
    */
-  const syncEmpreendimentos = async (): Promise<SyncResponse | null> => {
-    setIsSyncing(true);
-    setError(null);
-
-    try {
-      const result = await syncService.syncEmpreendimentos();
-      setLastResult(result);
-      return result;
-    } catch (err) {
-      const errorMessage = handleError(err);
-      setError(errorMessage);
-      return null;
-    } finally {
-      setIsSyncing(false);
+  const stopPolling = useCallback(() => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
     }
-  };
+  }, []);
 
   /**
-   * Sincroniza vendas
+   * Busca o log mais recente para verificar status
    */
-  const syncVendas = async (params?: SyncVendasParams): Promise<SyncResponse | null> => {
-    setIsSyncing(true);
-    setError(null);
-
+  const pollLogs = useCallback(async () => {
     try {
-      const result = await syncService.syncVendas(params);
-      setLastResult(result);
-      return result;
+      const response = await syncService.getLogs({ limit: 1, offset: 0 });
+
+      if (response.logs.length === 0) {
+        return;
+      }
+
+      const latestLog = response.logs[0];
+
+      // Verifica se é o log da sync atual (iniciada após syncStartTimeRef)
+      if (syncStartTimeRef.current && new Date(latestLog.data_inicio) < syncStartTimeRef.current) {
+        return;
+      }
+
+      // Atualiza progresso
+      if (latestLog.status === 'em_progresso') {
+        const processados = latestLog.total_registros || 0;
+        setSyncProgress(`Processando... ${processados} registros processados`);
+      } else if (latestLog.status === 'concluido' || latestLog.status === 'sucesso') {
+        // Sincronização concluída
+        setLastResult(latestLog);
+        setSyncProgress(null);
+        setIsSyncing(false);
+        stopPolling();
+      } else if (latestLog.status === 'erro' || latestLog.status === 'falha') {
+        // Sincronização com erro
+        setError(latestLog.detalhes_erro || latestLog.mensagem || 'Erro durante a sincronização');
+        setLastResult(latestLog);
+        setSyncProgress(null);
+        setIsSyncing(false);
+        stopPolling();
+      }
     } catch (err) {
-      const errorMessage = handleError(err);
-      setError(errorMessage);
-      return null;
-    } finally {
-      setIsSyncing(false);
+      // Erro ao buscar logs - não interrompe o polling
+      console.error('Erro ao buscar logs:', err);
     }
-  };
+  }, [stopPolling]);
+
+  /**
+   * Inicia polling de logs
+   */
+  const startPolling = useCallback(() => {
+    stopPolling();
+
+    // Poll imediato
+    pollLogs();
+
+    // Poll a cada 1 minuto
+    pollingIntervalRef.current = setInterval(pollLogs, 60000);
+  }, [pollLogs, stopPolling]);
 
   /**
    * Executa sincronização completa
+   * Dispara a sincronização e inicia polling para monitorar progresso
    */
-  const syncFull = async (): Promise<SyncResponse | null> => {
+  const syncFull = async (): Promise<boolean> => {
     setIsSyncing(true);
     setError(null);
+    setLastResult(null);
+    setSyncProgress('Iniciando sincronização...');
+    syncStartTimeRef.current = new Date();
 
     try {
-      const result = await syncService.syncFull();
-      setLastResult(result);
-      return result;
+      // Dispara a sincronização (retorna imediatamente)
+      await syncService.syncFull();
+
+      setSyncProgress('Sincronização em andamento...');
+
+      // Inicia polling para monitorar progresso
+      startPolling();
+
+      return true;
     } catch (err) {
       const errorMessage = handleError(err);
       setError(errorMessage);
-      return null;
-    } finally {
       setIsSyncing(false);
+      setSyncProgress(null);
+      syncStartTimeRef.current = null;
+      return false;
     }
   };
 
@@ -110,12 +150,21 @@ export function useSync() {
     setLastResult(null);
   };
 
+  /**
+   * Cleanup: para polling ao desmontar componente
+   */
+  useEffect(
+    () => () => {
+      stopPolling();
+    },
+    [stopPolling]
+  );
+
   return {
     isSyncing,
     error,
     lastResult,
-    syncEmpreendimentos,
-    syncVendas,
+    syncProgress,
     syncFull,
     clearError,
     clearLastResult,

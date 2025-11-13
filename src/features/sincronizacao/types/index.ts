@@ -5,7 +5,7 @@
 /**
  * Tipo de sincronização
  */
-export type SyncTipo = 'empreendimentos' | 'vendas' | 'full';
+export type SyncTipo = 'full';
 
 /**
  * Status de uma sincronização
@@ -29,19 +29,47 @@ export interface SyncResultado {
 }
 
 /**
- * Response de uma sincronização executada
+ * Response de sincronização inicial (dispatch)
  */
-export interface SyncResponse {
-  tipo: string;
-  inicio: string;
-  fim: string;
-  duracao_total_segundos: number;
-  resultados: SyncResultado[];
-  total_registros_processados: number;
-  total_novos: number;
-  total_atualizados: number;
-  total_erros: number;
-  sucesso_geral: boolean;
+export interface SyncDispatchResponse {
+  message: string;
+  sync_id?: string;
+}
+
+/**
+ * Log de sincronização individual (retornado pela API)
+ */
+export interface SyncLog {
+  id: number;
+  user_id: number;
+  created_at: string;
+  tipo_sync: string;
+  status: 'em_progresso' | 'concluido' | 'sucesso' | 'erro' | 'falha';
+  total_registros: number;
+  registros_criados: number;
+  registros_atualizados: number;
+  registros_erro: number;
+  tempo_execucao_segundos: number | null;
+  mensagem: string | null;
+  detalhes_erro: string | null;
+  data_inicio: string;
+  data_fim: string | null;
+}
+
+/**
+ * Response da listagem de logs
+ */
+export interface SyncLogsResponse {
+  logs: SyncLog[];
+  total: number;
+}
+
+/**
+ * Parâmetros para buscar logs
+ */
+export interface GetLogsParams {
+  limit?: number;
+  offset?: number;
 }
 
 /**
@@ -58,13 +86,6 @@ export interface SyncStatusGeral {
 }
 
 /**
- * Parâmetros para sincronização de vendas
- */
-export interface SyncVendasParams {
-  empreendimento_id?: number | null;
-}
-
-/**
  * Estado de erro da API de sincronização
  */
 export interface SyncApiError {
@@ -76,8 +97,7 @@ export interface SyncApiError {
 /**
  * Histórico de execução de sincronização
  */
-export interface SyncHistorico extends SyncResponse {
-  id: string;
+export interface SyncHistorico extends SyncLog {
   data_execucao: string;
   usuario?: string;
 }

@@ -1,7 +1,7 @@
 # 📡 API de Sincronização (ETL) - Documentação Frontend
 
-> **Versão:** 1.0  
-> **Data:** 13/11/2024  
+> **Versão:** 2.0
+> **Data:** 13/11/2024
 > **Base URL:** `http://localhost:8000/api/v1/sync`
 
 ---
@@ -10,12 +10,87 @@
 
 A API de sincronização permite executar jobs de ETL (Extract, Transform, Load) **manualmente** e consultar o **status/histórico** das sincronizações automáticas.
 
+### ✨ Novidades v2.0
+
+- ✅ **Endpoint Unificado:** Agora existe apenas `/sync/full` para todas as sincronizações
+- ✅ **Código Centralizado:** Sincronização manual e agendada usam a mesma lógica
+- ✅ **Execução Assíncrona:** Frontend não aguarda resposta, monitora via polling
+- ✅ **Logs Completos:** Todas as execuções (manuais e automáticas) registradas em `sync_logs`
+- ✅ **Lock System:** Evita execuções simultâneas com sistema de locks
+- ❌ **Removidos:** Endpoints `/sync/empreendimentos` e `/sync/vendas` (redundantes)
+
 ### Características
 
-✅ **Execução Manual:** Trigger de sincronizações sob demanda  
-✅ **Jobs Automáticos:** Scheduler executa sincronizações periódicas  
-✅ **Histórico:** Consulta de execuções passadas  
-✅ **Admin Only:** Todos os endpoints requerem permissão de administrador  
+✅ **Execução Manual:** Trigger de sincronizações sob demanda via `/sync/full`
+✅ **Jobs Automáticos:** Scheduler executa sincronizações a cada 2 horas
+✅ **Monitoramento em Tempo Real:** Polling via `/sync/logs` para acompanhar progresso
+✅ **Histórico:** Consulta de execuções passadas via `/sync/logs`
+✅ **Admin Only:** Todos os endpoints requerem permissão de administrador
+
+---
+
+## 🔄 Fluxo de Execução (Assíncrono)
+
+```
+┌─────────────┐                   ┌─────────────┐                   ┌─────────────┐
+│  Frontend   │                   │   Backend   │                   │  Database   │
+│   (Admin)   │                   │   (API)     │                   │ (sync_logs) │
+└──────┬──────┘                   └──────┬──────┘                   └──────┬──────┘
+       │                                 │                                 │
+       │ 1. POST /sync/full              │                                 │
+       │────────────────────────────────>│                                 │
+       │                                 │                                 │
+       │                                 │ 2. Criar log (status=em_progresso)
+       │                                 │────────────────────────────────>│
+       │                                 │                                 │
+       │ 3. HTTP 200 (imediato)          │                                 │
+       │<────────────────────────────────│                                 │
+       │                                 │                                 │
+       │                                 │ 4. Executar sync em background  │
+       │                                 │    (5-10 minutos)               │
+       │                                 │                                 │
+       │ 5. Polling (a cada 3s)          │                                 │
+       │ GET /sync/logs?limit=1          │                                 │
+       │────────────────────────────────>│                                 │
+       │                                 │                                 │
+       │                                 │ 6. Buscar último log            │
+       │                                 │────────────────────────────────>│
+       │                                 │                                 │
+       │                                 │ 7. Log (status=em_progresso)    │
+       │                                 │<────────────────────────────────│
+       │                                 │                                 │
+       │ 8. Dados do log                 │                                 │
+       │<────────────────────────────────│                                 │
+       │                                 │                                 │
+       │ (Mostrar progresso na UI)       │                                 │
+       │                                 │                                 │
+       │ ... (polling continua) ...      │                                 │
+       │                                 │                                 │
+       │                                 │ 9. Sync finalizada              │
+       │                                 │    Atualizar log (status=concluido)
+       │                                 │────────────────────────────────>│
+       │                                 │                                 │
+       │ 10. GET /sync/logs?limit=1      │                                 │
+       │────────────────────────────────>│                                 │
+       │                                 │                                 │
+       │                                 │ 11. Buscar último log           │
+       │                                 │────────────────────────────────>│
+       │                                 │                                 │
+       │                                 │ 12. Log (status=concluido)      │
+       │                                 │<────────────────────────────────│
+       │                                 │                                 │
+       │ 13. Dados finais                │                                 │
+       │<────────────────────────────────│                                 │
+       │                                 │                                 │
+       │ (Parar polling + Mostrar sucesso)                                 │
+       │                                 │                                 │
+```
+
+**Vantagens deste fluxo:**
+- ⚡ Frontend não fica bloqueado
+- 📊 Progresso visível em tempo real
+- ⏱️ Sem problemas de timeout HTTP
+- 🔄 Usuário pode navegar pela aplicação durante sync
 
 ---
 
@@ -43,9 +118,7 @@ O scheduler executa jobs automaticamente:
 
 | Job | Frequência | Horário | Descrição |
 |-----|------------|---------|-----------|
-| **Sync Full** | Diário | 02:00 | Empreendimentos + Contadores + Vendas |
-| **Sync Vendas** | A cada 2h | 06:00, 08:00, ..., 22:00 | Vendas e propostas retroativas |
-| **Sync Contadores** | A cada 2h | 06:15, 08:15, ..., 22:15 | Contadores de unidades |
+| **Sync Full** | A cada 2h | 06:00, 08:00, ..., 22:00 | Empreendimentos → Contadores → Vendas → Propostas |
 
 **Não é necessário disparar manualmente**, exceto:
 - Após mudanças críticas na API Mega
@@ -56,114 +129,15 @@ O scheduler executa jobs automaticamente:
 
 ## 📡 Endpoints Disponíveis
 
-### 1. Sincronizar Empreendimentos
+### 1. Sincronização Completa (Full Sync)
 
-**Endpoint:** `POST /api/v1/sync/empreendimentos`
+**Endpoint:** `POST /api/v1/sync/full`
 
-Sincroniza todos os empreendimentos da API Mega e atualiza contadores de unidades.
-
-#### Request
-
-```http
-POST /api/v1/sync/empreendimentos
-Authorization: Bearer {admin_token}
-Content-Type: application/json
-```
-
-**Não requer body.**
-
-#### Response
-
-```json
-{
-  "tipo": "empreendimentos",
-  "inicio": "2024-11-13T15:30:00.000Z",
-  "fim": "2024-11-13T15:32:15.000Z",
-  "duracao_total_segundos": 135.5,
-  "resultados": [
-    {
-      "entidade": "empreendimento",
-      "empreendimento_id": null,
-      "empreendimento_nome": null,
-      "total_processados": 45,
-      "novos": 3,
-      "atualizados": 42,
-      "erros": 0,
-      "sucesso": true,
-      "mensagem": null,
-      "duracao_segundos": 120.2
-    }
-  ],
-  "total_registros_processados": 45,
-  "total_novos": 3,
-  "total_atualizados": 42,
-  "total_erros": 0,
-  "sucesso_geral": true
-}
-```
-
-#### Exemplo React/Next.js
-
-```typescript
-import axios from 'axios';
-
-interface SyncResponse {
-  tipo: string;
-  inicio: string;
-  fim: string;
-  duracao_total_segundos: number;
-  resultados: Array<{
-    entidade: string;
-    total_processados: number;
-    novos: number;
-    atualizados: number;
-    erros: number;
-    sucesso: boolean;
-    mensagem?: string;
-  }>;
-  total_registros_processados: number;
-  total_novos: number;
-  total_atualizados: number;
-  total_erros: number;
-  sucesso_geral: boolean;
-}
-
-async function syncEmpreendimentos(): Promise<SyncResponse> {
-  const token = localStorage.getItem('admin_token');
-
-  try {
-    const response = await axios.post<SyncResponse>(
-      'http://localhost:8000/api/v1/sync/empreendimentos',
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    return response.data;
-  } catch (error: any) {
-    if (error.response?.status === 403) {
-      throw new Error('Apenas administradores podem executar sincronizações');
-    }
-    throw error;
-  }
-}
-
-// Uso:
-const resultado = await syncEmpreendimentos();
-console.log(`Sincronizados: ${resultado.total_processados}`);
-console.log(`Novos: ${resultado.total_novos}, Atualizados: ${resultado.total_atualizados}`);
-```
-
----
-
-### 2. Sincronizar Vendas
-
-**Endpoint:** `POST /api/v1/sync/vendas`
-
-Sincroniza vendas da API Carteira e cria propostas retroativas automaticamente.
+Executa sincronização completa em ordem sequencial:
+1. **Empreendimentos** - Dados da API REST Mega
+2. **Contadores** - Unidades disponíveis/reservadas/vendidas via SOAP
+3. **Vendas** - Contratos da API Carteira
+4. **Propostas** - Retroativas criadas automaticamente para vendas sem proposta
 
 #### Query Parameters
 
@@ -174,103 +148,382 @@ Sincroniza vendas da API Carteira e cria propostas retroativas automaticamente.
 #### Request
 
 ```http
-POST /api/v1/sync/vendas?empreendimento_id=5
+POST /api/v1/sync/full
 Authorization: Bearer {admin_token}
+Content-Type: application/json
 ```
 
-#### Response
+**Sincronizar TODOS os empreendimentos:**
+```http
+POST /api/v1/sync/full
+```
+
+**Sincronizar UM empreendimento específico:**
+```http
+POST /api/v1/sync/full?empreendimento_id=93
+```
+
+#### Response (Sucesso - 200)
 
 ```json
 {
-  "tipo": "vendas",
-  "inicio": "2024-11-13T15:35:00.000Z",
-  "fim": "2024-11-13T15:38:45.000Z",
-  "duracao_total_segundos": 225.3,
+  "tipo": "full",
+  "inicio": "2024-11-13T20:00:00.000Z",
+  "fim": "2024-11-13T20:05:30.000Z",
+  "duracao_total_segundos": 330.5,
   "resultados": [
     {
-      "entidade": "venda",
-      "empreendimento_id": 5,
-      "empreendimento_nome": "Loteamento Revoar",
-      "total_processados": 150,
-      "novos": 10,
-      "atualizados": 140,
+      "entidade": "empreendimentos",
+      "empreendimento_id": null,
+      "empreendimento_nome": null,
+      "total_processados": 45,
+      "novos": 2,
+      "atualizados": 43,
       "erros": 0,
       "sucesso": true,
-      "mensagem": "Propostas retroativas: 8",
-      "duracao_segundos": 225.3
+      "mensagem": null,
+      "duracao_segundos": 85.2
+    },
+    {
+      "entidade": "contadores",
+      "empreendimento_id": null,
+      "empreendimento_nome": null,
+      "total_processados": 45,
+      "novos": 0,
+      "atualizados": 45,
+      "erros": 0,
+      "sucesso": true,
+      "mensagem": null,
+      "duracao_segundos": 120.5
+    },
+    {
+      "entidade": "vendas",
+      "empreendimento_id": null,
+      "empreendimento_nome": null,
+      "total_processados": 850,
+      "novos": 15,
+      "atualizados": 835,
+      "erros": 0,
+      "sucesso": true,
+      "mensagem": "Propostas retroativas: 12",
+      "duracao_segundos": 124.8
     }
   ],
-  "total_registros_processados": 150,
-  "total_novos": 10,
-  "total_atualizados": 140,
+  "total_registros_processados": 940,
+  "total_novos": 17,
+  "total_atualizados": 923,
   "total_erros": 0,
   "sucesso_geral": true
 }
 ```
 
-#### Exemplo React Hook
+#### Response (Erro - Sincronização em Andamento - 409)
+
+```json
+{
+  "detail": "Sincronização de full já está em andamento"
+}
+```
+
+#### Response (Erro - Não Autorizado - 401)
+
+```json
+{
+  "detail": "Not authenticated"
+}
+```
+
+#### Response (Erro - Não é Admin - 403)
+
+```json
+{
+  "detail": "Permissão negada. Apenas administradores podem acessar este recurso"
+}
+```
+
+#### Exemplo TypeScript/React
 
 ```typescript
-import { useState } from 'react';
 import axios from 'axios';
 
-export function useSyncVendas() {
+interface SyncResultado {
+  entidade: string;
+  empreendimento_id: number | null;
+  empreendimento_nome: string | null;
+  total_processados: number;
+  novos: number;
+  atualizados: number;
+  erros: number;
+  sucesso: boolean;
+  mensagem: string | null;
+  duracao_segundos: number;
+}
+
+interface SyncResponse {
+  tipo: string;
+  inicio: string;
+  fim: string;
+  duracao_total_segundos: number;
+  resultados: SyncResultado[];
+  total_registros_processados: number;
+  total_novos: number;
+  total_atualizados: number;
+  total_erros: number;
+  sucesso_geral: boolean;
+}
+
+async function syncFull(empreendimentoId?: number): Promise<SyncResponse> {
+  const token = localStorage.getItem('admin_token');
+
+  try {
+    console.log('Iniciando sincronização completa...');
+
+    const response = await axios.post<SyncResponse>(
+      'http://localhost:8000/api/v1/sync/full',
+      {},
+      {
+        params: empreendimentoId ? { empreendimento_id: empreendimentoId } : undefined,
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 600000, // 10 minutos (sync pode demorar)
+      }
+    );
+
+    const { resultados, duracao_total_segundos, total_novos, total_atualizados } = response.data;
+
+    console.log(`✅ Sync concluída em ${duracao_total_segundos}s`);
+    console.log(`📊 Total: ${total_novos} novos, ${total_atualizados} atualizados`);
+
+    resultados.forEach(r => {
+      console.log(`  - ${r.entidade}: ${r.total_processados} processados`);
+    });
+
+    return response.data;
+
+  } catch (error: any) {
+    if (error.response?.status === 409) {
+      throw new Error('Sincronização já em andamento. Aguarde a conclusão.');
+    } else if (error.response?.status === 401) {
+      localStorage.removeItem('admin_token');
+      window.location.href = '/login';
+      throw new Error('Sessão expirada');
+    } else if (error.response?.status === 403) {
+      throw new Error('Apenas administradores podem executar sincronizações');
+    } else {
+      throw new Error('Erro na sincronização. Tente novamente.');
+    }
+  }
+}
+
+// Uso:
+// Sincronizar todos os empreendimentos
+const resultado = await syncFull();
+
+// Sincronizar um empreendimento específico
+const resultadoUnico = await syncFull(93);
+```
+
+#### Exemplo React Hook (Async com Polling)
+
+```typescript
+import { useState, useCallback, useRef } from 'react';
+import axios from 'axios';
+
+interface SyncLog {
+  id: number;
+  tipo_sync: string;
+  status: 'em_progresso' | 'concluido' | 'erro';
+  total_registros: number;
+  registros_criados: number;
+  registros_atualizados: number;
+  registros_erro: number;
+  tempo_execucao_segundos: number | null;
+  mensagem: string;
+  data_inicio: string;
+  data_fim: string | null;
+}
+
+export function useSyncFull() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<string>('');
+  const [currentLog, setCurrentLog] = useState<SyncLog | null>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const syncVendas = async (empreendimentoId?: number) => {
+  const stopPolling = useCallback(() => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+  }, []);
+
+  const fetchLatestLog = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('admin_token');
+      const response = await axios.get<{ logs: SyncLog[] }>(
+        'http://localhost:8000/api/v1/sync/logs',
+        {
+          params: { limit: 1 },
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      const latestLog = response.data.logs[0];
+      if (latestLog) {
+        setCurrentLog(latestLog);
+
+        // Atualizar mensagem de progresso
+        if (latestLog.status === 'em_progresso') {
+          setProgress(`Sincronizando... ${latestLog.total_registros} registros processados`);
+        } else if (latestLog.status === 'concluido') {
+          setProgress('✅ Sincronização concluída!');
+          setLoading(false);
+          stopPolling();
+        } else if (latestLog.status === 'erro') {
+          setError(latestLog.mensagem);
+          setProgress('');
+          setLoading(false);
+          stopPolling();
+        }
+      }
+
+      return latestLog;
+    } catch (err) {
+      console.error('Erro ao buscar logs:', err);
+      return null;
+    }
+  }, [stopPolling]);
+
+  const startPolling = useCallback(() => {
+    stopPolling(); // Garantir que não há polling anterior
+    pollingIntervalRef.current = setInterval(fetchLatestLog, 3000); // Poll a cada 3s
+  }, [fetchLatestLog, stopPolling]);
+
+  const executeSync = async (empreendimentoId?: number) => {
     setLoading(true);
     setError(null);
+    setProgress('Iniciando sincronização...');
+    setCurrentLog(null);
 
     try {
       const token = localStorage.getItem('admin_token');
 
-      const response = await axios.post<SyncResponse>(
-        'http://localhost:8000/api/v1/sync/vendas',
+      // Disparar sincronização (NÃO aguardar conclusão)
+      axios.post(
+        'http://localhost:8000/api/v1/sync/full',
         {},
         {
-          params: {
-            empreendimento_id: empreendimentoId || null,
-          },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          params: empreendimentoId ? { empreendimento_id: empreendimentoId } : undefined,
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 10000, // Timeout curto apenas para confirmar que iniciou
         }
-      );
+      ).catch(err => {
+        // Se der timeout, ignorar (sync continua em background)
+        if (err.code !== 'ECONNABORTED') {
+          throw err;
+        }
+      });
 
-      setLoading(false);
-      return response.data;
+      // Aguardar 2s para garantir que log foi criado
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Iniciar polling para monitorar progresso
+      startPolling();
+
     } catch (err: any) {
-      const errorMsg = err.response?.data?.detail || 'Erro ao sincronizar vendas';
-      setError(errorMsg);
+      if (err.response?.status === 409) {
+        setError('Sincronização já em andamento. Aguarde a conclusão.');
+      } else {
+        setError(err.response?.data?.detail || 'Erro ao iniciar sincronização');
+      }
+      setProgress('');
       setLoading(false);
-      throw new Error(errorMsg);
     }
   };
 
-  return { syncVendas, loading, error };
+  return {
+    executeSync,
+    loading,
+    error,
+    progress,
+    currentLog,
+    stopPolling,
+  };
 }
 
 // Uso no componente:
 function AdminSyncPanel() {
-  const { syncVendas, loading, error } = useSyncVendas();
+  const { executeSync, loading, error, progress, currentLog, stopPolling } = useSyncFull();
 
-  const handleSyncAll = async () => {
-    const result = await syncVendas(); // Todos os empreendimentos
-    alert(`Sincronizado: ${result.total_registros_processados} vendas`);
+  const handleSync = async () => {
+    try {
+      await executeSync(); // Dispara e começa polling
+    } catch (err: any) {
+      console.error('Erro ao iniciar sync:', err);
+    }
   };
 
-  const handleSyncEmpreendimento = async (id: number) => {
-    const result = await syncVendas(id); // Empreendimento específico
-    alert(`Sincronizado: ${result.total_novos} novas vendas`);
-  };
+  // Cleanup ao desmontar componente
+  useEffect(() => {
+    return () => stopPolling();
+  }, [stopPolling]);
 
   return (
-    <div>
-      <button onClick={handleSyncAll} disabled={loading}>
-        {loading ? 'Sincronizando...' : 'Sincronizar Todas Vendas'}
+    <div style={{ padding: '20px' }}>
+      <h2>Sincronização Manual</h2>
+
+      <button
+        onClick={handleSync}
+        disabled={loading}
+        style={{
+          padding: '12px 24px',
+          backgroundColor: loading ? '#ccc' : '#4CAF50',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: loading ? 'not-allowed' : 'pointer',
+          fontSize: '16px',
+        }}
+      >
+        {loading ? '⏳ Sincronizando...' : '🔄 Sincronizar Tudo'}
       </button>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+
+      {loading && (
+        <div style={{ marginTop: '10px', color: '#FF9800' }}>
+          <p>🔄 {progress}</p>
+          {currentLog && (
+            <div style={{ fontSize: '14px', marginTop: '5px' }}>
+              <p>⏱️ Tempo decorrido: {currentLog.tempo_execucao_segundos || 0}s</p>
+              <p>📊 Processados: {currentLog.total_registros}</p>
+              <p>➕ Criados: {currentLog.registros_criados}</p>
+              <p>🔄 Atualizados: {currentLog.registros_atualizados}</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {error && (
+        <p style={{ marginTop: '10px', color: '#f44336' }}>
+          ❌ {error}
+        </p>
+      )}
+
+      {!loading && currentLog && currentLog.status === 'concluido' && (
+        <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#E8F5E9', borderRadius: '5px' }}>
+          <h3>✅ Última Sincronização Concluída:</h3>
+          <p><strong>Tipo:</strong> {currentLog.tipo_sync}</p>
+          <p><strong>Duração:</strong> {currentLog.tempo_execucao_segundos}s</p>
+          <p><strong>Processados:</strong> {currentLog.total_registros}</p>
+          <p><strong>Novos:</strong> {currentLog.registros_criados}</p>
+          <p><strong>Atualizados:</strong> {currentLog.registros_atualizados}</p>
+          <p><strong>Erros:</strong> {currentLog.registros_erro}</p>
+          <p style={{ fontSize: '12px', color: '#666', marginTop: '10px' }}>
+            Início: {new Date(currentLog.data_inicio).toLocaleString('pt-BR')}
+          </p>
+          <p style={{ fontSize: '12px', color: '#666' }}>
+            Fim: {currentLog.data_fim ? new Date(currentLog.data_fim).toLocaleString('pt-BR') : '-'}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
@@ -278,96 +531,11 @@ function AdminSyncPanel() {
 
 ---
 
-### 3. Sincronização Completa (Full Sync)
-
-**Endpoint:** `POST /api/v1/sync/full`
-
-Executa sincronização completa em ordem: Empreendimentos → Contadores → Vendas.
-
-#### Request
-
-```http
-POST /api/v1/sync/full
-Authorization: Bearer {admin_token}
-```
-
-#### Response
-
-```json
-{
-  "tipo": "full",
-  "inicio": "2024-11-13T16:00:00.000Z",
-  "fim": "2024-11-13T16:08:30.000Z",
-  "duracao_total_segundos": 510.5,
-  "resultados": [
-    {
-      "entidade": "empreendimento",
-      "total_processados": 45,
-      "novos": 0,
-      "atualizados": 45,
-      "erros": 0,
-      "sucesso": true,
-      "duracao_segundos": 120.0
-    },
-    {
-      "entidade": "venda",
-      "total_processados": 850,
-      "novos": 15,
-      "atualizados": 835,
-      "erros": 0,
-      "sucesso": true,
-      "mensagem": "Propostas retroativas: 12",
-      "duracao_segundos": 390.5
-    }
-  ],
-  "total_registros_processados": 895,
-  "total_novos": 15,
-  "total_atualizados": 880,
-  "total_erros": 0,
-  "sucesso_geral": true
-}
-```
-
-#### Exemplo TypeScript
-
-```typescript
-async function fullSync(): Promise<void> {
-  const token = localStorage.getItem('admin_token');
-
-  try {
-    console.log('Iniciando sincronização completa...');
-    
-    const response = await axios.post<SyncResponse>(
-      'http://localhost:8000/api/v1/sync/full',
-      {},
-      {
-        headers: { Authorization: `Bearer ${token}` },
-        timeout: 600000, // 10 minutos (sync pode demorar)
-      }
-    );
-
-    const { resultados, duracao_total_segundos } = response.data;
-
-    console.log(`✅ Sync concluída em ${duracao_total_segundos}s`);
-    
-    resultados.forEach(r => {
-      console.log(`- ${r.entidade}: ${r.total_processados} processados, ${r.novos} novos`);
-    });
-
-  } catch (error: any) {
-    console.error('❌ Erro na sincronização:', error.message);
-    throw error;
-  }
-}
-```
-
----
-
-### 4. Status da Sincronização
+### 2. Status da Sincronização
 
 **Endpoint:** `GET /api/v1/sync/status`
 
-Retorna status atual e última sincronização de cada tipo.
+Retorna status atual e última sincronização.
 
 #### Request
 
@@ -380,9 +548,7 @@ Authorization: Bearer {admin_token}
 
 ```json
 {
-  "ultima_sync_empreendimentos": "2024-11-13T02:00:15.000Z",
-  "ultima_sync_propostas": "2024-11-13T14:15:30.000Z",
-  "ultima_sync_vendas": "2024-11-13T14:00:00.000Z",
+  "ultima_sync": "2024-11-13T20:05:30.000Z",
   "total_empreendimentos": 45,
   "total_propostas": 320,
   "total_vendas": 850,
@@ -390,87 +556,117 @@ Authorization: Bearer {admin_token}
 }
 ```
 
-#### Exemplo React Component
+---
+
+### 3. Histórico de Sincronizações
+
+**Endpoint:** `GET /api/v1/sync/logs`
+
+Retorna histórico de todas as sincronizações (manuais e automáticas).
+
+**⚡ USO PRINCIPAL:** Polling para monitorar progresso da sincronização em tempo real.
+
+#### Query Parameters
+
+| Parâmetro | Tipo | Default | Descrição |
+|-----------|------|---------|-----------|
+| `limit` | integer | 50 | Quantidade de logs a retornar |
+| `offset` | integer | 0 | Paginação |
+
+#### Request
+
+```http
+GET /api/v1/sync/logs?limit=10&offset=0
+Authorization: Bearer {admin_token}
+```
+
+#### Response
+
+```json
+{
+  "total": 150,
+  "logs": [
+    {
+      "id": 42,
+      "tipo_sync": "full",
+      "status": "concluido",
+      "user_id": 1,
+      "total_registros": 940,
+      "registros_criados": 17,
+      "registros_atualizados": 923,
+      "registros_erro": 0,
+      "tempo_execucao_segundos": 330,
+      "mensagem": "Sincronização concluída: 940 processados",
+      "data_inicio": "2024-11-13T20:00:00.000Z",
+      "data_fim": "2024-11-13T20:05:30.000Z"
+    },
+    {
+      "id": 41,
+      "tipo_sync": "full_scheduled",
+      "status": "concluido",
+      "user_id": null,
+      "total_registros": 938,
+      "registros_criados": 5,
+      "registros_atualizados": 933,
+      "registros_erro": 0,
+      "tempo_execucao_segundos": 315,
+      "mensagem": "Sincronização completa automática concluída: 938 processados",
+      "data_inicio": "2024-11-13T18:00:00.000Z",
+      "data_fim": "2024-11-13T18:05:15.000Z"
+    }
+  ]
+}
+```
+
+#### Status Possíveis
+
+| Status | Descrição |
+|--------|-----------|
+| `em_progresso` | Sincronização em andamento |
+| `concluido` | Sincronização finalizada com sucesso |
+| `erro` | Sincronização falhou |
+
+#### Tipos de Sincronização
+
+| Tipo | Descrição |
+|------|-----------|
+| `full` | Sincronização **manual** (iniciada por admin via API) |
+| `full_scheduled` | Sincronização **automática** (iniciada pelo scheduler) |
+
+#### Exemplo TypeScript - Polling
 
 ```typescript
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+// Buscar último log para monitorar progresso
+async function fetchLatestSyncLog() {
+  const token = localStorage.getItem('admin_token');
 
-interface SyncStatus {
-  ultima_sync_empreendimentos: string | null;
-  ultima_sync_propostas: string | null;
-  ultima_sync_vendas: string | null;
-  total_empreendimentos: number;
-  total_propostas: number;
-  total_vendas: number;
-  sync_em_andamento: boolean;
-}
-
-function SyncStatusPanel() {
-  const [status, setStatus] = useState<SyncStatus | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetchStatus = async () => {
-    const token = localStorage.getItem('admin_token');
-    
-    try {
-      const response = await axios.get<SyncStatus>(
-        'http://localhost:8000/api/v1/sync/status',
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setStatus(response.data);
-    } catch (error) {
-      console.error('Erro ao buscar status:', error);
-    } finally {
-      setLoading(false);
+  const response = await axios.get(
+    'http://localhost:8000/api/v1/sync/logs',
+    {
+      params: { limit: 1 }, // Apenas o mais recente
+      headers: { Authorization: `Bearer ${token}` }
     }
-  };
-
-  useEffect(() => {
-    fetchStatus();
-    
-    // Auto-refresh a cada 30 segundos
-    const interval = setInterval(fetchStatus, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  if (loading) return <p>Carregando status...</p>;
-  if (!status) return <p>Erro ao carregar status</p>;
-
-  const formatDate = (date: string | null) => {
-    if (!date) return 'Nunca executado';
-    return new Date(date).toLocaleString('pt-BR');
-  };
-
-  return (
-    <div>
-      <h2>Status de Sincronização</h2>
-      
-      <div>
-        <h3>Última Sincronização:</h3>
-        <ul>
-          <li>Empreendimentos: {formatDate(status.ultima_sync_empreendimentos)}</li>
-          <li>Propostas: {formatDate(status.ultima_sync_propostas)}</li>
-          <li>Vendas: {formatDate(status.ultima_sync_vendas)}</li>
-        </ul>
-      </div>
-
-      <div>
-        <h3>Totais no Banco:</h3>
-        <ul>
-          <li>Empreendimentos: {status.total_empreendimentos}</li>
-          <li>Propostas: {status.total_propostas}</li>
-          <li>Vendas: {status.total_vendas}</li>
-        </ul>
-      </div>
-
-      {status.sync_em_andamento && (
-        <p style={{ color: 'orange' }}>⚠️ Sincronização em andamento...</p>
-      )}
-    </div>
   );
+
+  const latestLog = response.data.logs[0];
+
+  if (latestLog) {
+    console.log(`Status: ${latestLog.status}`);
+    console.log(`Processados: ${latestLog.total_registros}`);
+
+    if (latestLog.status === 'em_progresso') {
+      console.log('⏳ Sincronização em andamento...');
+      return 'IN_PROGRESS';
+    } else if (latestLog.status === 'concluido') {
+      console.log('✅ Sincronização concluída!');
+      return 'COMPLETED';
+    } else if (latestLog.status === 'erro') {
+      console.error('❌ Erro:', latestLog.mensagem);
+      return 'ERROR';
+    }
+  }
+
+  return 'NO_LOG';
 }
 ```
 
@@ -481,117 +677,163 @@ function SyncStatusPanel() {
 Exemplo de painel admin completo com todas as funcionalidades:
 
 ```typescript
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 
+interface SyncStatus {
+  ultima_sync: string | null;
+  total_empreendimentos: number;
+  total_propostas: number;
+  total_vendas: number;
+  sync_em_andamento: boolean;
+}
+
 export function AdminSyncDashboard() {
-  const [loading, setLoading] = useState(false);
-  const [lastResult, setLastResult] = useState<SyncResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { executeSync, loading, error, progress, currentLog, stopPolling } = useSyncFull();
+  const [status, setStatus] = useState<SyncStatus | null>(null);
 
-  const executeSync = async (
-    endpoint: string,
-    params?: Record<string, any>
-  ) => {
-    setLoading(true);
-    setError(null);
+  // Buscar status a cada 30s
+  useEffect(() => {
+    fetchStatus();
+    const interval = setInterval(fetchStatus, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
+  // Cleanup ao desmontar
+  useEffect(() => {
+    return () => stopPolling();
+  }, [stopPolling]);
+
+  const fetchStatus = async () => {
     try {
       const token = localStorage.getItem('admin_token');
-
-      const response = await axios.post<SyncResponse>(
-        `http://localhost:8000/api/v1/sync/${endpoint}`,
-        {},
-        {
-          params,
-          headers: { Authorization: `Bearer ${token}` },
-          timeout: 600000, // 10 minutos
-        }
+      const response = await axios.get<SyncStatus>(
+        'http://localhost:8000/api/v1/sync/status',
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      setLastResult(response.data);
-      alert(`✅ Sincronização concluída!\nProcessados: ${response.data.total_registros_processados}`);
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.detail || 'Erro na sincronização';
-      setError(errorMsg);
-      alert(`❌ ${errorMsg}`);
-    } finally {
-      setLoading(false);
+      setStatus(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar status:', error);
     }
   };
 
+  const handleSync = async () => {
+    try {
+      await executeSync(); // Dispara sync e inicia polling
+    } catch (err) {
+      console.error('Erro ao iniciar sync:', err);
+    }
+  };
+
+  // Atualizar status quando sync completar
+  useEffect(() => {
+    if (currentLog && currentLog.status === 'concluido') {
+      fetchStatus();
+    }
+  }, [currentLog]);
+
+  const formatDate = (date: string | null) => {
+    if (!date) return 'Nunca executado';
+    return new Date(date).toLocaleString('pt-BR');
+  };
+
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Painel de Sincronização (Admin)</h1>
+    <div style={{ padding: '20px', maxWidth: '800px' }}>
+      <h1>🔄 Painel de Sincronização (Admin)</h1>
 
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-        <button
-          onClick={() => executeSync('empreendimentos')}
-          disabled={loading}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#4CAF50',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: loading ? 'not-allowed' : 'pointer',
-          }}
-        >
-          🏢 Sync Empreendimentos
-        </button>
+      {/* Status Atual */}
+      {status && (
+        <div style={{
+          padding: '15px',
+          backgroundColor: '#F5F5F5',
+          borderRadius: '5px',
+          marginBottom: '20px'
+        }}>
+          <h3>📊 Status Atual</h3>
+          <p><strong>Última Sincronização:</strong> {formatDate(status.ultima_sync)}</p>
+          <p><strong>Empreendimentos:</strong> {status.total_empreendimentos}</p>
+          <p><strong>Propostas:</strong> {status.total_propostas}</p>
+          <p><strong>Vendas:</strong> {status.total_vendas}</p>
 
-        <button
-          onClick={() => executeSync('vendas')}
-          disabled={loading}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#2196F3',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: loading ? 'not-allowed' : 'pointer',
-          }}
-        >
-          💰 Sync Vendas
-        </button>
-
-        <button
-          onClick={() => executeSync('full')}
-          disabled={loading}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#FF9800',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: loading ? 'not-allowed' : 'pointer',
-          }}
-        >
-          🔄 Sync Completo
-        </button>
-      </div>
-
-      {loading && (
-        <div style={{ padding: '20px', backgroundColor: '#FFF3CD' }}>
-          <p>⏳ Sincronizando... Isso pode levar alguns minutos.</p>
+          {status.sync_em_andamento && (
+            <p style={{ color: '#FF9800', fontWeight: 'bold' }}>
+              ⚠️ Sincronização em andamento...
+            </p>
+          )}
         </div>
       )}
 
+      {/* Botão de Sincronização */}
+      <button
+        onClick={handleSync}
+        disabled={loading || status?.sync_em_andamento}
+        style={{
+          padding: '15px 30px',
+          backgroundColor: loading ? '#ccc' : '#4CAF50',
+          color: 'white',
+          border: 'none',
+          borderRadius: '5px',
+          cursor: loading ? 'not-allowed' : 'pointer',
+          fontSize: '18px',
+          fontWeight: 'bold',
+        }}
+      >
+        {loading ? '⏳ Sincronizando...' : '🔄 Sincronizar Agora'}
+      </button>
+
+      {/* Progresso em Tempo Real */}
+      {loading && currentLog && (
+        <div style={{
+          marginTop: '20px',
+          padding: '15px',
+          backgroundColor: '#FFF3E0',
+          borderRadius: '5px'
+        }}>
+          <h3>🔄 Sincronização em Andamento</h3>
+          <p style={{ color: '#FF9800', fontWeight: 'bold' }}>{progress}</p>
+          <div style={{ marginTop: '10px', fontSize: '14px' }}>
+            <p>⏱️ <strong>Tempo:</strong> {currentLog.tempo_execucao_segundos || 0}s</p>
+            <p>📊 <strong>Processados:</strong> {currentLog.total_registros}</p>
+            <p>➕ <strong>Criados:</strong> {currentLog.registros_criados}</p>
+            <p>🔄 <strong>Atualizados:</strong> {currentLog.registros_atualizados}</p>
+            {currentLog.registros_erro > 0 && (
+              <p style={{ color: '#f44336' }}>❌ <strong>Erros:</strong> {currentLog.registros_erro}</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Erro */}
       {error && (
-        <div style={{ padding: '20px', backgroundColor: '#F8D7DA', color: '#721C24' }}>
-          <p>❌ {error}</p>
+        <div style={{
+          marginTop: '20px',
+          padding: '15px',
+          backgroundColor: '#FFEBEE',
+          color: '#C62828',
+          borderRadius: '5px'
+        }}>
+          <p>❌ <strong>{error}</strong></p>
         </div>
       )}
 
-      {lastResult && (
-        <div style={{ marginTop: '20px', padding: '20px', backgroundColor: '#D4EDDA' }}>
-          <h3>✅ Último Resultado:</h3>
-          <p><strong>Tipo:</strong> {lastResult.tipo}</p>
-          <p><strong>Duração:</strong> {lastResult.duracao_total_segundos.toFixed(2)}s</p>
-          <p><strong>Processados:</strong> {lastResult.total_registros_processados}</p>
-          <p><strong>Novos:</strong> {lastResult.total_novos}</p>
-          <p><strong>Atualizados:</strong> {lastResult.total_atualizados}</p>
-          <p><strong>Erros:</strong> {lastResult.total_erros}</p>
+      {/* Último Resultado Concluído */}
+      {!loading && currentLog && currentLog.status === 'concluido' && (
+        <div style={{
+          marginTop: '20px',
+          padding: '15px',
+          backgroundColor: '#E8F5E9',
+          borderRadius: '5px'
+        }}>
+          <h3>✅ Última Sincronização Concluída</h3>
+          <p><strong>Tipo:</strong> {currentLog.tipo_sync}</p>
+          <p><strong>Duração:</strong> {currentLog.tempo_execucao_segundos}s</p>
+          <p><strong>Processados:</strong> {currentLog.total_registros}</p>
+          <p><strong>Novos:</strong> {currentLog.registros_criados}</p>
+          <p><strong>Atualizados:</strong> {currentLog.registros_atualizados}</p>
+          <p><strong>Erros:</strong> {currentLog.registros_erro}</p>
+          <p style={{ fontSize: '12px', color: '#666', marginTop: '10px' }}>
+            Concluído em: {currentLog.data_fim ? new Date(currentLog.data_fim).toLocaleString('pt-BR') : '-'}
+          </p>
         </div>
       )}
     </div>
@@ -610,24 +852,38 @@ export function AdminSyncDashboard() {
 | 200 | Sucesso | Processar response |
 | 401 | Não autenticado | Redirecionar para login |
 | 403 | Não é admin | Mostrar mensagem de permissão negada |
+| 409 | Sync em andamento | Aguardar conclusão, tentar novamente depois |
 | 500 | Erro interno | Mostrar erro e tentar novamente |
-| 504 | Timeout | Aumentar timeout do request |
+| 504 | Timeout | Aumentar timeout do request (10min+) |
 
-### Exemplo de Tratamento
+### Exemplo de Tratamento Completo
 
 ```typescript
 try {
-  await syncFull();
+  const result = await syncFull();
+  console.log('Sucesso:', result);
+
 } catch (error: any) {
   if (error.response?.status === 401) {
     // Token expirado
     localStorage.removeItem('admin_token');
     window.location.href = '/login';
+
   } else if (error.response?.status === 403) {
+    // Não é admin
     alert('Apenas administradores podem executar sincronizações');
+
+  } else if (error.response?.status === 409) {
+    // Sync já em andamento
+    alert('Uma sincronização já está em andamento. Aguarde a conclusão.');
+
   } else if (error.code === 'ECONNABORTED') {
+    // Timeout
     alert('Sincronização demorou muito. Verifique o status mais tarde.');
+
   } else {
+    // Erro genérico
+    console.error('Erro:', error);
     alert('Erro na sincronização. Tente novamente.');
   }
 }
@@ -635,7 +891,7 @@ try {
 
 ---
 
-## 📊 Logs e Monitoramento
+## 📊 Monitoramento
 
 ### Logs Estruturados (Backend)
 
@@ -643,12 +899,13 @@ Todos os jobs geram logs estruturados (JSON):
 
 ```json
 {
-  "event": "sync_vendas_concluida",
-  "total_processados": 850,
-  "novos_vendas": 15,
-  "propostas_retroativas": 12,
-  "duracao_segundos": 390.5,
-  "timestamp": "2024-11-13T16:05:30.000Z"
+  "event": "sync_full_concluido",
+  "tipo": "full",
+  "total_processados": 940,
+  "total_criados": 17,
+  "total_atualizados": 923,
+  "total_erros": 0,
+  "timestamp": "2024-11-13T20:05:30.000Z"
 }
 ```
 
@@ -666,25 +923,151 @@ poetry run uvicorn app.main:app | grep "sync_"
 
 ## 🔄 Fluxo Recomendado no Frontend
 
-### Dashboard Admin - Sugestão de Workflow
+### ⚡ Execução Assíncrona (Background Processing)
+
+**IMPORTANTE:** O frontend **NÃO deve esperar** a resposta do `POST /sync/full`. A sincronização roda em **background** e o progresso é monitorado via polling.
+
+### Dashboard Admin - Workflow
 
 ```
-1. Página carrega → Buscar status (`GET /sync/status`)
-   └─> Mostrar última sincronização e totais
+1. Página carrega
+   └─> Buscar status (`GET /sync/status`)
+       └─> Mostrar última sincronização e totais
+   └─> Buscar últimos logs (`GET /sync/logs?limit=5`)
+       └─> Mostrar histórico recente
 
 2. Admin clica "Sincronizar"
-   ├─> Mostrar loading/spinner
-   ├─> Executar `POST /sync/full`
-   └─> Aguardar resposta (pode demorar 5-10min)
+   ├─> Verificar se sync já está em andamento (GET /sync/logs?limit=1)
+   │   └─> Se status="em_progresso": Informar e bloquear botão
+   ├─> Disparar `POST /sync/full` (NÃO aguardar resposta completa)
+   │   └─> Timeout baixo (5-10s) apenas para confirmar que iniciou
+   └─> Iniciar polling a cada 2-5s
 
-3. Resposta recebida
-   ├─> Sucesso: Mostrar resumo (processados, novos, erros)
-   ├─> Erro: Mostrar mensagem de erro
-   └─> Atualizar status (`GET /sync/status`)
+3. Polling de Progresso (a cada 2-5s)
+   └─> Buscar último log (`GET /sync/logs?limit=1`)
+       ├─> Se status="em_progresso": Mostrar spinner e mensagem
+       ├─> Se status="concluido": Mostrar sucesso e parar polling
+       ├─> Se status="erro": Mostrar erro e parar polling
+       └─> Atualizar UI com métricas (total_registros, registros_criados, etc.)
 
-4. Auto-refresh a cada 30s
-   └─> Atualizar status automaticamente
+4. Sync Concluída
+   ├─> Parar polling
+   ├─> Atualizar status geral (`GET /sync/status`)
+   ├─> Mostrar resumo final (processados, novos, erros)
+   └─> Reabilitar botão de sincronização
 ```
+
+### 🎯 Por Que Assíncrono?
+
+- **Performance:** Sync pode demorar 5-10 minutos
+- **UX:** Usuário não fica travado esperando
+- **Timeout:** Evita problemas de timeout HTTP
+- **Monitoramento:** Progresso em tempo real via polling
+
+---
+
+## 🚀 Migração da v1.0 para v2.0
+
+### Mudanças Necessárias
+
+Se você estava usando os endpoints antigos, faça as seguintes mudanças:
+
+#### ❌ ANTES (v1.0) - Síncrono
+
+```typescript
+// Três endpoints separados + espera completa da resposta
+await axios.post('/api/v1/sync/empreendimentos', {}, { timeout: 600000 });
+await axios.post('/api/v1/sync/vendas', {}, { timeout: 600000 });
+await axios.post('/api/v1/sync/full', {}, { timeout: 600000 });
+
+// Problema: Frontend trava esperando resposta (5-10min)
+```
+
+#### ✅ AGORA (v2.0) - Assíncrono com Polling
+
+```typescript
+// 1. Disparar sincronização (não aguardar conclusão)
+await axios.post('/api/v1/sync/full', {}, { timeout: 10000 });
+
+// 2. Polling para monitorar progresso
+const interval = setInterval(async () => {
+  const response = await axios.get('/api/v1/sync/logs?limit=1');
+  const log = response.data.logs[0];
+
+  if (log.status === 'concluido' || log.status === 'erro') {
+    clearInterval(interval);
+    console.log('Sync finalizada!', log);
+  } else {
+    console.log('Em progresso...', log.total_registros, 'processados');
+  }
+}, 3000); // Poll a cada 3s
+```
+
+### Benefícios da v2.0
+
+- ✅ **Mais Simples:** Um único endpoint para tudo
+- ✅ **Mais Consistente:** Mesma lógica para manual e scheduler
+- ✅ **Mais Rastreável:** Todos os syncs registrados em `sync_logs`
+- ✅ **Mais Seguro:** Lock system evita conflitos
+- ✅ **Menos Código:** Redução de ~150 linhas no backend
+- ✅ **UX Melhor:** Frontend não trava, progresso em tempo real
+- ✅ **Sem Timeout:** Não há limite de tempo HTTP
+
+---
+
+## 📚 Resumo - Melhores Práticas
+
+### ✅ Como Implementar Corretamente
+
+1. **Disparar Sincronização:**
+   ```typescript
+   // Timeout curto (10s) apenas para confirmar que iniciou
+   POST /api/v1/sync/full (timeout: 10000ms)
+   ```
+
+2. **Monitorar Progresso via Polling:**
+   ```typescript
+   // Buscar último log a cada 3-5s
+   GET /api/v1/sync/logs?limit=1
+   ```
+
+3. **Verificar Status:**
+   ```typescript
+   if (log.status === 'em_progresso') {
+     // Mostrar spinner + métricas
+   } else if (log.status === 'concluido') {
+     // Parar polling + mostrar sucesso
+   } else if (log.status === 'erro') {
+     // Parar polling + mostrar erro
+   }
+   ```
+
+4. **Cleanup:**
+   ```typescript
+   // Sempre limpar polling ao desmontar componente
+   useEffect(() => {
+     return () => clearInterval(pollingInterval);
+   }, []);
+   ```
+
+### ❌ O Que NÃO Fazer
+
+- ❌ **NÃO** aguardar resposta completa do `POST /sync/full`
+- ❌ **NÃO** usar timeout alto (600s) no POST
+- ❌ **NÃO** travar UI esperando sync completar
+- ❌ **NÃO** fazer polling muito rápido (< 2s)
+- ❌ **NÃO** esquecer de parar polling ao desmontar componente
+- ❌ **NÃO** fazer múltiplas requisições POST simultâneas (usar lock system)
+
+### 🎯 Intervalo de Polling Recomendado
+
+| Cenário | Intervalo | Motivo |
+|---------|-----------|--------|
+| **Desenvolvimento** | 2-3s | Feedback rápido para testes |
+| **Produção** | 3-5s | Equilíbrio entre UX e carga no servidor |
+| **Alta Carga** | 5-10s | Reduzir carga quando muitos usuários online |
+
+**Importante:** Sync pode demorar 5-10 minutos. O polling deve continuar até status mudar para `concluido` ou `erro`.
 
 ---
 
@@ -697,6 +1080,22 @@ poetry run uvicorn app.main:app | grep "sync_"
 
 ---
 
-**Última Atualização:** 13/11/2024  
-**Versão:** 1.0  
+**Última Atualização:** 13/11/2025 (v2.0 - Padrão Assíncrono)
+**Versão:** 2.0
 **Mantido por:** Equipe Backend LCP Dashboard
+
+---
+
+## 📝 Changelog
+
+### v2.0 (13/11/2025)
+- ✅ Endpoint unificado: Apenas `/sync/full` (removidos `/empreendimentos` e `/vendas`)
+- ✅ Código centralizado: Manual e scheduler usam mesma função
+- ✅ Padrão assíncrono: Frontend não aguarda resposta completa
+- ✅ Polling via `/sync/logs`: Monitoramento de progresso em tempo real
+- ✅ Lock system: Previne execuções simultâneas
+- ✅ Logging completo: Todas as execuções registradas em `sync_logs`
+
+### v1.0 (04/11/2025)
+- Versão inicial com 3 endpoints separados
+- Execução síncrona (timeout de 10min)
