@@ -175,12 +175,15 @@ export const DashboardFull = () => {
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
             <select
               value={filters.empreendimento_id || ''}
-              onChange={(e) =>
-                setFilters({
-                  ...filters,
-                  empreendimento_id: e.target.value ? Number(e.target.value) : undefined,
-                })
-              }
+              onChange={(e) => {
+                const newFilters = { ...filters };
+                if (e.target.value) {
+                  newFilters.empreendimento_id = Number(e.target.value);
+                } else {
+                  delete newFilters.empreendimento_id;
+                }
+                setFilters(newFilters);
+              }}
               className="rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-lcp-blue sm:px-4 sm:text-sm"
             >
               <option value="">Geral - Todos os Empreendimentos</option>

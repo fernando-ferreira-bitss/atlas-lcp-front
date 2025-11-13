@@ -39,8 +39,8 @@ export const VendasPorEmpreendimentoChart = ({ data }: VendasPorEmpreendimentoCh
           }}
         />
         <Legend />
-        <Bar dataKey="propostas" name="Propostas" fill="#0B2D5C" stackId="a" />
         <Bar dataKey="vendas" name="Vendas" fill="#20B187" stackId="a" />
+        <Bar dataKey="propostas" name="Propostas" fill="#0B2D5C" stackId="a" />
       </BarChart>
     </ResponsiveContainer>
   );
