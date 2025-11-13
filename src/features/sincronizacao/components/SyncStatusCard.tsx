@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui
 interface SyncStatusCardProps {
   status: SyncStatusGeral | undefined;
   isLoading: boolean;
+  error?: Error | null;
   onRefresh: () => void;
   autoRefreshEnabled: boolean;
   onToggleAutoRefresh: (enabled: boolean) => void;
@@ -20,6 +21,7 @@ interface SyncStatusCardProps {
 export const SyncStatusCard: FC<SyncStatusCardProps> = ({
   status,
   isLoading,
+  error,
   onRefresh,
   autoRefreshEnabled,
   onToggleAutoRefresh,
@@ -147,9 +149,27 @@ export const SyncStatusCard: FC<SyncStatusCardProps> = ({
           }
 
           return (
-            <div className="flex items-center justify-center gap-2 py-8 text-red-600">
-              <AlertCircle className="h-5 w-5" />
-              <span>Erro ao carregar status</span>
+            <div className="rounded-lg border border-red-200 bg-red-50 p-6">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h3 className="font-semibold text-red-900 mb-1">
+                    Erro ao carregar status de sincronização
+                  </h3>
+                  <p className="text-sm text-red-700">
+                    {error?.message || 'Não foi possível carregar os dados de sincronização. Tente novamente.'}
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onRefresh}
+                    className="mt-3 border-red-300 text-red-700 hover:bg-red-100"
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Tentar Novamente
+                  </Button>
+                </div>
+              </div>
             </div>
           );
         })()}

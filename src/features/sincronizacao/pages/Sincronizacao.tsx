@@ -27,7 +27,7 @@ export const Sincronizacao = () => {
     clearLastResult,
   } = useSync();
 
-  const { status, isLoading, refresh, autoRefreshEnabled, toggleAutoRefresh } = useSyncStatus();
+  const { status, isLoading, error: statusError, refresh, autoRefreshEnabled, toggleAutoRefresh } = useSyncStatus();
 
   const [syncingType, setSyncingType] = useState<SyncType>(null);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
@@ -105,6 +105,7 @@ export const Sincronizacao = () => {
       <SyncStatusCard
         status={status}
         isLoading={isLoading}
+        error={statusError}
         onRefresh={refresh}
         autoRefreshEnabled={autoRefreshEnabled}
         onToggleAutoRefresh={toggleAutoRefresh}
