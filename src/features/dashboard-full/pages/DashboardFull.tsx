@@ -1,4 +1,4 @@
-import { Maximize, Minimize } from 'lucide-react';
+import { Calendar, Maximize, Minimize, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { KPIFunnelChart } from '../components/charts/KPIFunnelChart';
@@ -19,15 +19,65 @@ import {
 } from '@/features/dashboard/hooks/useDashboard';
 import { useEmpreendimentos } from '@/features/empreendimentos/hooks/useEmpreendimentos';
 import { Loading } from '@/shared/components/common';
+import { Button } from '@/shared/components/ui/button';
+import { Label } from '@/shared/components/ui/label';
 import { formatCurrency } from '@/shared/utils/format';
 
+type PeriodoType = 'mensal' | 'ytd' | 'ultimos_12_meses' | 'personalizado';
+
 export const DashboardFull = () => {
-  const [filters, setFilters] = useState<IFilters>({});
+  const hoje = new Date();
+  const ano = hoje.getFullYear();
+  const mes = hoje.getMonth();
+
+  // Função para obter filtros salvos do localStorage
+  const getSavedFilters = (): {
+    filters: IFilters;
+    periodo: PeriodoType;
+    dataInicio: string;
+    dataFim: string;
+  } => {
+    try {
+      const saved = localStorage.getItem('dashboardFullFilters');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          filters: parsed.filters || {},
+          periodo: parsed.periodo || 'mensal',
+          dataInicio: parsed.dataInicio || new Date(ano, mes, 1).toISOString().split('T')[0],
+          dataFim: parsed.dataFim || hoje.toISOString().split('T')[0],
+        };
+      }
+    } catch (error) {
+      console.error('Erro ao recuperar filtros salvos:', error);
+    }
+
+    // Valores padrão se não houver salvos
+    return {
+      filters: {
+        data_inicio: new Date(ano, mes, 1).toISOString().split('T')[0],
+        data_fim: hoje.toISOString().split('T')[0],
+        periodo: 'mensal',
+      },
+      periodo: 'mensal',
+      dataInicio: new Date(ano, mes, 1).toISOString().split('T')[0],
+      dataFim: hoje.toISOString().split('T')[0],
+    };
+  };
+
+  const savedData = getSavedFilters();
+
+  // Inicializar com filtros salvos ou período mensal
+  const [filters, setFilters] = useState<IFilters>(savedData.filters);
+  const [periodo, setPeriodo] = useState<PeriodoType>(savedData.periodo);
+  const [dataInicio, setDataInicio] = useState(savedData.dataInicio);
+  const [dataFim, setDataFim] = useState(savedData.dataFim);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [empSearch, setEmpSearch] = useState('');
   const [showEmpList, setShowEmpList] = useState(false);
+  const [showPeriodFilter, setShowPeriodFilter] = useState(false);
 
   const currentYear = new Date().getFullYear();
   const previousYear = currentYear - 1;
@@ -36,10 +86,76 @@ export const DashboardFull = () => {
   const { data: kpis, isLoading } = useDashboardKPIs(filters);
   const { data: empreendimentos } = useEmpreendimentos();
 
-  // Filtra empreendimentos baseado na busca
-  const empreendimentosFiltrados = empreendimentos?.filter((emp) =>
-    emp.nome.toLowerCase().includes(empSearch.toLowerCase())
-  );
+  // Filtra empreendimentos baseado na busca - sempre mostra todos se não houver busca
+  const empreendimentosFiltrados = empSearch
+    ? empreendimentos?.filter((emp) => emp.nome.toLowerCase().includes(empSearch.toLowerCase()))
+    : empreendimentos;
+
+  // Funções de manipulação de período
+  const calculateDates = (tipo: PeriodoType): { data_inicio?: string; data_fim?: string } => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+
+    switch (tipo) {
+      case 'mensal': {
+        return {
+          data_inicio: new Date(year, month, 1).toISOString().split('T')[0],
+          data_fim: today.toISOString().split('T')[0],
+        };
+      }
+      case 'ytd': {
+        return {
+          data_inicio: `${year}-01-01`,
+          data_fim: today.toISOString().split('T')[0],
+        };
+      }
+      case 'ultimos_12_meses': {
+        const oneYearAgo = new Date(year - 1, month, today.getDate());
+        return {
+          data_inicio: oneYearAgo.toISOString().split('T')[0],
+          data_fim: today.toISOString().split('T')[0],
+        };
+      }
+      case 'personalizado': {
+        return {
+          data_inicio: dataInicio || undefined,
+          data_fim: dataFim || undefined,
+        };
+      }
+      default:
+        return {};
+    }
+  };
+
+  const handlePeriodoChange = (novoPeriodo: PeriodoType) => {
+    setPeriodo(novoPeriodo);
+    if (novoPeriodo !== 'personalizado') {
+      const dates = calculateDates(novoPeriodo);
+      const newDataInicio = dates.data_inicio || '';
+      const newDataFim = dates.data_fim || '';
+      setDataInicio(newDataInicio);
+      setDataFim(newDataFim);
+      setFilters({
+        ...filters,
+        ...dates,
+        periodo: novoPeriodo,
+      });
+    }
+  };
+
+  const handleApplyCustomDates = () => {
+    if (dataInicio && dataFim) {
+      setPeriodo('personalizado');
+      setFilters({
+        ...filters,
+        data_inicio: dataInicio,
+        data_fim: dataFim,
+        periodo: 'personalizado',
+      });
+      setShowPeriodFilter(false);
+    }
+  };
   const { data: graficoData } = useGraficoVendasMes(currentYear, filters.empreendimento_id);
   const { data: topEmpreendimentos } = useTopEmpreendimentos({
     data_inicio: filters.data_inicio,
@@ -56,6 +172,24 @@ export const DashboardFull = () => {
     previousYear,
     filters.empreendimento_id
   );
+
+  // Salva filtros no localStorage sempre que mudarem
+  useEffect(() => {
+    const filtersToSave = {
+      filters,
+      periodo,
+      dataInicio,
+      dataFim,
+    };
+    localStorage.setItem('dashboardFullFilters', JSON.stringify(filtersToSave));
+  }, [filters, periodo, dataInicio, dataFim]);
+
+  // Abre automaticamente o painel de datas se o período for personalizado
+  useEffect(() => {
+    if (periodo === 'personalizado') {
+      setShowPeriodFilter(true);
+    }
+  }, [periodo]);
 
   // Atualiza relógio a cada minuto
   useEffect(() => {
@@ -191,16 +325,43 @@ export const DashboardFull = () => {
 
       {/* Header - oculta em fullscreen */}
       {!isFullscreen && (
-        <div className="mb-3 flex flex-col gap-3 sm:mb-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-            <div className="relative min-w-[300px]">
+        <div className="mb-3 flex flex-col gap-3 sm:mb-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="text-lg font-bold text-lcp-blue sm:text-xl">
+              Dashboard LCP {selectedEmp ? `- ${selectedEmp.nome}` : ''}
+            </h1>
+
+            <div className="text-left sm:text-right">
+              <p className="text-xs text-gray-600 sm:text-sm">
+                {currentTime.toLocaleDateString('pt-BR', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </p>
+              <p className="text-base font-semibold text-lcp-blue sm:text-lg">
+                {currentTime.toLocaleTimeString('pt-BR', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+            {/* Filtro de Empreendimento */}
+            <div className="relative min-w-[280px]">
               <input
                 id="empreendimento-search"
                 type="text"
                 placeholder="Buscar empreendimento..."
                 value={empSearch}
                 onChange={(e) => setEmpSearch(e.target.value)}
-                onFocus={() => setShowEmpList(true)}
+                onFocus={() => {
+                  setEmpSearch(''); // Limpa o campo ao focar
+                  setShowEmpList(true);
+                }}
                 className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-lcp-blue sm:px-4 sm:text-sm"
               />
               {showEmpList && (
@@ -265,27 +426,97 @@ export const DashboardFull = () => {
               )}
             </div>
 
-            <h1 className="text-lg font-bold text-lcp-blue sm:text-xl">
-              Dashboard LCP {selectedEmp ? `- ${selectedEmp.nome}` : ''}
-            </h1>
+            {/* Botões de Período */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant={periodo === 'mensal' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handlePeriodoChange('mensal')}
+                className="text-xs"
+              >
+                Mês Atual
+              </Button>
+              <Button
+                variant={periodo === 'ytd' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handlePeriodoChange('ytd')}
+                className="text-xs"
+              >
+                YTD
+              </Button>
+              <Button
+                variant={periodo === 'ultimos_12_meses' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handlePeriodoChange('ultimos_12_meses')}
+                className="text-xs"
+              >
+                12 Meses
+              </Button>
+              <Button
+                variant={periodo === 'personalizado' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setShowPeriodFilter(!showPeriodFilter)}
+                className="text-xs"
+              >
+                <Calendar className="mr-1 h-3 w-3" />
+                Personalizado
+              </Button>
+            </div>
           </div>
 
-          <div className="text-left sm:text-right">
-            <p className="text-xs text-gray-600 sm:text-sm">
-              {currentTime.toLocaleDateString('pt-BR', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </p>
-            <p className="text-base font-semibold text-lcp-blue sm:text-lg">
-              {currentTime.toLocaleTimeString('pt-BR', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </p>
-          </div>
+          {/* Filtro de Período Personalizado */}
+          {showPeriodFilter && (
+            <div className="rounded-lg border bg-white p-3 shadow-sm">
+              <div className="mb-2 flex items-center justify-between">
+                <Label className="text-sm font-semibold">Período Personalizado</Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowPeriodFilter(false)}
+                  className="h-6 w-6 p-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+                <div className="flex-1">
+                  <Label htmlFor="dataInicio" className="mb-1 block text-xs">
+                    Data Início
+                  </Label>
+                  <input
+                    id="dataInicio"
+                    type="date"
+                    value={dataInicio}
+                    onChange={(e) => setDataInicio(e.target.value)}
+                    onClick={(e) => {
+                      const input = e.target as HTMLInputElement;
+                      input.showPicker?.();
+                    }}
+                    className="w-full cursor-pointer rounded-md border border-gray-300 bg-white px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-lcp-blue"
+                  />
+                </div>
+                <div className="flex-1">
+                  <Label htmlFor="dataFim" className="mb-1 block text-xs">
+                    Data Fim
+                  </Label>
+                  <input
+                    id="dataFim"
+                    type="date"
+                    value={dataFim}
+                    onChange={(e) => setDataFim(e.target.value)}
+                    onClick={(e) => {
+                      const input = e.target as HTMLInputElement;
+                      input.showPicker?.();
+                    }}
+                    className="w-full cursor-pointer rounded-md border border-gray-300 bg-white px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-lcp-blue"
+                  />
+                </div>
+                <Button size="sm" onClick={handleApplyCustomDates} className="text-xs">
+                  Aplicar
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -334,7 +565,11 @@ export const DashboardFull = () => {
           <div
             className={`overflow-auto ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'max-h-[180px]'}`}
           >
-            <UltimasVendasCompactTable empreendimentoId={filters.empreendimento_id} />
+            <UltimasVendasCompactTable
+              empreendimentoId={filters.empreendimento_id}
+              dataInicio={filters.data_inicio}
+              dataFim={filters.data_fim}
+            />
           </div>
         </div>
 

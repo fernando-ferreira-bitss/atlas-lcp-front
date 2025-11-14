@@ -13,10 +13,15 @@ export const MetaGaugeChart = ({
   subtitle,
   isFullscreen = false,
 }: MetaGaugeChartProps) => {
-  const value = Math.min(Math.max(percentual, 0), 100);
+  // Valor real para exibição (pode ultrapassar 100%)
+  const realValue = Math.max(percentual, 0);
+
+  // Valor para o gráfico (limitado a 100% para não distorcer o velocímetro)
+  const chartValue = Math.min(realValue, 100);
+
   const data = [
-    { name: 'Atingido', value },
-    { name: 'Restante', value: 100 - value },
+    { name: 'Atingido', value: chartValue },
+    { name: 'Restante', value: 100 - chartValue },
   ];
 
   const COLORS = ['#20B187', '#e5e7eb']; // Verde LCP e gray-200
@@ -52,7 +57,7 @@ export const MetaGaugeChart = ({
         <p
           className={`font-bold text-lcp-green ${isFullscreen ? 'text-4xl lg:text-5xl' : 'text-2xl sm:text-3xl lg:text-4xl'}`}
         >
-          {value.toFixed(1)}%
+          {realValue.toFixed(1)}%
         </p>
         <p
           className={`font-semibold text-lcp-blue ${isFullscreen ? 'text-base lg:text-lg' : 'text-xs sm:text-sm lg:text-base'}`}

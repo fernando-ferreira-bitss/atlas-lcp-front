@@ -6,10 +6,14 @@ import { formatCurrency, formatDate } from '@/shared/utils/format';
 
 interface UltimasVendasCompactTableProps {
   empreendimentoId?: number;
+  dataInicio?: string;
+  dataFim?: string;
 }
 
 export const UltimasVendasCompactTable = ({
   empreendimentoId,
+  dataInicio,
+  dataFim,
 }: UltimasVendasCompactTableProps = {}) => {
   const {
     data: vendas,
@@ -18,6 +22,8 @@ export const UltimasVendasCompactTable = ({
   } = useVendas({
     limit: 5,
     empreendimento_id: empreendimentoId,
+    data_inicio: dataInicio,
+    data_fim: dataFim,
   });
 
   if (isLoading) {

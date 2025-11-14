@@ -136,7 +136,6 @@ export const UltimasVendasTable = ({ empreendimentoId }: UltimasVendasTableProps
             <TableRow>
               <TableHead>Empreendimento</TableHead>
               <TableHead>Cliente</TableHead>
-              <TableHead className="hidden md:table-cell">Condição</TableHead>
               <TableHead>VGV</TableHead>
               <TableHead className="hidden sm:table-cell">Data</TableHead>
               <TableHead className="text-right">Ação</TableHead>
@@ -149,9 +148,6 @@ export const UltimasVendasTable = ({ empreendimentoId }: UltimasVendasTableProps
                   {venda.empreendimento_nome || `ID: ${venda.empreendimento_id}`}
                 </TableCell>
                 <TableCell>{venda.cliente_nome}</TableCell>
-                <TableCell className="hidden md:table-cell">
-                  {venda.forma_pagamento || 'Não informado'}
-                </TableCell>
                 <TableCell>{formatCurrency(venda.valor_venda)}</TableCell>
                 <TableCell className="hidden sm:table-cell">
                   {formatDate(venda.data_venda)}

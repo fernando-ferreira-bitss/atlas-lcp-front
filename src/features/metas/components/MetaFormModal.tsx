@@ -90,10 +90,10 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
     },
   });
 
-  // Filtra empreendimentos baseado na busca
-  const empreendimentosFiltrados = empreendimentos?.filter((emp) =>
-    emp.nome.toLowerCase().includes(empSearch.toLowerCase())
-  );
+  // Filtra empreendimentos baseado na busca - sempre mostra todos se não houver busca
+  const empreendimentosFiltrados = empSearch
+    ? empreendimentos?.filter((emp) => emp.nome.toLowerCase().includes(empSearch.toLowerCase()))
+    : empreendimentos;
 
   // Fecha o dropdown ao clicar fora
   useEffect(() => {
@@ -221,7 +221,10 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
                   placeholder="Buscar empreendimento..."
                   value={empSearch}
                   onChange={(e) => setEmpSearch(e.target.value)}
-                  onFocus={() => setShowEmpList(true)}
+                  onFocus={() => {
+                    setEmpSearch(''); // Limpa o campo ao focar
+                    setShowEmpList(true);
+                  }}
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
                 {showEmpList && (
