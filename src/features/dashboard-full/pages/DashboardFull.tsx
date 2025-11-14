@@ -1,4 +1,4 @@
-import { Calendar, Maximize, Minimize, X } from 'lucide-react';
+import { Calendar, Maximize, Minimize, RotateCcw, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { KPIFunnelChart } from '../components/charts/KPIFunnelChart';
@@ -36,6 +36,7 @@ export const DashboardFull = () => {
     periodo: PeriodoType;
     dataInicio: string;
     dataFim: string;
+    empSearch: string;
   } => {
     try {
       const saved = localStorage.getItem('dashboardFullFilters');
@@ -46,6 +47,7 @@ export const DashboardFull = () => {
           periodo: parsed.periodo || 'mensal',
           dataInicio: parsed.dataInicio || new Date(ano, mes, 1).toISOString().split('T')[0],
           dataFim: parsed.dataFim || hoje.toISOString().split('T')[0],
+          empSearch: parsed.empSearch || '',
         };
       }
     } catch (error) {
@@ -62,6 +64,7 @@ export const DashboardFull = () => {
       periodo: 'mensal',
       dataInicio: new Date(ano, mes, 1).toISOString().split('T')[0],
       dataFim: hoje.toISOString().split('T')[0],
+      empSearch: '',
     };
   };
 
@@ -75,7 +78,7 @@ export const DashboardFull = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  const [empSearch, setEmpSearch] = useState('');
+  const [empSearch, setEmpSearch] = useState(savedData.empSearch);
   const [showEmpList, setShowEmpList] = useState(false);
   const [showPeriodFilter, setShowPeriodFilter] = useState(false);
 
@@ -156,6 +159,24 @@ export const DashboardFull = () => {
       setShowPeriodFilter(false);
     }
   };
+
+  const handleClearFilters = () => {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = hoje.getMonth();
+    const newDataInicio = new Date(ano, mes, 1).toISOString().split('T')[0];
+    const newDataFim = hoje.toISOString().split('T')[0];
+
+    setPeriodo('mensal');
+    setDataInicio(newDataInicio);
+    setDataFim(newDataFim);
+    setEmpSearch('');
+    setFilters({
+      data_inicio: newDataInicio,
+      data_fim: newDataFim,
+      periodo: 'mensal',
+    });
+  };
   const { data: graficoData } = useGraficoVendasMes(currentYear, filters.empreendimento_id);
   const { data: topEmpreendimentos } = useTopEmpreendimentos({
     data_inicio: filters.data_inicio,
@@ -180,9 +201,10 @@ export const DashboardFull = () => {
       periodo,
       dataInicio,
       dataFim,
+      empSearch,
     };
     localStorage.setItem('dashboardFullFilters', JSON.stringify(filtersToSave));
-  }, [filters, periodo, dataInicio, dataFim]);
+  }, [filters, periodo, dataInicio, dataFim, empSearch]);
 
   // Abre automaticamente o painel de datas se o período for personalizado
   useEffect(() => {
@@ -190,6 +212,16 @@ export const DashboardFull = () => {
       setShowPeriodFilter(true);
     }
   }, [periodo]);
+
+  // Preenche o campo de busca com o nome do empreendimento selecionado
+  useEffect(() => {
+    if (filters.empreendimento_id && empreendimentos) {
+      const emp = empreendimentos.find((e) => e.id === filters.empreendimento_id);
+      if (emp) {
+        setEmpSearch(emp.nome);
+      }
+    }
+  }, [filters.empreendimento_id, empreendimentos]);
 
   // Atualiza relógio a cada minuto
   useEffect(() => {
@@ -460,6 +492,16 @@ export const DashboardFull = () => {
               >
                 <Calendar className="mr-1 h-3 w-3" />
                 Personalizado
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClearFilters}
+                className="text-xs"
+                title="Limpar todos os filtros"
+              >
+                <RotateCcw className="mr-1 h-3 w-3" />
+                Limpar
               </Button>
             </div>
           </div>
