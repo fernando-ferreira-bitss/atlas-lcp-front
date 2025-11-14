@@ -2,6 +2,7 @@ import {
   Bar,
   CartesianGrid,
   ComposedChart,
+  LabelList,
   Legend,
   Line,
   ResponsiveContainer,
@@ -78,17 +79,22 @@ export const UnifiedSalesChart = ({ vendasMesData, comparativoData }: UnifiedSal
             borderRadius: '8px',
             fontSize: '11px',
           }}
-          formatter={(value: number, name: string) => {
+          formatter={(value: number, name: string, props: any) => {
             const labels: Record<string, string> = {
-              meta: 'Meta (R$)',
-              realizado: 'Realizado (R$)',
-              anoAnterior: 'Ano Anterior (Qtd)',
-              anoAtual: 'Ano Atual (Qtd)',
+              meta: 'Meta',
+              realizado: 'Realizado',
+              anoAnterior: 'Ano Anterior',
+              anoAtual: 'Ano Atual',
             };
+
+            // Get the dataKey from props
+            const dataKey = props.dataKey || name;
+
             // Only format as currency for meta and realizado
             const formattedValue =
-              name === 'meta' || name === 'realizado' ? formatCurrency(value) : value;
-            return [formattedValue, labels[name] || name];
+              dataKey === 'meta' || dataKey === 'realizado' ? formatCurrency(value) : value;
+
+            return [formattedValue, labels[dataKey] || name];
           }}
         />
         <Legend
