@@ -15,7 +15,7 @@ const getApiBaseUrl = (): string => {
 // Configuração base do cliente Axios
 export const apiClient = axios.create({
   baseURL: `${getApiBaseUrl()}/api/v1`,
-  timeout: 10000,
+  timeout: 60000, // 60 segundos
   headers: {
     'Content-Type': 'application/json',
   },

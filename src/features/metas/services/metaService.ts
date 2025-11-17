@@ -79,6 +79,7 @@ class MetaService {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      timeout: 60000, // 60 segundos para importação
     });
   }
 
