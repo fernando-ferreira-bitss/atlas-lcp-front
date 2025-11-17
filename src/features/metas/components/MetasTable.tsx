@@ -141,25 +141,27 @@ export const MetasTable = ({ metas, isLoading }: MetasTableProps) => {
                     {meta.meta_unidades}
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center justify-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEdit(meta)}
-                        title="Editar"
-                      >
-                        <Edit className="h-4 w-4 text-blue-600" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(meta.id, descricao)}
-                        disabled={deleteMeta.isPending}
-                        title="Excluir"
-                      >
-                        <Trash2 className="h-4 w-4 text-red-600" />
-                      </Button>
-                    </div>
+                    {!isConsolidado && (
+                      <div className="flex items-center justify-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEdit(meta)}
+                          title="Editar"
+                        >
+                          <Edit className="h-4 w-4 text-blue-600" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(meta.id, descricao)}
+                          disabled={deleteMeta.isPending}
+                          title="Excluir"
+                        >
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </div>
+                    )}
                   </TableCell>
                 </TableRow>
               );

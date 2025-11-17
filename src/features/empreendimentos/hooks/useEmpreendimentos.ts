@@ -12,6 +12,17 @@ export const useEmpreendimentos = (): UseQueryResult<Empreendimento[], Error> =>
     staleTime: 1000 * 60 * 10, // 10 minutos
   });
 
+/**
+ * Hook para buscar todos os empreendimentos sem paginação
+ * Usa a rota /api/v1/empreendimentos/all
+ */
+export const useAllEmpreendimentos = (): UseQueryResult<Empreendimento[], Error> =>
+  useQuery({
+    queryKey: ['empreendimentos', 'all'],
+    queryFn: () => empreendimentoService.getAllUnpaginated(),
+    staleTime: 1000 * 60 * 10, // 10 minutos
+  });
+
 export const useEmpreendimento = (id: number): UseQueryResult<Empreendimento, Error> =>
   useQuery({
     queryKey: ['empreendimento', id],

@@ -8,7 +8,7 @@ import { useMetas } from '../hooks/useMetas';
 
 import type { MetaFilters, MetaWithEmpreendimento } from '../types';
 
-import { useEmpreendimentos } from '@/features/empreendimentos/hooks/useEmpreendimentos';
+import { useAllEmpreendimentos } from '@/features/empreendimentos/hooks/useEmpreendimentos';
 import { Button } from '@/shared/components/ui/button';
 import {
   Card,
@@ -42,7 +42,7 @@ export const Metas = () => {
   const [isImportExpanded, setIsImportExpanded] = useState(false);
 
   const { data: metas, isLoading, refetch } = useMetas(filters);
-  const { data: empreendimentos } = useEmpreendimentos();
+  const { data: empreendimentos } = useAllEmpreendimentos();
 
   // Gerar array de anos (últimos 5 + próximos 5)
   const anos = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);

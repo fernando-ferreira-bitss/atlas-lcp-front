@@ -9,6 +9,14 @@ class EmpreendimentoService {
     return apiClient.get<never, Empreendimento[]>(this.baseURL, { params });
   }
 
+  /**
+   * Busca todos os empreendimentos sem paginação
+   * Usa a rota /all que retorna todos os registros ativos
+   */
+  async getAllUnpaginated(): Promise<Empreendimento[]> {
+    return apiClient.get<never, Empreendimento[]>(`${this.baseURL}/all`);
+  }
+
   async getById(id: number): Promise<Empreendimento> {
     return apiClient.get<never, Empreendimento>(`${this.baseURL}/${id}`);
   }

@@ -9,7 +9,7 @@ import { useCreateMeta, useUpdateMeta } from '../hooks/useMetas';
 
 import type { Meta } from '../types';
 
-import { useEmpreendimentos } from '@/features/empreendimentos/hooks/useEmpreendimentos';
+import { useAllEmpreendimentos } from '@/features/empreendimentos/hooks/useEmpreendimentos';
 import { Button } from '@/shared/components/ui/button';
 import {
   Dialog,
@@ -45,7 +45,7 @@ const MESES = [
 ];
 
 const metaSchema = z.object({
-  empreendimento_id: z.string().optional(),
+  empreendimento_id: z.string().min(1, 'Empreendimento é obrigatório'),
   mes: z.number().min(1, 'Mês é obrigatório').max(12),
   ano: z.number().min(2020, 'Ano mínimo: 2020').max(2100, 'Ano máximo: 2100'),
   meta_vendas: z.string().min(1, 'Meta VGV é obrigatória'),
@@ -64,7 +64,7 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
   const isEditing = !!meta;
   const currentYear = new Date().getFullYear();
 
-  const { data: empreendimentos } = useEmpreendimentos();
+  const { data: empreendimentos } = useAllEmpreendimentos();
   const createMeta = useCreateMeta();
   const updateMeta = useUpdateMeta();
 
@@ -82,7 +82,7 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
   } = useForm<MetaFormData>({
     resolver: zodResolver(metaSchema),
     defaultValues: {
-      empreendimento_id: 'consolidado',
+      empreendimento_id: undefined,
       mes: new Date().getMonth() + 1,
       ano: currentYear,
       meta_vendas: '',
@@ -114,9 +114,8 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
   // Preencher form ao editar
   useEffect(() => {
     if (meta && open) {
-      const empId = meta.empreendimento_id?.toString() || 'consolidado';
       reset({
-        empreendimento_id: empId,
+        empreendimento_id: meta.empreendimento_id?.toString(),
         mes: meta.mes,
         ano: meta.ano,
         meta_vendas: meta.meta_vendas,
@@ -124,15 +123,11 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
       });
 
       // Atualizar campo de busca
-      if (empId === 'consolidado') {
-        setEmpSearch('Consolidado (Geral)');
-      } else {
-        const emp = empreendimentos?.find((e) => e.id === meta.empreendimento_id);
-        setEmpSearch(emp?.nome || '');
-      }
+      const emp = empreendimentos?.find((e) => e.id === meta.empreendimento_id);
+      setEmpSearch(emp?.nome || '');
     } else if (!open) {
       reset({
-        empreendimento_id: 'consolidado',
+        empreendimento_id: undefined,
         mes: new Date().getMonth() + 1,
         ano: currentYear,
         meta_vendas: '',
@@ -152,8 +147,7 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
       );
 
       const payload = {
-        empreendimento_id:
-          data.empreendimento_id === 'consolidado' ? null : Number(data.empreendimento_id),
+        empreendimento_id: Number(data.empreendimento_id),
         mes: data.mes,
         ano: data.ano,
         meta_vendas: metaVendasNumber,
@@ -211,9 +205,7 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
           {/* Empreendimento - Oculto na edição */}
           {!isEditing && (
             <div className="space-y-2">
-              <Label htmlFor="empreendimento_id">
-                Empreendimento <span className="text-xs text-gray-500">(opcional)</span>
-              </Label>
+              <Label htmlFor="empreendimento_id">Empreendimento *</Label>
               <div className="relative">
                 <input
                   id="emp-search-modal"
@@ -229,25 +221,6 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
                 />
                 {showEmpList && (
                   <div className="emp-dropdown absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-background shadow-lg">
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      className="cursor-pointer px-3 py-2 text-sm hover:bg-gray-100"
-                      onClick={() => {
-                        setValue('empreendimento_id', 'consolidado');
-                        setEmpSearch('Consolidado (Geral)');
-                        setShowEmpList(false);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          setValue('empreendimento_id', 'consolidado');
-                          setEmpSearch('Consolidado (Geral)');
-                          setShowEmpList(false);
-                        }
-                      }}
-                    >
-                      Consolidado (Geral)
-                    </div>
                     {empreendimentosFiltrados?.map((emp) => (
                       <div
                         key={emp.id}
@@ -280,6 +253,9 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
                   </div>
                 )}
               </div>
+              {errors.empreendimento_id && (
+                <p className="text-xs text-red-500">{errors.empreendimento_id.message}</p>
+              )}
             </div>
           )}
 
