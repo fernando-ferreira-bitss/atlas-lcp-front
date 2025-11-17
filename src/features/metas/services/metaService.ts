@@ -88,12 +88,11 @@ class MetaService {
    * @returns Blob do arquivo Excel
    */
   async downloadTemplate(ano?: number): Promise<Blob> {
-    const response = await apiClient.get(`${this.baseURL}/template`, {
+    // O interceptor já retorna response.data, então response já é o Blob
+    return apiClient.get(`${this.baseURL}/template`, {
       params: ano ? { ano } : undefined,
       responseType: 'blob',
     });
-
-    return response.data;
   }
 
   /**
