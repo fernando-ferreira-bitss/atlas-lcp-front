@@ -17,8 +17,8 @@ import {
   useGraficoVendasMes,
   useTopGrupos,
 } from '@/features/dashboard/hooks/useDashboard';
-import { GrupoSelect } from '@/shared/components/common/GrupoSelect';
 import { Loading } from '@/shared/components/common';
+import { GrupoSelect } from '@/shared/components/common/GrupoSelect';
 import { Button } from '@/shared/components/ui/button';
 import { Label } from '@/shared/components/ui/label';
 import { formatCurrency } from '@/shared/utils/format';
@@ -154,9 +154,6 @@ export const DashboardFull = () => {
   };
 
   const handleClearFilters = () => {
-    const hoje = new Date();
-    const ano = hoje.getFullYear();
-    const mes = hoje.getMonth();
     const newDataInicio = new Date(ano, mes, 1).toISOString().split('T')[0];
     const newDataFim = hoje.toISOString().split('T')[0];
 
@@ -297,7 +294,6 @@ export const DashboardFull = () => {
     };
   }, [isFullscreen]);
 
-
   if (isLoading) {
     return <Loading />;
   }
@@ -342,9 +338,7 @@ export const DashboardFull = () => {
       {!isFullscreen && (
         <div className="mb-3 flex flex-col gap-3 sm:mb-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-lg font-bold text-lcp-blue sm:text-xl">
-              Dashboard LCP
-            </h1>
+            <h1 className="text-lg font-bold text-lcp-blue sm:text-xl">Dashboard LCP</h1>
 
             <div className="text-left sm:text-right">
               <p className="text-xs text-gray-600 sm:text-sm">

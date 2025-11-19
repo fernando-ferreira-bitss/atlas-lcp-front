@@ -1,3 +1,4 @@
+import { useGruposSimple } from '@/features/grupos/hooks/useGrupos';
 import {
   Select,
   SelectContent,
@@ -5,7 +6,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/components/ui/select';
-import { useGruposSimple } from '@/features/grupos/hooks/useGrupos';
 
 interface GrupoSelectProps {
   value?: number | null;
@@ -20,14 +20,14 @@ interface GrupoSelectProps {
  * Componente de seleção de grupo de empreendimentos
  * Carrega automaticamente os grupos disponíveis da API usando a rota otimizada /simple
  */
-export function GrupoSelect({
+export const GrupoSelect = ({
   value,
   onChange,
   placeholder = 'Selecione um grupo',
   className,
   disabled = false,
   showAllOption = false,
-}: GrupoSelectProps) {
+}: GrupoSelectProps) => {
   const { data: grupos, isLoading } = useGruposSimple();
 
   const handleValueChange = (stringValue: string) => {
@@ -49,20 +49,18 @@ export function GrupoSelect({
       </SelectTrigger>
       <SelectContent>
         {showAllOption && <SelectItem value="null">Todos os grupos</SelectItem>}
-        {grupos && grupos.length > 0 ? (
-          grupos.map((grupo) => (
-            <SelectItem key={grupo.id} value={grupo.id.toString()}>
-              {grupo.nome_grupo}
-            </SelectItem>
-          ))
-        ) : (
-          !isLoading && (
-            <div className="px-2 py-1.5 text-sm text-muted-foreground">
-              Nenhum grupo disponível
-            </div>
-          )
-        )}
+        {grupos && grupos.length > 0
+          ? grupos.map((grupo) => (
+              <SelectItem key={grupo.id} value={grupo.id.toString()}>
+                {grupo.nome_grupo}
+              </SelectItem>
+            ))
+          : !isLoading && (
+              <div className="px-2 py-1.5 text-sm text-muted-foreground">
+                Nenhum grupo disponível
+              </div>
+            )}
       </SelectContent>
     </Select>
   );
-}
+};

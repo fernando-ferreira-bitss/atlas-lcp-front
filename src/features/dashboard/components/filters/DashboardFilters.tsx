@@ -12,11 +12,37 @@ interface DashboardFiltersProps {
 
 type PeriodoType = 'mensal' | 'ytd' | 'ultimos_12_meses' | 'personalizado';
 
+const STORAGE_KEY = 'dashboard-filters';
+
 export const DashboardFilters = ({ onFilterChange }: DashboardFiltersProps) => {
-  const [periodo, setPeriodo] = useState<PeriodoType>('mensal');
-  const [dataInicio, setDataInicio] = useState('');
-  const [dataFim, setDataFim] = useState('');
-  const [grupoId, setGrupoId] = useState<number | null>(null);
+  // Recupera filtros salvos do localStorage
+  const getSavedFilters = (): {
+    periodo: PeriodoType;
+    dataInicio: string;
+    dataFim: string;
+    grupoId: number | null;
+  } => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (error) {
+      console.error('Erro ao recuperar filtros salvos:', error);
+    }
+    return {
+      periodo: 'mensal',
+      dataInicio: '',
+      dataFim: '',
+      grupoId: null,
+    };
+  };
+
+  const savedFilters = getSavedFilters();
+  const [periodo, setPeriodo] = useState<PeriodoType>(savedFilters.periodo);
+  const [dataInicio, setDataInicio] = useState(savedFilters.dataInicio);
+  const [dataFim, setDataFim] = useState(savedFilters.dataFim);
+  const [grupoId, setGrupoId] = useState<number | null>(savedFilters.grupoId);
 
   const calculateDates = (tipo: PeriodoType): { data_inicio?: string; data_fim?: string } => {
     const hoje = new Date();
@@ -67,15 +93,34 @@ export const DashboardFilters = ({ onFilterChange }: DashboardFiltersProps) => {
   };
 
   useEffect(() => {
-    // Aplica filtro inicial (mensal) ao montar o componente
-    const dates = calculateDates('mensal');
-    setDataInicio(dates.data_inicio || '');
-    setDataFim(dates.data_fim || '');
+    // Aplica filtros salvos ou filtro inicial (mensal) ao montar o componente
+    const dates = calculateDates(periodo);
+    if (!dataInicio || !dataFim) {
+      setDataInicio(dates.data_inicio || '');
+      setDataFim(dates.data_fim || '');
+    }
+
+    // Aplica os filtros salvos automaticamente
+    onFilterChange({
+      ...dates,
+      grupo_id: grupoId ?? undefined,
+      periodo,
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleApplyFilters = () => {
     const dates = calculateDates(periodo);
+
+    // Salva filtros no localStorage
+    const filtersToSave = {
+      periodo,
+      dataInicio,
+      dataFim,
+      grupoId,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(filtersToSave));
+
     onFilterChange({
       ...dates,
       grupo_id: grupoId ?? undefined,
@@ -88,6 +133,10 @@ export const DashboardFilters = ({ onFilterChange }: DashboardFiltersProps) => {
     setDataInicio('');
     setDataFim('');
     setGrupoId(null);
+
+    // Limpa filtros do localStorage
+    localStorage.removeItem(STORAGE_KEY);
+
     const dates = calculateDates('mensal');
     onFilterChange({
       ...dates,

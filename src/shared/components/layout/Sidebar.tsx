@@ -1,4 +1,14 @@
-import { BarChart3, FolderTree, Home, Monitor, RefreshCw, Target, User, Users, X } from 'lucide-react';
+import {
+  BarChart3,
+  FolderTree,
+  Home,
+  Monitor,
+  RefreshCw,
+  Target,
+  User,
+  Users,
+  X,
+} from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 import { useCurrentUser } from '@/features/auth';

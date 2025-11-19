@@ -18,7 +18,7 @@ import {
   TableRow,
 } from '@/shared/components/ui/table';
 
-export function GruposPage() {
+export const GruposPage = () => {
   const [selectedGrupo, setSelectedGrupo] = useState<EmpreendimentoGrupoWithMembros | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loadingGrupoId, setLoadingGrupoId] = useState<number | null>(null);
@@ -28,7 +28,8 @@ export function GruposPage() {
 
   const handleDelete = async (id: number, nome: string) => {
     if (
-      !confirm(
+      // eslint-disable-next-line no-alert
+      !window.confirm(
         `Tem certeza que deseja excluir o grupo "${nome}"?\n\nEmpreendimentos vinculados serão desvinculados.`
       )
     ) {
@@ -39,8 +40,8 @@ export function GruposPage() {
     try {
       await deleteGrupo.mutateAsync(id);
       toast.success('Grupo excluído com sucesso');
-    } catch (error) {
-      console.error('Erro ao excluir grupo:', error);
+    } catch (err) {
+      console.error('Erro ao excluir grupo:', err);
       toast.error('Erro ao excluir grupo');
     } finally {
       setLoadingGrupoId(null);
@@ -125,9 +126,7 @@ export function GruposPage() {
                     <TableCell className="hidden lg:table-cell">
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                          grupo.ativo
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-gray-100 text-gray-700'
+                          grupo.ativo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
                         }`}
                       >
                         {grupo.ativo ? 'Ativo' : 'Inativo'}
@@ -177,11 +176,7 @@ export function GruposPage() {
         </div>
       </div>
 
-      <GrupoFormModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        grupo={selectedGrupo}
-      />
+      <GrupoFormModal isOpen={isModalOpen} onClose={handleCloseModal} grupo={selectedGrupo} />
     </div>
   );
-}
+};

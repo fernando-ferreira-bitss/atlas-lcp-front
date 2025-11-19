@@ -49,10 +49,7 @@ class GrupoService {
    * @param data - Dados do grupo
    */
   async create(data: CreateEmpreendimentoGrupoData): Promise<EmpreendimentoGrupo> {
-    return apiClient.post<CreateEmpreendimentoGrupoData, EmpreendimentoGrupo>(
-      this.baseURL,
-      data
-    );
+    return apiClient.post<CreateEmpreendimentoGrupoData, EmpreendimentoGrupo>(this.baseURL, data);
   }
 
   /**
@@ -60,10 +57,7 @@ class GrupoService {
    * @param id - ID do grupo
    * @param data - Dados a atualizar
    */
-  async update(
-    id: number,
-    data: UpdateEmpreendimentoGrupoData
-  ): Promise<EmpreendimentoGrupo> {
+  async update(id: number, data: UpdateEmpreendimentoGrupoData): Promise<EmpreendimentoGrupo> {
     return apiClient.put<UpdateEmpreendimentoGrupoData, EmpreendimentoGrupo>(
       `${this.baseURL}/${id}`,
       data

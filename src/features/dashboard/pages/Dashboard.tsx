@@ -1,4 +1,4 @@
-import { BarChart3, Download, FileText, Percent, Target, TrendingUp } from 'lucide-react';
+import { BarChart3, FileText, Percent, Target, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
 
 import { KPICard } from '../components/cards/KPICard';
@@ -22,7 +22,6 @@ import {
 import type { DashboardFilters as IFilters } from '@/shared/types';
 
 import { Loading } from '@/shared/components/common';
-import { Button } from '@/shared/components/ui/button';
 import { formatCurrency, formatPercentage } from '@/shared/utils/format';
 
 export const Dashboard = () => {

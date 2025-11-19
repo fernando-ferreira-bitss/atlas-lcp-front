@@ -29,5 +29,4 @@ export type {
   MetaImportResult,
   MetaTemplateParams,
   MetaUpdate,
-  MetaWithEmpreendimento,
 } from './types';

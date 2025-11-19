@@ -1,6 +1,6 @@
-import { formatPercentage } from '@/shared/utils/format';
-
 import type { ConversaoPorEmpreendimento } from '@/shared/types';
+
+import { formatPercentage } from '@/shared/utils/format';
 
 interface VendasConversaoBarChartProps {
   data: ConversaoPorEmpreendimento[];

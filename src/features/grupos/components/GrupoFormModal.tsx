@@ -15,7 +15,6 @@ import {
 import type { EmpreendimentoGrupoWithMembros, EmpreendimentoSimple } from '@/shared/types';
 
 import { useAllEmpreendimentos } from '@/features/empreendimentos/hooks/useEmpreendimentos';
-
 import { Button } from '@/shared/components/ui/button';
 import {
   Dialog,
@@ -43,7 +42,7 @@ interface GrupoFormModalProps {
   grupo?: EmpreendimentoGrupoWithMembros | null;
 }
 
-export function GrupoFormModal({ isOpen, onClose, grupo }: GrupoFormModalProps) {
+export const GrupoFormModal = ({ isOpen, onClose, grupo }: GrupoFormModalProps) => {
   const createGrupo = useCreateGrupo();
   const updateGrupo = useUpdateGrupo();
 
@@ -97,8 +96,7 @@ export function GrupoFormModal({ isOpen, onClose, grupo }: GrupoFormModalProps) 
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       lista = lista.filter(
-        (emp) =>
-          emp.nome.toLowerCase().includes(term) || emp.codigo_mega.toString().includes(term)
+        (emp) => emp.nome.toLowerCase().includes(term) || emp.codigo_mega.toString().includes(term)
       );
     }
 
@@ -236,9 +234,7 @@ export function GrupoFormModal({ isOpen, onClose, grupo }: GrupoFormModalProps) 
               disabled={isLoading}
               placeholder="Ex: Todas as fases do empreendimento"
             />
-            {errors.descricao && (
-              <p className="text-sm text-red-500">{errors.descricao.message}</p>
-            )}
+            {errors.descricao && <p className="text-sm text-red-500">{errors.descricao.message}</p>}
           </div>
 
           <div className="flex items-center space-x-2">
@@ -272,52 +268,66 @@ export function GrupoFormModal({ isOpen, onClose, grupo }: GrupoFormModalProps) 
             </div>
 
             <div className="rounded-md border p-3 max-h-60 overflow-y-auto">
-              {isLoadingDisponiveis || isLoadingVinculados || isLoadingTodos ? (
-                <div className="flex items-center justify-center py-4">
-                  <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-                  <span className="ml-2 text-sm text-gray-500">Carregando...</span>
-                </div>
-              ) : empreendimentosFiltrados.length > 0 ? (
-                <div className="space-y-1">
-                  {empreendimentosFiltrados.map((emp) => {
-                    const isSelected = selectedEmpreendimentos.includes(emp.id);
-                    return (
-                      <div
-                        key={emp.id}
-                        className={`flex items-center space-x-2 py-1.5 px-2 rounded transition-colors ${
-                          isSelected ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          id={`emp-${emp.id}`}
-                          checked={isSelected}
-                          onChange={() => handleToggleEmpreendimento(emp.id)}
-                          disabled={isLoading}
-                          className="h-4 w-4 rounded border-gray-300"
-                        />
-                        <label
-                          htmlFor={`emp-${emp.id}`}
-                          className="text-sm cursor-pointer flex-1"
-                        >
-                          <span className={isSelected ? 'font-medium text-blue-900' : ''}>
-                            {emp.nome}
-                          </span>
-                          <span className="text-gray-500 ml-1">({emp.codigo_mega})</span>
-                        </label>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : searchTerm ? (
-                <p className="text-sm text-gray-500 text-center py-2">
-                  Nenhum empreendimento encontrado para "{searchTerm}"
-                </p>
-              ) : (
-                <p className="text-sm text-gray-500 text-center py-2">
-                  Nenhum empreendimento disponível
-                </p>
-              )}
+              {(() => {
+                if (isLoadingDisponiveis || isLoadingVinculados || isLoadingTodos) {
+                  return (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+                      <span className="ml-2 text-sm text-gray-500">Carregando...</span>
+                    </div>
+                  );
+                }
+
+                if (empreendimentosFiltrados.length > 0) {
+                  return (
+                    <div className="space-y-1">
+                      {empreendimentosFiltrados.map((emp) => {
+                        const isSelected = selectedEmpreendimentos.includes(emp.id);
+                        return (
+                          <div
+                            key={emp.id}
+                            className={`flex items-center space-x-2 py-1.5 px-2 rounded transition-colors ${
+                              isSelected ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              id={`emp-${emp.id}`}
+                              checked={isSelected}
+                              onChange={() => handleToggleEmpreendimento(emp.id)}
+                              disabled={isLoading}
+                              className="h-4 w-4 rounded border-gray-300"
+                            />
+                            <label
+                              htmlFor={`emp-${emp.id}`}
+                              className="text-sm cursor-pointer flex-1"
+                            >
+                              <span className={isSelected ? 'font-medium text-blue-900' : ''}>
+                                {emp.nome}
+                              </span>
+                              <span className="text-gray-500 ml-1">({emp.codigo_mega})</span>
+                            </label>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                }
+
+                if (searchTerm) {
+                  return (
+                    <p className="text-sm text-gray-500 text-center py-2">
+                      Nenhum empreendimento encontrado para &quot;{searchTerm}&quot;
+                    </p>
+                  );
+                }
+
+                return (
+                  <p className="text-sm text-gray-500 text-center py-2">
+                    Nenhum empreendimento disponível
+                  </p>
+                );
+              })()}
             </div>
             <p className="text-xs text-gray-500">
               {selectedEmpreendimentos.length} empreendimento(s) selecionado(s)
@@ -329,11 +339,15 @@ export function GrupoFormModal({ isOpen, onClose, grupo }: GrupoFormModalProps) 
               Cancelar
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Salvando...' : grupo ? 'Atualizar' : 'Criar'}
+              {(() => {
+                if (isLoading) return 'Salvando...';
+                if (grupo) return 'Atualizar';
+                return 'Criar';
+              })()}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
   );
-}
+};
