@@ -58,7 +58,7 @@ export const UltimasVendasCompactTable = ({
       <table className="w-full text-xs">
         <thead>
           <tr className="border-b">
-            <th className="py-1 text-left font-semibold">Empreendimento</th>
+            <th className="py-1 text-left font-semibold">Grupo</th>
             <th className="py-1 text-right font-semibold">VGV</th>
             <th className="py-1 text-right font-semibold">Data</th>
           </tr>
@@ -67,7 +67,7 @@ export const UltimasVendasCompactTable = ({
           {vendas.map((venda: Venda) => (
             <tr key={venda.id} className="border-b hover:bg-gray-50">
               <td className="py-1 font-medium">
-                {venda.empreendimento_nome || `ID: ${venda.empreendimento_id}`}
+                {venda.grupo_nome || venda.empreendimento_nome || `ID: ${venda.empreendimento_id}`}
               </td>
               <td className="py-1 text-right">{formatCurrency(venda.valor_venda)}</td>
               <td className="py-1 text-right">{formatDate(venda.data_venda)}</td>

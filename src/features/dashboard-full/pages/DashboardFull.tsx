@@ -12,11 +12,9 @@ import { MetaGaugeChart } from '@/features/dashboard/components/charts/MetaGauge
 import { VendasPorEmpreendimentoChart } from '@/features/dashboard/components/charts/VendasPorEmpreendimentoChart';
 import {
   useComparativoAnos,
-  useConversaoPorEmpreendimento,
   useConversaoPorGrupo,
   useDashboardKPIs,
   useGraficoVendasMes,
-  useTopEmpreendimentos,
   useTopGrupos,
 } from '@/features/dashboard/hooks/useDashboard';
 import { GrupoSelect } from '@/shared/components/common/GrupoSelect';
@@ -183,24 +181,13 @@ export const DashboardFull = () => {
 
   const { data: graficoData } = useGraficoVendasMes(currentYear, undefined, filters.grupo_id);
 
-  // Buscar Top Empreendimentos OU Top Grupos dependendo do filtro
-  const { data: topEmpreendimentos } = useTopEmpreendimentos({
-    data_inicio: filters.data_inicio,
-    data_fim: filters.data_fim,
-    limit: 5,
-  });
+  // Buscar dados de grupos
   const { data: topGrupos } = useTopGrupos({
     data_inicio: filters.data_inicio,
     data_fim: filters.data_fim,
     limit: 5,
   });
 
-  // Buscar Conversão por Empreendimento OU por Grupo dependendo do filtro
-  const { data: conversaoPorEmp } = useConversaoPorEmpreendimento({
-    data_inicio: filters.data_inicio,
-    data_fim: filters.data_fim,
-    limit: 5,
-  });
   const { data: conversaoPorGrupo } = useConversaoPorGrupo({
     data_inicio: filters.data_inicio,
     data_fim: filters.data_fim,
@@ -545,104 +532,72 @@ export const DashboardFull = () => {
           </div>
         </div>
 
-        {/* [1,3] - Top 5 Empreendimentos OU Top 5 Grupos */}
+        {/* [1,3] - Top 5 Grupos */}
         <div
           className={`overflow-auto rounded-lg bg-white shadow-md ${isFullscreen ? 'p-4' : 'p-2 min-h-[300px]'} lg:p-4`}
         >
           <h2
             className={`mb-2 font-bold text-lcp-blue ${isFullscreen ? 'text-sm mb-3' : 'text-xs'} lg:text-sm lg:mb-3`}
           >
-            {selectedGrupo ? 'Top 5 Empreendimentos' : 'Top 5 Grupos'}
+            Top 5 Grupos
           </h2>
-          {selectedGrupo ? (
-            // Mostrar Top Empreendimentos quando filtrado por grupo
-            topEmpreendimentos && topEmpreendimentos.length > 0 ? (
-              <div className={isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[280px]'}>
-                <VendasPorEmpreendimentoChart data={topEmpreendimentos} />
-              </div>
-            ) : (
-              <div
-                className={`flex items-center justify-center ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[280px]'}`}
-              >
-                <p className="text-xs text-gray-500">Nenhum dado disponível</p>
-              </div>
-            )
+          {topGrupos && topGrupos.length > 0 ? (
+            <div className={isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[280px]'}>
+              <VendasPorEmpreendimentoChart
+                data={topGrupos.map((g) => ({
+                  empreendimento_id: g.grupo_id,
+                  empreendimento_nome: g.grupo_nome,
+                  grupo_id: null,
+                  grupo_nome: null,
+                  total_propostas: 0,
+                  total_vendas: g.total_vendas,
+                  valor_propostas: 0,
+                  valor_vendas: g.valor_vendas,
+                }))}
+              />
+            </div>
           ) : (
-            // Mostrar Top Grupos quando sem filtro
-            topGrupos && topGrupos.length > 0 ? (
-              <div className={isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[280px]'}>
-                <VendasPorEmpreendimentoChart
-                  data={topGrupos.map((g) => ({
-                    empreendimento_id: g.grupo_id,
-                    empreendimento_nome: g.grupo_nome,
-                    grupo_id: null,
-                    grupo_nome: null,
-                    total_propostas: 0,
-                    total_vendas: g.total_vendas,
-                    valor_propostas: 0,
-                    valor_vendas: g.valor_vendas,
-                  }))}
-                />
-              </div>
-            ) : (
-              <div
-                className={`flex items-center justify-center ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[280px]'}`}
-              >
-                <p className="text-xs text-gray-500">Nenhum dado disponível</p>
-              </div>
-            )
+            <div
+              className={`flex items-center justify-center ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[280px]'}`}
+            >
+              <p className="text-xs text-gray-500">Nenhum dado disponível</p>
+            </div>
           )}
         </div>
 
         {/* ============== LINHA 2 ============== */}
 
-        {/* [2,1] - Vendas por Empreendimento OU por Grupo + Taxa de Conversão */}
+        {/* [2,1] - Vendas por Grupo + Taxa de Conversão */}
         <div
           className={`overflow-auto rounded-lg bg-white shadow-md ${isFullscreen ? 'p-4' : 'p-2 min-h-[200px]'} lg:p-4`}
         >
           <h2
             className={`mb-2 font-bold text-lcp-blue ${isFullscreen ? 'text-sm mb-3' : 'text-xs'} lg:text-sm lg:mb-3`}
           >
-            {selectedGrupo ? 'Vendas por Empreendimento' : 'Vendas por Grupo'}
+            Vendas por Grupo
           </h2>
-          {selectedGrupo ? (
-            // Mostrar Conversão por Empreendimento quando filtrado por grupo
-            conversaoPorEmp && conversaoPorEmp.length > 0 ? (
-              <div className={`overflow-auto ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[180px]'}`}>
-                <VendasConversaoBarChart data={conversaoPorEmp} />
-              </div>
-            ) : (
-              <div
-                className={`flex items-center justify-center ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[180px]'}`}
-              >
-                <p className="text-xs text-gray-500">Nenhum dado disponível</p>
-              </div>
-            )
+          {conversaoPorGrupo && conversaoPorGrupo.length > 0 ? (
+            <div className={`overflow-auto ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[180px]'}`}>
+              <VendasConversaoBarChart
+                data={conversaoPorGrupo.map((g) => ({
+                  empreendimento_id: g.grupo_id,
+                  empreendimento_nome: g.grupo_nome,
+                  grupo_id: null,
+                  grupo_nome: null,
+                  total_propostas: g.total_propostas,
+                  total_vendas: g.total_vendas,
+                  taxa_conversao: g.taxa_conversao,
+                  valor_propostas: g.valor_propostas,
+                  valor_vendas: g.valor_vendas,
+                }))}
+              />
+            </div>
           ) : (
-            // Mostrar Conversão por Grupo quando sem filtro
-            conversaoPorGrupo && conversaoPorGrupo.length > 0 ? (
-              <div className={`overflow-auto ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[180px]'}`}>
-                <VendasConversaoBarChart
-                  data={conversaoPorGrupo.map((g) => ({
-                    empreendimento_id: g.grupo_id,
-                    empreendimento_nome: g.grupo_nome,
-                    grupo_id: null,
-                    grupo_nome: null,
-                    total_propostas: g.total_propostas,
-                    total_vendas: g.total_vendas,
-                    taxa_conversao: g.taxa_conversao,
-                    valor_propostas: g.valor_propostas,
-                    valor_vendas: g.valor_vendas,
-                  }))}
-                />
-              </div>
-            ) : (
-              <div
-                className={`flex items-center justify-center ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[180px]'}`}
-              >
-                <p className="text-xs text-gray-500">Nenhum dado disponível</p>
-              </div>
-            )
+            <div
+              className={`flex items-center justify-center ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[180px]'}`}
+            >
+              <p className="text-xs text-gray-500">Nenhum dado disponível</p>
+            </div>
           )}
         </div>
 
