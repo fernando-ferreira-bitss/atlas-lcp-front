@@ -12,11 +12,11 @@ import { DashboardFilters } from '../components/filters/DashboardFilters';
 import { UltimasVendasTable } from '../components/tables/UltimasVendasTable';
 import {
   useComparativoAnos,
-  useConversaoPorEmpreendimento,
+  useConversaoPorGrupo,
   useDashboardKPIs,
   useEvolucaoTicketMedio,
   useGraficoVendasMes,
-  useTopEmpreendimentos,
+  useTopGrupos,
 } from '../hooks/useDashboard';
 
 import type { DashboardFilters as IFilters } from '@/shared/types';
@@ -37,20 +37,20 @@ export const Dashboard = () => {
     filters.empreendimento_id,
     filters.grupo_id
   );
-  const { data: topEmpreendimentos, isLoading: isLoadingTop } = useTopEmpreendimentos({
+  const { data: topGrupos, isLoading: isLoadingTop } = useTopGrupos({
     data_inicio: filters.data_inicio,
     data_fim: filters.data_fim,
     limit: 5,
   });
 
-  // Novos hooks para dados reais
+  // Hooks para dados reais
   const { data: comparativoAnos, isLoading: isLoadingComparativo } = useComparativoAnos(
     currentYear,
     previousYear,
     filters.empreendimento_id,
     filters.grupo_id
   );
-  const { data: conversaoPorEmp, isLoading: isLoadingConversao } = useConversaoPorEmpreendimento({
+  const { data: conversaoPorGrupo, isLoading: isLoadingConversao } = useConversaoPorGrupo({
     data_inicio: filters.data_inicio,
     data_fim: filters.data_fim,
     limit: 10,
@@ -101,10 +101,10 @@ export const Dashboard = () => {
             Visão geral dos indicadores de vendas
           </p>
         </div>
-        <Button className="w-full bg-lcp-green hover:bg-lcp-green/90 sm:w-auto">
+        {/* <Button className="w-full bg-lcp-green hover:bg-lcp-green/90 sm:w-auto">
           <Download className="mr-2 h-4 w-4" />
           Exportar CSV/XLSX
-        </Button>
+        </Button> */}
       </div>
 
       {/* Filtros */}
@@ -241,22 +241,34 @@ export const Dashboard = () => {
           )}
         </div>
 
-        {/* Taxa de Conversão por Empreendimento */}
+        {/* Taxa de Conversão por Grupo */}
         <div className="rounded-lg border-none bg-card p-4 shadow-md sm:p-6">
           <h2 className="mb-4 text-base font-semibold text-lcp-blue sm:text-lg">
-            Taxa de Conversão por Empreendimento
+            Taxa de Conversão por Grupo
           </h2>
           {isLoadingConversao && (
             <div className="flex h-80 items-center justify-center">
               <Loading />
             </div>
           )}
-          {!isLoadingConversao && conversaoPorEmp && conversaoPorEmp.length > 0 && (
+          {!isLoadingConversao && conversaoPorGrupo && conversaoPorGrupo.length > 0 && (
             <div className="h-80">
-              <ConversaoPorEmpreendimentoChart data={conversaoPorEmp} />
+              <ConversaoPorEmpreendimentoChart
+                data={conversaoPorGrupo.map((g) => ({
+                  empreendimento_id: g.grupo_id,
+                  empreendimento_nome: g.grupo_nome,
+                  grupo_id: null,
+                  grupo_nome: null,
+                  total_propostas: g.total_propostas,
+                  total_vendas: g.total_vendas,
+                  taxa_conversao: g.taxa_conversao,
+                  valor_propostas: g.valor_propostas,
+                  valor_vendas: g.valor_vendas,
+                }))}
+              />
             </div>
           )}
-          {!isLoadingConversao && (!conversaoPorEmp || conversaoPorEmp.length === 0) && (
+          {!isLoadingConversao && (!conversaoPorGrupo || conversaoPorGrupo.length === 0) && (
             <div className="flex h-80 items-center justify-center">
               <p className="text-sm text-muted-foreground">Nenhum dado disponível</p>
             </div>
@@ -264,24 +276,35 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      {/* Terceira linha: Vendas por Empreendimento | Evolução do Ticket Médio */}
+      {/* Terceira linha: Vendas por Grupo | Evolução do Ticket Médio */}
       <div className="grid gap-4 md:grid-cols-2">
-        {/* Vendas por Empreendimento */}
+        {/* Vendas por Grupo */}
         <div className="rounded-lg border-none bg-card p-4 shadow-md sm:p-6">
           <h2 className="mb-4 text-base font-semibold text-lcp-blue sm:text-lg">
-            Vendas por Empreendimento
+            Vendas por Grupo
           </h2>
           {isLoadingTop && (
             <div className="flex h-80 items-center justify-center">
               <Loading />
             </div>
           )}
-          {!isLoadingTop && topEmpreendimentos && topEmpreendimentos.length > 0 && (
+          {!isLoadingTop && topGrupos && topGrupos.length > 0 && (
             <div className="h-80">
-              <VendasPorEmpreendimentoChart data={topEmpreendimentos} />
+              <VendasPorEmpreendimentoChart
+                data={topGrupos.map((g) => ({
+                  empreendimento_id: g.grupo_id,
+                  empreendimento_nome: g.grupo_nome,
+                  grupo_id: null,
+                  grupo_nome: null,
+                  total_propostas: 0,
+                  total_vendas: g.total_vendas,
+                  valor_propostas: 0,
+                  valor_vendas: g.valor_vendas,
+                }))}
+              />
             </div>
           )}
-          {!isLoadingTop && (!topEmpreendimentos || topEmpreendimentos.length === 0) && (
+          {!isLoadingTop && (!topGrupos || topGrupos.length === 0) && (
             <div className="flex h-80 items-center justify-center">
               <p className="text-sm text-muted-foreground">Nenhum dado disponível</p>
             </div>

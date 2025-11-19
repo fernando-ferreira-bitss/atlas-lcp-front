@@ -134,7 +134,7 @@ export const UltimasVendasTable = ({ empreendimentoId }: UltimasVendasTableProps
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Empreendimento</TableHead>
+              <TableHead>Grupo</TableHead>
               <TableHead>Cliente</TableHead>
               <TableHead>VGV</TableHead>
               <TableHead className="hidden sm:table-cell">Data</TableHead>
@@ -145,7 +145,7 @@ export const UltimasVendasTable = ({ empreendimentoId }: UltimasVendasTableProps
             {vendas.map((venda) => (
               <TableRow key={venda.id}>
                 <TableCell className="font-medium">
-                  {venda.empreendimento_nome || `ID: ${venda.empreendimento_id}`}
+                  {venda.grupo_nome || venda.empreendimento_nome || `ID: ${venda.empreendimento_id}`}
                 </TableCell>
                 <TableCell>{venda.cliente_nome}</TableCell>
                 <TableCell>{formatCurrency(venda.valor_venda)}</TableCell>
