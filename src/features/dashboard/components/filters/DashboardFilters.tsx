@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import type { DashboardFilters as IFilters } from '@/shared/types';
 
-import { useEmpreendimentos } from '@/features/empreendimentos/hooks/useEmpreendimentos';
+import { GrupoSelect } from '@/shared/components/common/GrupoSelect';
 import { Button } from '@/shared/components/ui/button';
 import { Label } from '@/shared/components/ui/label';
 
@@ -16,16 +16,7 @@ export const DashboardFilters = ({ onFilterChange }: DashboardFiltersProps) => {
   const [periodo, setPeriodo] = useState<PeriodoType>('mensal');
   const [dataInicio, setDataInicio] = useState('');
   const [dataFim, setDataFim] = useState('');
-  const [empreendimentoId, setEmpreendimentoId] = useState<number | undefined>();
-  const [empSearch, setEmpSearch] = useState('');
-  const [showEmpList, setShowEmpList] = useState(false);
-
-  const { data: empreendimentos } = useEmpreendimentos();
-
-  // Filtra empreendimentos baseado na busca
-  const empreendimentosFiltrados = empreendimentos?.filter((emp) =>
-    emp.nome.toLowerCase().includes(empSearch.toLowerCase())
-  );
+  const [grupoId, setGrupoId] = useState<number | null>(null);
 
   const calculateDates = (tipo: PeriodoType): { data_inicio?: string; data_fim?: string } => {
     const hoje = new Date();
@@ -83,24 +74,11 @@ export const DashboardFilters = ({ onFilterChange }: DashboardFiltersProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fecha o dropdown ao clicar fora
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest('#empreendimento-search') && !target.closest('.absolute')) {
-        setShowEmpList(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   const handleApplyFilters = () => {
     const dates = calculateDates(periodo);
     onFilterChange({
       ...dates,
-      empreendimento_id: empreendimentoId,
+      grupo_id: grupoId ?? undefined,
       periodo,
     });
   };
@@ -109,8 +87,7 @@ export const DashboardFilters = ({ onFilterChange }: DashboardFiltersProps) => {
     setPeriodo('mensal');
     setDataInicio('');
     setDataFim('');
-    setEmpreendimentoId(undefined);
-    setEmpSearch('');
+    setGrupoId(null);
     const dates = calculateDates('mensal');
     onFilterChange({
       ...dates,
@@ -230,72 +207,15 @@ export const DashboardFilters = ({ onFilterChange }: DashboardFiltersProps) => {
         </div>
 
         <div>
-          <Label htmlFor="empreendimento" className="mb-2 block">
-            Empreendimento
+          <Label htmlFor="grupo" className="mb-2 block">
+            Grupo
           </Label>
-          <div className="relative">
-            <input
-              id="empreendimento-search"
-              type="text"
-              placeholder="Buscar empreendimento..."
-              value={empSearch}
-              onChange={(e) => setEmpSearch(e.target.value)}
-              onFocus={() => setShowEmpList(true)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
-            {showEmpList && (
-              <div className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-background shadow-lg">
-                <div
-                  role="button"
-                  tabIndex={0}
-                  className="cursor-pointer px-3 py-2 text-sm hover:bg-gray-100"
-                  onClick={() => {
-                    setEmpreendimentoId(undefined);
-                    setEmpSearch('');
-                    setShowEmpList(false);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      setEmpreendimentoId(undefined);
-                      setEmpSearch('');
-                      setShowEmpList(false);
-                    }
-                  }}
-                >
-                  Todos
-                </div>
-                {empreendimentosFiltrados?.map((emp) => (
-                  <div
-                    key={emp.id}
-                    role="button"
-                    tabIndex={0}
-                    className={`cursor-pointer px-3 py-2 text-sm hover:bg-gray-100 ${
-                      empreendimentoId === emp.id ? 'bg-blue-100' : ''
-                    }`}
-                    onClick={() => {
-                      setEmpreendimentoId(emp.id);
-                      setEmpSearch(emp.nome);
-                      setShowEmpList(false);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        setEmpreendimentoId(emp.id);
-                        setEmpSearch(emp.nome);
-                        setShowEmpList(false);
-                      }
-                    }}
-                  >
-                    {emp.nome}
-                  </div>
-                ))}
-                {empreendimentosFiltrados?.length === 0 && (
-                  <div className="px-3 py-2 text-sm text-gray-500">
-                    Nenhum empreendimento encontrado
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          <GrupoSelect
+            value={grupoId}
+            onChange={setGrupoId}
+            placeholder="Todos os grupos"
+            showAllOption
+          />
         </div>
       </div>
 

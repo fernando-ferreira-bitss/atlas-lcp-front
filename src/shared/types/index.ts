@@ -31,11 +31,43 @@ export interface ChangePasswordData {
   new_password: string;
 }
 
+// === Empreendimento Grupo Types ===
+export interface EmpreendimentoGrupo {
+  id: number;
+  nome_grupo: string;
+  descricao?: string | null;
+  ativo: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EmpreendimentoGrupoWithMembros extends EmpreendimentoGrupo {
+  total_empreendimentos: number;
+}
+
+export interface EmpreendimentoGrupoSimple {
+  id: number;
+  nome_grupo: string;
+}
+
+export interface CreateEmpreendimentoGrupoData {
+  nome_grupo: string;
+  descricao?: string;
+  ativo?: boolean;
+}
+
+export interface UpdateEmpreendimentoGrupoData {
+  nome_grupo?: string;
+  descricao?: string;
+  ativo?: boolean;
+}
+
 // === Empreendimento Types ===
 export interface Empreendimento {
   id: number;
   codigo_mega: number;
   nome: string;
+  empreendimento_grupo_id?: number | null;
   endereco?: string | null;
   cidade?: string | null;
   estado?: string | null;
@@ -81,7 +113,10 @@ export interface PropostaFilters {
   skip?: number;
   limit?: number;
   empreendimento_id?: number;
+  grupo_id?: number;
   status?: string;
+  data_inicio?: string;
+  data_fim?: string;
 }
 
 // === Venda Types ===
@@ -105,6 +140,7 @@ export interface VendaFilters {
   skip?: number;
   limit?: number;
   empreendimento_id?: number;
+  grupo_id?: number;
   status?: string;
   data_inicio?: string;
   data_fim?: string;
@@ -113,36 +149,39 @@ export interface VendaFilters {
 // === Meta Types ===
 export interface Meta {
   id: number;
-  nome: string;
-  tipo: string;
-  valor_meta: number;
-  valor_realizado: number;
-  percentual_atingido: number;
-  periodo_inicio: string;
-  periodo_fim: string;
+  empreendimento_id: number | null;
+  empreendimento_grupo_id: number | null;
+  mes: number;
+  ano: number;
+  meta_vendas: number;
+  meta_unidades: number;
   ativo: boolean;
   created_at: string;
   updated_at: string;
 }
 
 export interface CreateMetaData {
-  nome: string;
-  tipo: string;
-  valor_meta: number;
-  periodo_inicio: string;
-  periodo_fim: string;
+  empreendimento_id?: number | null;
+  empreendimento_grupo_id: number;
+  mes: number;
+  ano: number;
+  meta_vendas: number;
+  meta_unidades: number;
   ativo?: boolean;
 }
 
 export interface UpdateMetaData {
-  valor_meta?: number;
+  meta_vendas?: number;
+  meta_unidades?: number;
   ativo?: boolean;
 }
 
 // === Dashboard Types ===
 export interface TopEmpreendimento {
-  empreendimento_id: number;
-  empreendimento_nome: string;
+  empreendimento_id: number | null;
+  empreendimento_nome: string | null;
+  grupo_id?: number | null;
+  grupo_nome?: string | null;
   total_propostas: number;
   total_vendas: number;
   valor_propostas: number;
@@ -193,8 +232,10 @@ export interface ComparativoAnos {
 }
 
 export interface ConversaoPorEmpreendimento {
-  empreendimento_id: number;
-  empreendimento_nome: string;
+  empreendimento_id: number | null;
+  empreendimento_nome: string | null;
+  grupo_id?: number | null;
+  grupo_nome?: string | null;
   total_propostas: number;
   total_vendas: number;
   taxa_conversao: number;
@@ -214,6 +255,7 @@ export interface DashboardFilters {
   data_inicio?: string;
   data_fim?: string;
   empreendimento_id?: number;
+  grupo_id?: number;
   periodo?: 'mensal' | 'ytd' | 'ultimos_12_meses' | 'personalizado';
 }
 

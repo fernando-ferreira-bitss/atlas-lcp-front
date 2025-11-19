@@ -1,4 +1,4 @@
-import { BarChart3, Home, Monitor, RefreshCw, Target, User, Users, X } from 'lucide-react';
+import { BarChart3, FolderTree, Home, Monitor, RefreshCw, Target, User, Users, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 import { useCurrentUser } from '@/features/auth';
@@ -29,6 +29,12 @@ const menuItems = [
     title: 'Metas',
     href: '/metas',
     icon: Target,
+    adminOnly: true,
+  },
+  {
+    title: 'Grupos',
+    href: '/grupos',
+    icon: FolderTree,
     adminOnly: true,
   },
   {

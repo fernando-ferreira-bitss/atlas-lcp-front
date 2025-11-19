@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronUp, FileSpreadsheet, Filter, Plus, RefreshCw } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { MetaFormModal } from '../components/MetaFormModal';
 import { MetaImportForm } from '../components/MetaImportForm';
@@ -8,7 +8,7 @@ import { useMetas } from '../hooks/useMetas';
 
 import type { MetaFilters, MetaWithEmpreendimento } from '../types';
 
-import { useAllEmpreendimentos } from '@/features/empreendimentos/hooks/useEmpreendimentos';
+import { GrupoSelect } from '@/shared/components/common/GrupoSelect';
 import { Button } from '@/shared/components/ui/button';
 import {
   Card,
@@ -31,87 +31,39 @@ export const Metas = () => {
 
   const [filters, setFilters] = useState<MetaFilters>({
     ano: currentYear,
-    empreendimento_id: undefined,
+    empreendimento_grupo_id: undefined,
   });
 
-  const [selectedEmp, setSelectedEmp] = useState<string>('all');
-  const [empSearch, setEmpSearch] = useState('');
-  const [showEmpList, setShowEmpList] = useState(false);
+  const [selectedGrupo, setSelectedGrupo] = useState<number | null>(null);
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isImportExpanded, setIsImportExpanded] = useState(false);
 
   const { data: metas, isLoading, refetch } = useMetas(filters);
-  const { data: empreendimentos } = useAllEmpreendimentos();
 
   // Gerar array de anos (últimos 5 + próximos 5)
   const anos = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
 
-  // Filtra empreendimentos baseado na busca - sempre mostra todos se não houver busca
-  const empreendimentosFiltrados = empSearch
-    ? empreendimentos?.filter((emp) => emp.nome.toLowerCase().includes(empSearch.toLowerCase()))
-    : empreendimentos;
-
-  // Fecha o dropdown ao clicar fora
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest('#emp-search-metas') && !target.closest('.emp-dropdown-metas')) {
-        setShowEmpList(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Enriquecer metas com nome do empreendimento
-  const metasWithEmp: MetaWithEmpreendimento[] =
-    metas?.map((meta) => {
-      const emp = empreendimentos?.find((e) => e.id === meta.empreendimento_id);
-      return {
-        ...meta,
-        empreendimento_nome: emp?.nome,
-      };
-    }) || [];
+  // Metas já vêm com informações do grupo
+  const metasWithEmp: MetaWithEmpreendimento[] = metas || [];
 
   const handleAnoChange = (value: string) => {
     setFilters((prev) => ({ ...prev, ano: value === 'all' ? undefined : Number(value) }));
   };
 
-  const handleEmpChange = (value: string) => {
-    setSelectedEmp(value);
-
-    if (value === 'all') {
-      // Todos os empreendimentos (incluindo consolidado)
-      setFilters((prev) => ({
-        ...prev,
-        empreendimento_id: undefined,
-        apenas_consolidado: undefined,
-      }));
-    } else if (value === 'consolidado') {
-      // Apenas consolidado (empreendimento_id = null no backend)
-      setFilters((prev) => ({
-        ...prev,
-        empreendimento_id: undefined,
-        apenas_consolidado: true,
-      }));
-    } else {
-      // Empreendimento específico
-      setFilters((prev) => ({
-        ...prev,
-        empreendimento_id: Number(value),
-        apenas_consolidado: undefined,
-      }));
-    }
+  const handleGrupoChange = (grupoId: number | null) => {
+    setSelectedGrupo(grupoId);
+    setFilters((prev) => ({
+      ...prev,
+      empreendimento_grupo_id: grupoId ?? undefined,
+    }));
   };
 
   const handleClearFilters = () => {
-    setSelectedEmp('all');
-    setEmpSearch('');
+    setSelectedGrupo(null);
     setFilters({
       ano: currentYear,
-      empreendimento_id: undefined,
+      empreendimento_grupo_id: undefined,
     });
   };
 
@@ -208,96 +160,13 @@ export const Metas = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="filter-emp">Empreendimento</Label>
-              <div className="relative">
-                <input
-                  id="emp-search-metas"
-                  type="text"
-                  placeholder="Buscar empreendimento..."
-                  value={empSearch}
-                  onChange={(e) => setEmpSearch(e.target.value)}
-                  onFocus={() => {
-                    setEmpSearch(''); // Limpa o campo ao focar
-                    setShowEmpList(true);
-                  }}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                />
-                {showEmpList && (
-                  <div className="emp-dropdown-metas absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-background shadow-lg">
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      className={`cursor-pointer px-3 py-2 text-sm hover:bg-gray-100 ${
-                        selectedEmp === 'all' ? 'bg-blue-100' : ''
-                      }`}
-                      onClick={() => {
-                        handleEmpChange('all');
-                        setEmpSearch('Todos os empreendimentos');
-                        setShowEmpList(false);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          handleEmpChange('all');
-                          setEmpSearch('Todos os empreendimentos');
-                          setShowEmpList(false);
-                        }
-                      }}
-                    >
-                      Todos os empreendimentos
-                    </div>
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      className={`cursor-pointer px-3 py-2 text-sm hover:bg-gray-100 ${
-                        selectedEmp === 'consolidado' ? 'bg-blue-100' : ''
-                      }`}
-                      onClick={() => {
-                        handleEmpChange('consolidado');
-                        setEmpSearch('Consolidado');
-                        setShowEmpList(false);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          handleEmpChange('consolidado');
-                          setEmpSearch('Consolidado');
-                          setShowEmpList(false);
-                        }
-                      }}
-                    >
-                      Consolidado
-                    </div>
-                    {empreendimentosFiltrados?.map((emp) => (
-                      <div
-                        key={emp.id}
-                        role="button"
-                        tabIndex={0}
-                        className={`cursor-pointer px-3 py-2 text-sm hover:bg-gray-100 ${
-                          selectedEmp === String(emp.id) ? 'bg-blue-100' : ''
-                        }`}
-                        onClick={() => {
-                          handleEmpChange(String(emp.id));
-                          setEmpSearch(emp.nome);
-                          setShowEmpList(false);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            handleEmpChange(String(emp.id));
-                            setEmpSearch(emp.nome);
-                            setShowEmpList(false);
-                          }
-                        }}
-                      >
-                        {emp.nome}
-                      </div>
-                    ))}
-                    {empreendimentosFiltrados?.length === 0 && (
-                      <div className="px-3 py-2 text-sm text-gray-500">
-                        Nenhum empreendimento encontrado
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+              <Label htmlFor="filter-grupo">Grupo</Label>
+              <GrupoSelect
+                value={selectedGrupo}
+                onChange={handleGrupoChange}
+                placeholder="Todos os grupos"
+                showAllOption
+              />
             </div>
 
             <div className="flex items-end gap-2">

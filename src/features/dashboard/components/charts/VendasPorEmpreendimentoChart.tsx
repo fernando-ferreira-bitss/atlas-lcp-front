@@ -16,15 +16,15 @@ interface VendasPorEmpreendimentoChartProps {
 }
 
 export const VendasPorEmpreendimentoChart = ({ data }: VendasPorEmpreendimentoChartProps) => {
-  const chartData = data.map((item) => ({
-    nomeCompleto: item.empreendimento_nome,
-    nomeAbreviado:
-      item.empreendimento_nome.length > 20
-        ? `${item.empreendimento_nome.substring(0, 20)}...`
-        : item.empreendimento_nome,
-    propostas: item.total_propostas,
-    vendas: item.total_vendas,
-  }));
+  const chartData = data.map((item) => {
+    const nome = item.grupo_nome || item.empreendimento_nome || 'Sem nome';
+    return {
+      nomeCompleto: nome,
+      nomeAbreviado: nome.length > 20 ? `${nome.substring(0, 20)}...` : nome,
+      propostas: item.total_propostas,
+      vendas: item.total_vendas,
+    };
+  });
 
   return (
     <ResponsiveContainer width="100%" height="100%">

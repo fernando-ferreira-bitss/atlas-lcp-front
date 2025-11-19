@@ -1,13 +1,9 @@
 import { formatPercentage } from '@/shared/utils/format';
 
+import type { ConversaoPorEmpreendimento } from '@/shared/types';
+
 interface VendasConversaoBarChartProps {
-  data: Array<{
-    empreendimento_id: number;
-    empreendimento_nome: string;
-    total_propostas: number;
-    total_vendas: number;
-    taxa_conversao: number;
-  }>;
+  data: ConversaoPorEmpreendimento[];
 }
 
 const COLORS = ['#0B2D5C', '#20B187', '#F45B32', '#9333EA', '#F59E0B'];
@@ -28,15 +24,15 @@ export const VendasConversaoBarChart = ({ data }: VendasConversaoBarChartProps) 
       {data.map((item, index) => {
         const widthPercentage = (item.total_vendas / maxVendas) * 100;
 
+        const nome = item.grupo_nome || item.empreendimento_nome || 'Sem nome';
+        const itemId = item.grupo_id || item.empreendimento_id || index;
+
         return (
-          <div key={item.empreendimento_id} className="flex items-center gap-3">
-            {/* Nome do Empreendimento */}
+          <div key={itemId} className="flex items-center gap-3">
+            {/* Nome do Empreendimento/Grupo */}
             <div className="w-32 flex-shrink-0">
-              <p
-                className="truncate text-xs font-medium text-gray-700"
-                title={item.empreendimento_nome}
-              >
-                {item.empreendimento_nome}
+              <p className="truncate text-xs font-medium text-gray-700" title={nome}>
+                {nome}
               </p>
             </div>
 

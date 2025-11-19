@@ -22,15 +22,15 @@ export const SalesByPropertyFunnelChart = ({ data }: SalesByPropertyFunnelChartP
   // Ordena por total de vendas (decrescente) para efeito funil
   const sortedData = [...data].sort((a, b) => b.total_vendas - a.total_vendas);
 
-  const chartData = sortedData.map((item, index) => ({
-    nome:
-      item.empreendimento_nome.length > 20
-        ? `${item.empreendimento_nome.substring(0, 20)}...`
-        : item.empreendimento_nome,
-    vendas: item.total_vendas,
-    conversao: item.taxa_conversao,
-    color: COLORS[index % COLORS.length],
-  }));
+  const chartData = sortedData.map((item, index) => {
+    const nome = item.grupo_nome || item.empreendimento_nome || 'Sem nome';
+    return {
+      nome: nome.length > 20 ? `${nome.substring(0, 20)}...` : nome,
+      vendas: item.total_vendas,
+      conversao: item.taxa_conversao,
+      color: COLORS[index % COLORS.length],
+    };
+  });
 
   // Custom label para mostrar vendas + taxa de conversão
   const renderCustomLabel = (props: {

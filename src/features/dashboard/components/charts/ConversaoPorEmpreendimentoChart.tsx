@@ -7,15 +7,15 @@ interface ConversaoPorEmpreendimentoChartProps {
 }
 
 export const ConversaoPorEmpreendimentoChart = ({ data }: ConversaoPorEmpreendimentoChartProps) => {
-  const chartData = data.map((item) => ({
-    nome:
-      item.empreendimento_nome.length > 30
-        ? `${item.empreendimento_nome.substring(0, 30)}...`
-        : item.empreendimento_nome,
-    taxa_conversao: item.taxa_conversao,
-    total_propostas: item.total_propostas,
-    total_vendas: item.total_vendas,
-  }));
+  const chartData = data.map((item) => {
+    const nome = item.grupo_nome || item.empreendimento_nome || 'Sem nome';
+    return {
+      nome: nome.length > 30 ? `${nome.substring(0, 30)}...` : nome,
+      taxa_conversao: item.taxa_conversao,
+      total_propostas: item.total_propostas,
+      total_vendas: item.total_vendas,
+    };
+  });
 
   return (
     <ResponsiveContainer width="100%" height="100%">

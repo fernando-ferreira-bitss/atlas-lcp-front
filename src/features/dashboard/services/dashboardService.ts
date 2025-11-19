@@ -16,6 +16,7 @@ interface DashboardFilters {
   data_inicio?: string;
   data_fim?: string;
   empreendimento_id?: number;
+  grupo_id?: number;
 }
 
 /**
@@ -38,12 +39,17 @@ class DashboardService {
   /**
    * Busca dados de vendas por mês para gráficos
    * @param ano - Ano para filtrar
-   * @param empreendimento_id - ID do empreendimento (opcional)
+   * @param empreendimento_id - ID do empreendimento (opcional, deprecated)
+   * @param grupo_id - ID do grupo (opcional)
    * @returns Lista de vendas por mês
    */
-  async getGraficoVendasMes(ano: number, empreendimento_id?: number): Promise<GraficoVendasMes[]> {
+  async getGraficoVendasMes(
+    ano: number,
+    empreendimento_id?: number,
+    grupo_id?: number
+  ): Promise<GraficoVendasMes[]> {
     return apiClient.get<never, GraficoVendasMes[]>(`${this.baseURL}/grafico-vendas-mes`, {
-      params: { ano, empreendimento_id },
+      params: { ano, empreendimento_id, grupo_id },
     });
   }
 
@@ -85,16 +91,18 @@ class DashboardService {
    * Busca comparativo de vendas entre dois anos
    * @param ano_atual - Ano atual para comparação
    * @param ano_anterior - Ano anterior para comparação
-   * @param empreendimento_id - ID do empreendimento (opcional)
+   * @param empreendimento_id - ID do empreendimento (opcional, deprecated)
+   * @param grupo_id - ID do grupo (opcional)
    * @returns Lista com comparativo por mês
    */
   async getComparativoAnos(
     ano_atual: number,
     ano_anterior: number,
-    empreendimento_id?: number
+    empreendimento_id?: number,
+    grupo_id?: number
   ): Promise<ComparativoAnos[]> {
     return apiClient.get<never, ComparativoAnos[]>(`${this.baseURL}/comparativo-anos`, {
-      params: { ano_atual, ano_anterior, empreendimento_id },
+      params: { ano_atual, ano_anterior, empreendimento_id, grupo_id },
     });
   }
 
@@ -117,15 +125,17 @@ class DashboardService {
   /**
    * Busca evolução mensal do ticket médio
    * @param ano - Ano para análise
-   * @param empreendimento_id - ID do empreendimento (opcional)
+   * @param empreendimento_id - ID do empreendimento (opcional, deprecated)
+   * @param grupo_id - ID do grupo (opcional)
    * @returns Lista com evolução do ticket médio por mês
    */
   async getEvolucaoTicketMedio(
     ano: number,
-    empreendimento_id?: number
+    empreendimento_id?: number,
+    grupo_id?: number
   ): Promise<EvolucaoTicketMedio[]> {
     return apiClient.get<never, EvolucaoTicketMedio[]>(`${this.baseURL}/evolucao-ticket-medio`, {
-      params: { ano, empreendimento_id },
+      params: { ano, empreendimento_id, grupo_id },
     });
   }
 }

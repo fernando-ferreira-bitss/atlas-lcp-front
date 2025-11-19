@@ -4,6 +4,7 @@ import { AdminRoute, PrivateRoute } from '@/features/auth';
 import { Login } from '@/features/auth/pages/Login';
 import { Dashboard } from '@/features/dashboard/pages/Dashboard';
 import { DashboardFull } from '@/features/dashboard-full';
+import { GruposPage } from '@/features/grupos';
 import { Metas } from '@/features/metas';
 import { Relatorios } from '@/features/relatorios';
 import { Sincronizacao } from '@/features/sincronizacao';
@@ -37,6 +38,16 @@ export const router = createBrowserRouter([
           {
             index: true,
             element: <Metas />,
+          },
+        ],
+      },
+      {
+        path: 'grupos',
+        element: <AdminRoute />,
+        children: [
+          {
+            index: true,
+            element: <GruposPage />,
           },
         ],
       },

@@ -38,16 +38,18 @@ export const useDashboardKPIs = (
 /**
  * Hook para buscar gráfico de vendas por mês
  * @param ano - Ano para filtrar
- * @param empreendimento_id - ID do empreendimento (opcional)
+ * @param empreendimento_id - ID do empreendimento (opcional, deprecated)
+ * @param grupo_id - ID do grupo (opcional)
  * @returns Query result com dados do gráfico
  */
 export const useGraficoVendasMes = (
   ano: number,
-  empreendimento_id?: number
+  empreendimento_id?: number,
+  grupo_id?: number
 ): UseQueryResult<GraficoVendasMes[], Error> =>
   useQuery({
-    queryKey: ['grafico-vendas-mes', ano, empreendimento_id],
-    queryFn: () => dashboardService.getGraficoVendasMes(ano, empreendimento_id),
+    queryKey: ['grafico-vendas-mes', ano, empreendimento_id, grupo_id],
+    queryFn: () => dashboardService.getGraficoVendasMes(ano, empreendimento_id, grupo_id),
     staleTime: 1000 * 60, // 1 minuto
     refetchInterval: 1000 * 60 * 10, // Atualiza a cada 10 minutos
   });
@@ -99,17 +101,20 @@ export const useVendasPorPeriodo = (
  * Hook para buscar comparativo de vendas entre dois anos
  * @param ano_atual - Ano atual para comparação
  * @param ano_anterior - Ano anterior para comparação
- * @param empreendimento_id - ID do empreendimento (opcional)
+ * @param empreendimento_id - ID do empreendimento (opcional, deprecated)
+ * @param grupo_id - ID do grupo (opcional)
  * @returns Query result com comparativo por mês
  */
 export const useComparativoAnos = (
   ano_atual: number,
   ano_anterior: number,
-  empreendimento_id?: number
+  empreendimento_id?: number,
+  grupo_id?: number
 ): UseQueryResult<ComparativoAnos[], Error> =>
   useQuery({
-    queryKey: ['comparativo-anos', ano_atual, ano_anterior, empreendimento_id],
-    queryFn: () => dashboardService.getComparativoAnos(ano_atual, ano_anterior, empreendimento_id),
+    queryKey: ['comparativo-anos', ano_atual, ano_anterior, empreendimento_id, grupo_id],
+    queryFn: () =>
+      dashboardService.getComparativoAnos(ano_atual, ano_anterior, empreendimento_id, grupo_id),
     staleTime: 1000 * 60, // 1 minuto
     refetchInterval: 1000 * 60 * 10, // Atualiza a cada 10 minutos
   });
@@ -134,15 +139,17 @@ export const useConversaoPorEmpreendimento = (filters?: {
 /**
  * Hook para buscar evolução mensal do ticket médio
  * @param ano - Ano para análise
- * @param empreendimento_id - ID do empreendimento (opcional)
+ * @param empreendimento_id - ID do empreendimento (opcional, deprecated)
+ * @param grupo_id - ID do grupo (opcional)
  * @returns Query result com evolução do ticket médio
  */
 export const useEvolucaoTicketMedio = (
   ano: number,
-  empreendimento_id?: number
+  empreendimento_id?: number,
+  grupo_id?: number
 ): UseQueryResult<EvolucaoTicketMedio[], Error> =>
   useQuery({
-    queryKey: ['evolucao-ticket-medio', ano, empreendimento_id],
-    queryFn: () => dashboardService.getEvolucaoTicketMedio(ano, empreendimento_id),
+    queryKey: ['evolucao-ticket-medio', ano, empreendimento_id, grupo_id],
+    queryFn: () => dashboardService.getEvolucaoTicketMedio(ano, empreendimento_id, grupo_id),
     staleTime: 1000 * 60 * 5, // 5 minutos
   });

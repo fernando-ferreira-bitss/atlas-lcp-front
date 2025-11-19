@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import CurrencyInput from 'react-currency-input-field';
 import { useForm, Controller } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -9,7 +9,7 @@ import { useCreateMeta, useUpdateMeta } from '../hooks/useMetas';
 
 import type { Meta } from '../types';
 
-import { useAllEmpreendimentos } from '@/features/empreendimentos/hooks/useEmpreendimentos';
+import { GrupoSelect } from '@/shared/components/common/GrupoSelect';
 import { Button } from '@/shared/components/ui/button';
 import {
   Dialog,
@@ -45,7 +45,7 @@ const MESES = [
 ];
 
 const metaSchema = z.object({
-  empreendimento_id: z.string().min(1, 'Empreendimento é obrigatório'),
+  empreendimento_grupo_id: z.number().min(1, 'Grupo é obrigatório'),
   mes: z.number().min(1, 'Mês é obrigatório').max(12),
   ano: z.number().min(2020, 'Ano mínimo: 2020').max(2100, 'Ano máximo: 2100'),
   meta_vendas: z.string().min(1, 'Meta VGV é obrigatória'),
@@ -64,12 +64,8 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
   const isEditing = !!meta;
   const currentYear = new Date().getFullYear();
 
-  const { data: empreendimentos } = useAllEmpreendimentos();
   const createMeta = useCreateMeta();
   const updateMeta = useUpdateMeta();
-
-  const [empSearch, setEmpSearch] = useState('');
-  const [showEmpList, setShowEmpList] = useState(false);
 
   const {
     register,
@@ -82,7 +78,7 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
   } = useForm<MetaFormData>({
     resolver: zodResolver(metaSchema),
     defaultValues: {
-      empreendimento_id: undefined,
+      empreendimento_grupo_id: 0,
       mes: new Date().getMonth() + 1,
       ano: currentYear,
       meta_vendas: '',
@@ -90,53 +86,26 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
     },
   });
 
-  // Filtra empreendimentos baseado na busca - sempre mostra todos se não houver busca
-  const empreendimentosFiltrados = empSearch
-    ? empreendimentos?.filter((emp) => emp.nome.toLowerCase().includes(empSearch.toLowerCase()))
-    : empreendimentos;
-
-  // Fecha o dropdown ao clicar fora
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest('#emp-search-modal') && !target.closest('.emp-dropdown')) {
-        setShowEmpList(false);
-      }
-    };
-
-    if (open) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [open]);
-
-  // Preencher form ao editar
-  useEffect(() => {
+    // Preencher form ao editar
     if (meta && open) {
       reset({
-        empreendimento_id: meta.empreendimento_id?.toString(),
+        empreendimento_grupo_id: meta.empreendimento_grupo_id || 0,
         mes: meta.mes,
         ano: meta.ano,
-        meta_vendas: meta.meta_vendas,
+        meta_vendas: meta.meta_vendas.toString(),
         meta_unidades: meta.meta_unidades,
       });
-
-      // Atualizar campo de busca
-      const emp = empreendimentos?.find((e) => e.id === meta.empreendimento_id);
-      setEmpSearch(emp?.nome || '');
     } else if (!open) {
       reset({
-        empreendimento_id: undefined,
+        empreendimento_grupo_id: 0,
         mes: new Date().getMonth() + 1,
         ano: currentYear,
         meta_vendas: '',
         meta_unidades: 1,
       });
-      setEmpSearch('');
-      setShowEmpList(false);
     }
-  }, [meta, open, reset, currentYear, empreendimentos]);
+  }, [meta, open, reset, currentYear]);
 
   const onSubmit = async (data: MetaFormData) => {
     try {
@@ -147,14 +116,15 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
       );
 
       const payload = {
-        empreendimento_id: Number(data.empreendimento_id),
+        empreendimento_id: null, // Sempre null - metas são APENAS por grupo
+        empreendimento_grupo_id: data.empreendimento_grupo_id,
         mes: data.mes,
         ano: data.ano,
         meta_vendas: metaVendasNumber,
         meta_unidades: data.meta_unidades,
       };
 
-      if (isEditing) {
+      if (isEditing && meta) {
         await updateMeta.mutateAsync({ id: meta.id, data: payload });
         toast.success('Meta atualizada com sucesso!');
       } else {
@@ -184,7 +154,7 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
 
   const mesValue = watch('mes');
   const anoValue = watch('ano');
-  const empValue = watch('empreendimento_id');
+  const grupoValue = watch('empreendimento_grupo_id');
 
   // Gerar array de anos (últimos 5 + próximos 5)
   const anos = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
@@ -202,62 +172,19 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Empreendimento - Oculto na edição */}
-          {!isEditing && (
-            <div className="space-y-2">
-              <Label htmlFor="empreendimento_id">Empreendimento *</Label>
-              <div className="relative">
-                <input
-                  id="emp-search-modal"
-                  type="text"
-                  placeholder="Buscar empreendimento..."
-                  value={empSearch}
-                  onChange={(e) => setEmpSearch(e.target.value)}
-                  onFocus={() => {
-                    setEmpSearch(''); // Limpa o campo ao focar
-                    setShowEmpList(true);
-                  }}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                />
-                {showEmpList && (
-                  <div className="emp-dropdown absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-background shadow-lg">
-                    {empreendimentosFiltrados?.map((emp) => (
-                      <div
-                        key={emp.id}
-                        role="button"
-                        tabIndex={0}
-                        className={`cursor-pointer px-3 py-2 text-sm hover:bg-gray-100 ${
-                          empValue === String(emp.id) ? 'bg-blue-100' : ''
-                        }`}
-                        onClick={() => {
-                          setValue('empreendimento_id', String(emp.id));
-                          setEmpSearch(emp.nome);
-                          setShowEmpList(false);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            setValue('empreendimento_id', String(emp.id));
-                            setEmpSearch(emp.nome);
-                            setShowEmpList(false);
-                          }
-                        }}
-                      >
-                        {emp.nome}
-                      </div>
-                    ))}
-                    {empreendimentosFiltrados?.length === 0 && (
-                      <div className="px-3 py-2 text-sm text-gray-500">
-                        Nenhum empreendimento encontrado
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-              {errors.empreendimento_id && (
-                <p className="text-xs text-red-500">{errors.empreendimento_id.message}</p>
-              )}
-            </div>
-          )}
+          {/* Grupo - Sempre visível */}
+          <div className="space-y-2">
+            <Label htmlFor="grupo">Grupo *</Label>
+            <GrupoSelect
+              value={grupoValue || null}
+              onChange={(value) => setValue('empreendimento_grupo_id', value || 0)}
+              placeholder="Selecione um grupo"
+              disabled={isEditing}
+            />
+            {errors.empreendimento_grupo_id && (
+              <p className="text-xs text-red-500">{errors.empreendimento_grupo_id.message}</p>
+            )}
+          </div>
 
           {/* Mês e Ano */}
           <div className="grid grid-cols-2 gap-4">

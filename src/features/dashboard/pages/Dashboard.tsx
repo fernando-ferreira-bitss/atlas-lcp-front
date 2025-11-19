@@ -34,7 +34,8 @@ export const Dashboard = () => {
   const { data: kpis, isLoading, error } = useDashboardKPIs(filters);
   const { data: graficoData, isLoading: isLoadingGrafico } = useGraficoVendasMes(
     currentYear,
-    filters.empreendimento_id
+    filters.empreendimento_id,
+    filters.grupo_id
   );
   const { data: topEmpreendimentos, isLoading: isLoadingTop } = useTopEmpreendimentos({
     data_inicio: filters.data_inicio,
@@ -46,7 +47,8 @@ export const Dashboard = () => {
   const { data: comparativoAnos, isLoading: isLoadingComparativo } = useComparativoAnos(
     currentYear,
     previousYear,
-    filters.empreendimento_id
+    filters.empreendimento_id,
+    filters.grupo_id
   );
   const { data: conversaoPorEmp, isLoading: isLoadingConversao } = useConversaoPorEmpreendimento({
     data_inicio: filters.data_inicio,
@@ -55,7 +57,8 @@ export const Dashboard = () => {
   });
   const { data: evolucaoTicket, isLoading: isLoadingTicket } = useEvolucaoTicketMedio(
     currentYear,
-    filters.empreendimento_id
+    filters.empreendimento_id,
+    filters.grupo_id
   );
 
   if (isLoading) {
