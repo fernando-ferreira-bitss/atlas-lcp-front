@@ -2,6 +2,7 @@ import type {
   EmpreendimentoGrupo,
   EmpreendimentoGrupoSimple,
   EmpreendimentoGrupoWithMembros,
+  EmpreendimentoSimple,
   CreateEmpreendimentoGrupoData,
   UpdateEmpreendimentoGrupoData,
 } from '@/shared/types';
@@ -84,6 +85,16 @@ class GrupoService {
    */
   async getEmpreendimentos(id: number): Promise<number[]> {
     return apiClient.get<never, number[]>(`${this.baseURL}/${id}/empreendimentos`);
+  }
+
+  /**
+   * Lista empreendimentos disponíveis (sem grupo) para vincular
+   * @returns Lista de empreendimentos não vinculados a nenhum grupo
+   */
+  async getEmpreendimentosDisponiveis(): Promise<EmpreendimentoSimple[]> {
+    return apiClient.get<never, EmpreendimentoSimple[]>(
+      `${this.baseURL}/disponiveis/empreendimentos`
+    );
   }
 }
 

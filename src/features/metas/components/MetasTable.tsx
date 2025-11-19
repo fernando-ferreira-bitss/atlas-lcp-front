@@ -6,7 +6,7 @@ import { useDeleteMeta } from '../hooks/useMetas';
 
 import { MetaFormModal } from './MetaFormModal';
 
-import type { MetaWithEmpreendimento } from '../types';
+import type { Meta } from '../types';
 
 import { Button } from '@/shared/components/ui/button';
 import {
@@ -36,17 +36,17 @@ const MESES = [
 ];
 
 interface MetasTableProps {
-  metas: MetaWithEmpreendimento[];
+  metas: Meta[];
   isLoading?: boolean;
 }
 
 export const MetasTable = ({ metas, isLoading }: MetasTableProps) => {
-  const [metaToEdit, setMetaToEdit] = useState<MetaWithEmpreendimento | null>(null);
+  const [metaToEdit, setMetaToEdit] = useState<Meta | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const deleteMeta = useDeleteMeta();
 
-  const handleEdit = (meta: MetaWithEmpreendimento) => {
+  const handleEdit = (meta: Meta) => {
     setMetaToEdit(meta);
     setIsModalOpen(true);
   };
@@ -91,13 +91,34 @@ export const MetasTable = ({ metas, isLoading }: MetasTableProps) => {
     );
   }
 
+  // Ordenar metas: agrupadas por mês/ano, com consolidado primeiro de cada período
+  const metasOrdenadas = [...metas].sort((a, b) => {
+    // Primeiro ordenar por ano DESC (mais recente primeiro)
+    if (a.ano !== b.ano) return b.ano - a.ano;
+
+    // Depois ordenar por mês DESC (mais recente primeiro)
+    if (a.mes !== b.mes) return b.mes - a.mes;
+
+    // Dentro do mesmo mês/ano: consolidado sempre primeiro
+    const aIsConsolidado = !a.empreendimento_grupo_id;
+    const bIsConsolidado = !b.empreendimento_grupo_id;
+
+    if (aIsConsolidado && !bIsConsolidado) return -1;
+    if (!aIsConsolidado && bIsConsolidado) return 1;
+
+    // Se ambas são de grupos, ordenar por nome do grupo (alfabético)
+    const nomeA = a.grupo_nome || '';
+    const nomeB = b.grupo_nome || '';
+    return nomeA.localeCompare(nomeB);
+  });
+
   return (
     <>
       <div className="overflow-x-auto rounded-lg border border-gray-200">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Empreendimento</TableHead>
+              <TableHead>Grupo</TableHead>
               <TableHead>Mês</TableHead>
               <TableHead>Ano</TableHead>
               <TableHead className="text-right">Meta VGV</TableHead>
@@ -106,10 +127,10 @@ export const MetasTable = ({ metas, isLoading }: MetasTableProps) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {metas.map((meta) => {
-              const empNome = meta.empreendimento_nome || 'Consolidado';
-              const descricao = `${empNome} - ${MESES[meta.mes]}/${meta.ano}`;
-              const isConsolidado = !meta.empreendimento_id;
+            {metasOrdenadas.map((meta) => {
+              const grupoNome = meta.grupo_nome || 'Consolidado';
+              const descricao = `${grupoNome} - ${MESES[meta.mes]}/${meta.ano}`;
+              const isConsolidado = !meta.empreendimento_grupo_id;
 
               return (
                 <TableRow
@@ -117,8 +138,8 @@ export const MetasTable = ({ metas, isLoading }: MetasTableProps) => {
                   className={isConsolidado ? 'bg-blue-50 hover:bg-blue-100' : ''}
                 >
                   <TableCell className="font-medium">
-                    {meta.empreendimento_id ? (
-                      meta.empreendimento_nome || `ID: ${meta.empreendimento_id}`
+                    {meta.empreendimento_grupo_id ? (
+                      meta.grupo_nome || `ID: ${meta.empreendimento_grupo_id}`
                     ) : (
                       <span className="flex items-center gap-2 font-bold text-lcp-blue">
                         <span className="flex h-2 w-2 rounded-full bg-lcp-blue" />

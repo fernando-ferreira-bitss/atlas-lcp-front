@@ -4,6 +4,7 @@ import type {
   CreateEmpreendimentoGrupoData,
   EmpreendimentoGrupoSimple,
   EmpreendimentoGrupoWithMembros,
+  EmpreendimentoSimple,
   UpdateEmpreendimentoGrupoData,
 } from '@/shared/types';
 
@@ -61,6 +62,7 @@ export function useCreateGrupo() {
     mutationFn: (data: CreateEmpreendimentoGrupoData) => grupoService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['grupos'] });
+      queryClient.invalidateQueries({ queryKey: ['empreendimentos-disponiveis'] });
     },
   });
 }
@@ -78,6 +80,8 @@ export function useUpdateGrupo() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['grupos'] });
       queryClient.invalidateQueries({ queryKey: ['grupo', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['grupo-empreendimentos', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['empreendimentos-disponiveis'] });
     },
   });
 }
@@ -93,6 +97,7 @@ export function useDeleteGrupo() {
     mutationFn: (id: number) => grupoService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['grupos'] });
+      queryClient.invalidateQueries({ queryKey: ['empreendimentos-disponiveis'] });
     },
   });
 }
@@ -108,5 +113,17 @@ export function useGrupoEmpreendimentos(id: number): UseQueryResult<number[], Er
     queryFn: () => grupoService.getEmpreendimentos(id),
     enabled: !!id,
     staleTime: 1000 * 60 * 5, // 5 minutos
+  });
+}
+
+/**
+ * Hook para buscar empreendimentos disponíveis (sem grupo)
+ * @returns Query result com lista de empreendimentos disponíveis para vincular
+ */
+export function useEmpreendimentosDisponiveis(): UseQueryResult<EmpreendimentoSimple[], Error> {
+  return useQuery({
+    queryKey: ['empreendimentos-disponiveis'],
+    queryFn: () => grupoService.getEmpreendimentosDisponiveis(),
+    staleTime: 1000 * 60 * 2, // 2 minutos - dados mais voláteis
   });
 }

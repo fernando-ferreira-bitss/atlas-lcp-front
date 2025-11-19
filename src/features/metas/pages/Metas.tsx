@@ -6,7 +6,7 @@ import { MetaImportForm } from '../components/MetaImportForm';
 import { MetasTable } from '../components/MetasTable';
 import { useMetas } from '../hooks/useMetas';
 
-import type { MetaFilters, MetaWithEmpreendimento } from '../types';
+import type { MetaFilters } from '../types';
 
 import { GrupoSelect } from '@/shared/components/common/GrupoSelect';
 import { Button } from '@/shared/components/ui/button';
@@ -44,9 +44,6 @@ export const Metas = () => {
   // Gerar array de anos (últimos 5 + próximos 5)
   const anos = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
 
-  // Metas já vêm com informações do grupo
-  const metasWithEmp: MetaWithEmpreendimento[] = metas || [];
-
   const handleAnoChange = (value: string) => {
     setFilters((prev) => ({ ...prev, ano: value === 'all' ? undefined : Number(value) }));
   };
@@ -74,7 +71,7 @@ export const Metas = () => {
         <div>
           <h1 className="text-3xl font-bold text-lcp-blue">Gerenciar Metas</h1>
           <p className="text-sm text-gray-600">
-            Defina e acompanhe metas de vendas por empreendimento e período
+            Defina e acompanhe metas de vendas por grupo e período
           </p>
           <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
             <FileSpreadsheet className="h-4 w-4" />
@@ -180,7 +177,7 @@ export const Metas = () => {
           </div>
 
           {/* Tabela */}
-          <MetasTable metas={metasWithEmp} isLoading={isLoading} />
+          <MetasTable metas={metas || []} isLoading={isLoading} />
         </CardContent>
       </Card>
 

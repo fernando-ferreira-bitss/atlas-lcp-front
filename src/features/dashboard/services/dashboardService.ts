@@ -1,11 +1,13 @@
 import type {
   ComparativoAnos,
+  ConversaoGrupo,
   ConversaoPorEmpreendimento,
   DashboardKPIs,
   DashboardResumo,
   EvolucaoTicketMedio,
   GraficoVendasMes,
   TopEmpreendimento,
+  TopGrupo,
   VendasPorPeriodo,
   VendasPorPeriodoFilters,
 } from '@/shared/types';
@@ -136,6 +138,36 @@ class DashboardService {
   ): Promise<EvolucaoTicketMedio[]> {
     return apiClient.get<never, EvolucaoTicketMedio[]>(`${this.baseURL}/evolucao-ticket-medio`, {
       params: { ano, empreendimento_id, grupo_id },
+    });
+  }
+
+  /**
+   * Busca ranking dos grupos por valor de vendas (dados agregados)
+   * @param filters - Filtros opcionais de data e limite
+   * @returns Lista dos top grupos por vendas
+   */
+  async getTopGrupos(filters?: {
+    data_inicio?: string;
+    data_fim?: string;
+    limit?: number;
+  }): Promise<TopGrupo[]> {
+    return apiClient.get<never, TopGrupo[]>(`${this.baseURL}/top-grupos`, {
+      params: filters,
+    });
+  }
+
+  /**
+   * Busca taxa de conversão por grupo (propostas → vendas agregadas por grupo)
+   * @param filters - Filtros opcionais de data e limite
+   * @returns Lista de grupos com taxa de conversão
+   */
+  async getConversaoPorGrupo(filters?: {
+    data_inicio?: string;
+    data_fim?: string;
+    limit?: number;
+  }): Promise<ConversaoGrupo[]> {
+    return apiClient.get<never, ConversaoGrupo[]>(`${this.baseURL}/conversao-por-grupo`, {
+      params: filters,
     });
   }
 }

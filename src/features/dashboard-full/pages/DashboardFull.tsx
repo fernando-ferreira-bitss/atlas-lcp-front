@@ -13,11 +13,13 @@ import { VendasPorEmpreendimentoChart } from '@/features/dashboard/components/ch
 import {
   useComparativoAnos,
   useConversaoPorEmpreendimento,
+  useConversaoPorGrupo,
   useDashboardKPIs,
   useGraficoVendasMes,
   useTopEmpreendimentos,
+  useTopGrupos,
 } from '@/features/dashboard/hooks/useDashboard';
-import { useEmpreendimentos } from '@/features/empreendimentos/hooks/useEmpreendimentos';
+import { GrupoSelect } from '@/shared/components/common/GrupoSelect';
 import { Loading } from '@/shared/components/common';
 import { Button } from '@/shared/components/ui/button';
 import { Label } from '@/shared/components/ui/label';
@@ -36,7 +38,7 @@ export const DashboardFull = () => {
     periodo: PeriodoType;
     dataInicio: string;
     dataFim: string;
-    empSearch: string;
+    selectedGrupo: number | null;
   } => {
     try {
       const saved = localStorage.getItem('dashboardFullFilters');
@@ -47,7 +49,7 @@ export const DashboardFull = () => {
           periodo: parsed.periodo || 'mensal',
           dataInicio: parsed.dataInicio || new Date(ano, mes, 1).toISOString().split('T')[0],
           dataFim: parsed.dataFim || hoje.toISOString().split('T')[0],
-          empSearch: parsed.empSearch || '',
+          selectedGrupo: parsed.selectedGrupo || null,
         };
       }
     } catch (error) {
@@ -64,7 +66,7 @@ export const DashboardFull = () => {
       periodo: 'mensal',
       dataInicio: new Date(ano, mes, 1).toISOString().split('T')[0],
       dataFim: hoje.toISOString().split('T')[0],
-      empSearch: '',
+      selectedGrupo: null,
     };
   };
 
@@ -78,8 +80,7 @@ export const DashboardFull = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  const [empSearch, setEmpSearch] = useState(savedData.empSearch);
-  const [showEmpList, setShowEmpList] = useState(false);
+  const [selectedGrupo, setSelectedGrupo] = useState<number | null>(savedData.selectedGrupo);
   const [showPeriodFilter, setShowPeriodFilter] = useState(false);
 
   const currentYear = new Date().getFullYear();
@@ -87,12 +88,6 @@ export const DashboardFull = () => {
 
   // Hooks de dados
   const { data: kpis, isLoading } = useDashboardKPIs(filters);
-  const { data: empreendimentos } = useEmpreendimentos();
-
-  // Filtra empreendimentos baseado na busca - sempre mostra todos se não houver busca
-  const empreendimentosFiltrados = empSearch
-    ? empreendimentos?.filter((emp) => emp.nome.toLowerCase().includes(empSearch.toLowerCase()))
-    : empreendimentos;
 
   // Funções de manipulação de período
   const calculateDates = (tipo: PeriodoType): { data_inicio?: string; data_fim?: string } => {
@@ -170,28 +165,53 @@ export const DashboardFull = () => {
     setPeriodo('mensal');
     setDataInicio(newDataInicio);
     setDataFim(newDataFim);
-    setEmpSearch('');
+    setSelectedGrupo(null);
     setFilters({
       data_inicio: newDataInicio,
       data_fim: newDataFim,
       periodo: 'mensal',
     });
   };
-  const { data: graficoData } = useGraficoVendasMes(currentYear, filters.empreendimento_id);
+
+  const handleGrupoChange = (grupoId: number | null) => {
+    setSelectedGrupo(grupoId);
+    setFilters((prev) => ({
+      ...prev,
+      grupo_id: grupoId ?? undefined,
+    }));
+  };
+
+  const { data: graficoData } = useGraficoVendasMes(currentYear, undefined, filters.grupo_id);
+
+  // Buscar Top Empreendimentos OU Top Grupos dependendo do filtro
   const { data: topEmpreendimentos } = useTopEmpreendimentos({
     data_inicio: filters.data_inicio,
     data_fim: filters.data_fim,
     limit: 5,
   });
+  const { data: topGrupos } = useTopGrupos({
+    data_inicio: filters.data_inicio,
+    data_fim: filters.data_fim,
+    limit: 5,
+  });
+
+  // Buscar Conversão por Empreendimento OU por Grupo dependendo do filtro
   const { data: conversaoPorEmp } = useConversaoPorEmpreendimento({
     data_inicio: filters.data_inicio,
     data_fim: filters.data_fim,
     limit: 5,
   });
+  const { data: conversaoPorGrupo } = useConversaoPorGrupo({
+    data_inicio: filters.data_inicio,
+    data_fim: filters.data_fim,
+    limit: 5,
+  });
+
   const { data: comparativoAnos } = useComparativoAnos(
     currentYear,
     previousYear,
-    filters.empreendimento_id
+    undefined,
+    filters.grupo_id
   );
 
   // Salva filtros no localStorage sempre que mudarem
@@ -201,10 +221,10 @@ export const DashboardFull = () => {
       periodo,
       dataInicio,
       dataFim,
-      empSearch,
+      selectedGrupo,
     };
     localStorage.setItem('dashboardFullFilters', JSON.stringify(filtersToSave));
-  }, [filters, periodo, dataInicio, dataFim, empSearch]);
+  }, [filters, periodo, dataInicio, dataFim, selectedGrupo]);
 
   // Abre automaticamente o painel de datas se o período for personalizado
   useEffect(() => {
@@ -212,16 +232,6 @@ export const DashboardFull = () => {
       setShowPeriodFilter(true);
     }
   }, [periodo]);
-
-  // Preenche o campo de busca com o nome do empreendimento selecionado
-  useEffect(() => {
-    if (filters.empreendimento_id && empreendimentos) {
-      const emp = empreendimentos.find((e) => e.id === filters.empreendimento_id);
-      if (emp) {
-        setEmpSearch(emp.nome);
-      }
-    }
-  }, [filters.empreendimento_id, empreendimentos]);
 
   // Atualiza relógio a cada minuto
   useEffect(() => {
@@ -300,18 +310,6 @@ export const DashboardFull = () => {
     };
   }, [isFullscreen]);
 
-  // Fecha o dropdown de empreendimentos ao clicar fora
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest('#empreendimento-search') && !target.closest('.emp-dropdown')) {
-        setShowEmpList(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   if (isLoading) {
     return <Loading />;
@@ -324,8 +322,6 @@ export const DashboardFull = () => {
       </div>
     );
   }
-
-  const selectedEmp = empreendimentos?.find((emp) => emp.id === filters.empreendimento_id);
 
   return (
     <div
@@ -360,7 +356,7 @@ export const DashboardFull = () => {
         <div className="mb-3 flex flex-col gap-3 sm:mb-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h1 className="text-lg font-bold text-lcp-blue sm:text-xl">
-              Dashboard LCP {selectedEmp ? `- ${selectedEmp.nome}` : ''}
+              Dashboard LCP
             </h1>
 
             <div className="text-left sm:text-right">
@@ -382,80 +378,14 @@ export const DashboardFull = () => {
           </div>
 
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-            {/* Filtro de Empreendimento */}
-            <div className="relative min-w-[280px]">
-              <input
-                id="empreendimento-search"
-                type="text"
-                placeholder="Buscar empreendimento..."
-                value={empSearch}
-                onChange={(e) => setEmpSearch(e.target.value)}
-                onFocus={() => {
-                  setEmpSearch(''); // Limpa o campo ao focar
-                  setShowEmpList(true);
-                }}
-                className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-lcp-blue sm:px-4 sm:text-sm"
+            {/* Filtro de Grupo */}
+            <div className="min-w-[280px]">
+              <GrupoSelect
+                value={selectedGrupo}
+                onChange={handleGrupoChange}
+                placeholder="Todos os grupos"
+                showAllOption
               />
-              {showEmpList && (
-                <div className="emp-dropdown absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white shadow-lg">
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    className="cursor-pointer px-3 py-2 text-sm hover:bg-gray-100"
-                    onClick={() => {
-                      const newFilters = { ...filters };
-                      delete newFilters.empreendimento_id;
-                      setFilters(newFilters);
-                      setEmpSearch('');
-                      setShowEmpList(false);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        const newFilters = { ...filters };
-                        delete newFilters.empreendimento_id;
-                        setFilters(newFilters);
-                        setEmpSearch('');
-                        setShowEmpList(false);
-                      }
-                    }}
-                  >
-                    Todos os Empreendimentos
-                  </div>
-                  {empreendimentosFiltrados?.map((emp) => (
-                    <div
-                      key={emp.id}
-                      role="button"
-                      tabIndex={0}
-                      className={`cursor-pointer px-3 py-2 text-sm hover:bg-gray-100 ${
-                        filters.empreendimento_id === emp.id ? 'bg-blue-100' : ''
-                      }`}
-                      onClick={() => {
-                        const newFilters = { ...filters };
-                        newFilters.empreendimento_id = emp.id;
-                        setFilters(newFilters);
-                        setEmpSearch(emp.nome);
-                        setShowEmpList(false);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          const newFilters = { ...filters };
-                          newFilters.empreendimento_id = emp.id;
-                          setFilters(newFilters);
-                          setEmpSearch(emp.nome);
-                          setShowEmpList(false);
-                        }
-                      }}
-                    >
-                      {emp.nome}
-                    </div>
-                  ))}
-                  {empreendimentosFiltrados?.length === 0 && (
-                    <div className="px-3 py-2 text-sm text-gray-500">
-                      Nenhum empreendimento encontrado
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
 
             {/* Botões de Período */}
@@ -608,56 +538,111 @@ export const DashboardFull = () => {
             className={`overflow-auto ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'max-h-[180px]'}`}
           >
             <UltimasVendasCompactTable
-              empreendimentoId={filters.empreendimento_id}
+              grupoId={filters.grupo_id}
               dataInicio={filters.data_inicio}
               dataFim={filters.data_fim}
             />
           </div>
         </div>
 
-        {/* [1,3] - Top 5 Empreendimentos */}
+        {/* [1,3] - Top 5 Empreendimentos OU Top 5 Grupos */}
         <div
           className={`overflow-auto rounded-lg bg-white shadow-md ${isFullscreen ? 'p-4' : 'p-2 min-h-[300px]'} lg:p-4`}
         >
           <h2
             className={`mb-2 font-bold text-lcp-blue ${isFullscreen ? 'text-sm mb-3' : 'text-xs'} lg:text-sm lg:mb-3`}
           >
-            Top 5 Empreendimentos
+            {selectedGrupo ? 'Top 5 Empreendimentos' : 'Top 5 Grupos'}
           </h2>
-          {topEmpreendimentos && topEmpreendimentos.length > 0 ? (
-            <div className={isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[280px]'}>
-              <VendasPorEmpreendimentoChart data={topEmpreendimentos} />
-            </div>
+          {selectedGrupo ? (
+            // Mostrar Top Empreendimentos quando filtrado por grupo
+            topEmpreendimentos && topEmpreendimentos.length > 0 ? (
+              <div className={isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[280px]'}>
+                <VendasPorEmpreendimentoChart data={topEmpreendimentos} />
+              </div>
+            ) : (
+              <div
+                className={`flex items-center justify-center ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[280px]'}`}
+              >
+                <p className="text-xs text-gray-500">Nenhum dado disponível</p>
+              </div>
+            )
           ) : (
-            <div
-              className={`flex items-center justify-center ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[280px]'}`}
-            >
-              <p className="text-xs text-gray-500">Nenhum dado disponível</p>
-            </div>
+            // Mostrar Top Grupos quando sem filtro
+            topGrupos && topGrupos.length > 0 ? (
+              <div className={isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[280px]'}>
+                <VendasPorEmpreendimentoChart
+                  data={topGrupos.map((g) => ({
+                    empreendimento_id: g.grupo_id,
+                    empreendimento_nome: g.grupo_nome,
+                    grupo_id: null,
+                    grupo_nome: null,
+                    total_propostas: 0,
+                    total_vendas: g.total_vendas,
+                    valor_propostas: 0,
+                    valor_vendas: g.valor_vendas,
+                  }))}
+                />
+              </div>
+            ) : (
+              <div
+                className={`flex items-center justify-center ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[280px]'}`}
+              >
+                <p className="text-xs text-gray-500">Nenhum dado disponível</p>
+              </div>
+            )
           )}
         </div>
 
         {/* ============== LINHA 2 ============== */}
 
-        {/* [2,1] - Vendas por Empreendimento + Taxa de Conversão */}
+        {/* [2,1] - Vendas por Empreendimento OU por Grupo + Taxa de Conversão */}
         <div
           className={`overflow-auto rounded-lg bg-white shadow-md ${isFullscreen ? 'p-4' : 'p-2 min-h-[200px]'} lg:p-4`}
         >
           <h2
             className={`mb-2 font-bold text-lcp-blue ${isFullscreen ? 'text-sm mb-3' : 'text-xs'} lg:text-sm lg:mb-3`}
           >
-            Vendas por Empreendimento
+            {selectedGrupo ? 'Vendas por Empreendimento' : 'Vendas por Grupo'}
           </h2>
-          {conversaoPorEmp && conversaoPorEmp.length > 0 ? (
-            <div className={`overflow-auto ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[180px]'}`}>
-              <VendasConversaoBarChart data={conversaoPorEmp} />
-            </div>
+          {selectedGrupo ? (
+            // Mostrar Conversão por Empreendimento quando filtrado por grupo
+            conversaoPorEmp && conversaoPorEmp.length > 0 ? (
+              <div className={`overflow-auto ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[180px]'}`}>
+                <VendasConversaoBarChart data={conversaoPorEmp} />
+              </div>
+            ) : (
+              <div
+                className={`flex items-center justify-center ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[180px]'}`}
+              >
+                <p className="text-xs text-gray-500">Nenhum dado disponível</p>
+              </div>
+            )
           ) : (
-            <div
-              className={`flex items-center justify-center ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[180px]'}`}
-            >
-              <p className="text-xs text-gray-500">Nenhum dado disponível</p>
-            </div>
+            // Mostrar Conversão por Grupo quando sem filtro
+            conversaoPorGrupo && conversaoPorGrupo.length > 0 ? (
+              <div className={`overflow-auto ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[180px]'}`}>
+                <VendasConversaoBarChart
+                  data={conversaoPorGrupo.map((g) => ({
+                    empreendimento_id: g.grupo_id,
+                    empreendimento_nome: g.grupo_nome,
+                    grupo_id: null,
+                    grupo_nome: null,
+                    total_propostas: g.total_propostas,
+                    total_vendas: g.total_vendas,
+                    taxa_conversao: g.taxa_conversao,
+                    valor_propostas: g.valor_propostas,
+                    valor_vendas: g.valor_vendas,
+                  }))}
+                />
+              </div>
+            ) : (
+              <div
+                className={`flex items-center justify-center ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[180px]'}`}
+              >
+                <p className="text-xs text-gray-500">Nenhum dado disponível</p>
+              </div>
+            )
           )}
         </div>
 

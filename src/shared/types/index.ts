@@ -54,12 +54,20 @@ export interface CreateEmpreendimentoGrupoData {
   nome_grupo: string;
   descricao?: string;
   ativo?: boolean;
+  empreendimento_ids?: number[];
 }
 
 export interface UpdateEmpreendimentoGrupoData {
   nome_grupo?: string;
   descricao?: string;
   ativo?: boolean;
+  empreendimento_ids?: number[];
+}
+
+export interface EmpreendimentoSimple {
+  id: number;
+  codigo_mega: number;
+  nome: string;
 }
 
 // === Empreendimento Types ===
@@ -125,6 +133,8 @@ export interface Venda {
   codigo_mega: number;
   empreendimento_id: number;
   empreendimento_nome?: string;
+  grupo_id?: number | null;
+  grupo_nome?: string | null;
   cliente_nome: string;
   unidade: string;
   bloco: string;
@@ -151,6 +161,7 @@ export interface Meta {
   id: number;
   empreendimento_id: number | null;
   empreendimento_grupo_id: number | null;
+  grupo_nome?: string;
   mes: number;
   ano: number;
   meta_vendas: number;
@@ -185,6 +196,13 @@ export interface TopEmpreendimento {
   total_propostas: number;
   total_vendas: number;
   valor_propostas: number;
+  valor_vendas: number;
+}
+
+export interface TopGrupo {
+  grupo_id: number;
+  grupo_nome: string;
+  total_vendas: number;
   valor_vendas: number;
 }
 
@@ -236,6 +254,16 @@ export interface ConversaoPorEmpreendimento {
   empreendimento_nome: string | null;
   grupo_id?: number | null;
   grupo_nome?: string | null;
+  total_propostas: number;
+  total_vendas: number;
+  taxa_conversao: number;
+  valor_propostas: number;
+  valor_vendas: number;
+}
+
+export interface ConversaoGrupo {
+  grupo_id: number;
+  grupo_nome: string;
   total_propostas: number;
   total_vendas: number;
   taxa_conversao: number;

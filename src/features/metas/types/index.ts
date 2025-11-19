@@ -10,6 +10,7 @@ export interface Meta {
   id: number;
   empreendimento_id: number | null; // SEMPRE null - metas são apenas por grupo
   empreendimento_grupo_id: number | null; // ID do grupo (obrigatório)
+  grupo_nome?: string; // Nome do grupo (retornado pela API)
   mes: number; // 1-12
   ano: number; // 2020-2100
   meta_vendas: number; // Valor decimal
@@ -75,11 +76,4 @@ export interface MetaTemplateParams {
 export interface MetaImportParams {
   ano: number; // Ano das metas a importar (obrigatório)
   file: File; // Arquivo Excel (.xlsx ou .xls)
-}
-
-/**
- * Meta com informações do empreendimento (para exibição)
- */
-export interface MetaWithEmpreendimento extends Meta {
-  empreendimento_nome?: string;
 }

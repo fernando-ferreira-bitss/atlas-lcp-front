@@ -4,12 +4,14 @@ import { dashboardService } from '../services/dashboardService';
 
 import type {
   ComparativoAnos,
+  ConversaoGrupo,
   ConversaoPorEmpreendimento,
   DashboardKPIs,
   DashboardResumo,
   EvolucaoTicketMedio,
   GraficoVendasMes,
   TopEmpreendimento,
+  TopGrupo,
   VendasPorPeriodo,
   VendasPorPeriodoFilters,
 } from '@/shared/types';
@@ -152,4 +154,38 @@ export const useEvolucaoTicketMedio = (
     queryKey: ['evolucao-ticket-medio', ano, empreendimento_id, grupo_id],
     queryFn: () => dashboardService.getEvolucaoTicketMedio(ano, empreendimento_id, grupo_id),
     staleTime: 1000 * 60 * 5, // 5 minutos
+  });
+
+/**
+ * Hook para buscar ranking dos grupos por valor de vendas
+ * @param filters - Filtros opcionais de data e limite
+ * @returns Query result com top grupos por vendas
+ */
+export const useTopGrupos = (filters?: {
+  data_inicio?: string;
+  data_fim?: string;
+  limit?: number;
+}): UseQueryResult<TopGrupo[], Error> =>
+  useQuery({
+    queryKey: ['top-grupos', filters],
+    queryFn: () => dashboardService.getTopGrupos(filters),
+    staleTime: 1000 * 60, // 1 minuto
+    refetchInterval: 1000 * 60 * 10, // Atualiza a cada 10 minutos
+  });
+
+/**
+ * Hook para buscar taxa de conversão por grupo
+ * @param filters - Filtros opcionais de data e limite
+ * @returns Query result com conversão por grupo
+ */
+export const useConversaoPorGrupo = (filters?: {
+  data_inicio?: string;
+  data_fim?: string;
+  limit?: number;
+}): UseQueryResult<ConversaoGrupo[], Error> =>
+  useQuery({
+    queryKey: ['conversao-por-grupo', filters],
+    queryFn: () => dashboardService.getConversaoPorGrupo(filters),
+    staleTime: 1000 * 60, // 1 minuto
+    refetchInterval: 1000 * 60 * 10, // Atualiza a cada 10 minutos
   });
