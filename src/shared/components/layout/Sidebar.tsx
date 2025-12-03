@@ -66,7 +66,13 @@ export const Sidebar = () => {
   const { data: user } = useCurrentUser();
   const { isOpen, close } = useSidebar();
 
-  const handleLinkClick = () => {
+  const handleLinkClick = (href: string) => {
+    // Limpa cache de filtros ao clicar nos menus de dashboard
+    if (href === '/') {
+      localStorage.removeItem('dashboard-filters');
+    } else if (href === '/dashboard-full') {
+      localStorage.removeItem('dashboardFullFilters');
+    }
     close();
   };
 
@@ -124,7 +130,7 @@ export const Sidebar = () => {
                   <Link
                     key={item.href}
                     to={item.href}
-                    onClick={handleLinkClick}
+                    onClick={() => handleLinkClick(item.href)}
                     className={cn(
                       'flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors',
                       isActive
