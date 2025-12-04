@@ -605,7 +605,7 @@ export const DashboardFull = () => {
               <p
                 className={`font-medium uppercase text-green-700 ${isFullscreen ? 'text-xs' : 'text-[10px]'} lg:text-xs`}
               >
-                Vendas do Mês
+                Vendas do Período
               </p>
               <p
                 className={`font-bold text-green-900 ${isFullscreen ? 'text-3xl' : 'text-xl'} lg:text-3xl`}
@@ -658,7 +658,7 @@ export const DashboardFull = () => {
             <div className="flex h-full flex-1">
               <MetaGaugeChart
                 percentual={kpis.percentual_meta_mensal}
-                title="Meta Mensal"
+                title="Meta Período"
                 subtitle={formatCurrency(kpis.meta_vendas_mensal)}
                 isFullscreen={isFullscreen}
               />
