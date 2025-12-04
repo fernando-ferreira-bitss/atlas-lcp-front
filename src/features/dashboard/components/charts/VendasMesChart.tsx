@@ -16,7 +16,7 @@ interface VendasMesChartProps {
     mes: number;
     total_vendas: number;
     valor_vendas: number;
-    meta_vendas: number;
+    valor_meta_vendas: number;
   }>;
 }
 
@@ -39,7 +39,7 @@ export const VendasMesChart = ({ data }: VendasMesChartProps) => {
   const chartData = data.map((item) => ({
     mes: mesesNomes[item.mes - 1],
     vendas: item.valor_vendas,
-    meta: item.meta_vendas,
+    meta: item.valor_meta_vendas,
     quantidade: item.total_vendas,
   }));
 

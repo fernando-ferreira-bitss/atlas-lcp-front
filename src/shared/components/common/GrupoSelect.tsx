@@ -1,4 +1,4 @@
-import { useGruposSimple } from '@/features/grupos/hooks/useGrupos';
+import { useGruposAll, useGruposSimple } from '@/features/grupos/hooks/useGrupos';
 import {
   Select,
   SelectContent,
@@ -14,11 +14,14 @@ interface GrupoSelectProps {
   className?: string;
   disabled?: boolean;
   showAllOption?: boolean;
+  /** Se true, usa a rota /all que retorna todos os grupos (ativos e inativos) */
+  includeAll?: boolean;
 }
 
 /**
  * Componente de seleção de grupo de empreendimentos
  * Carrega automaticamente os grupos disponíveis da API usando a rota otimizada /simple
+ * ou /all se includeAll for true
  */
 export const GrupoSelect = ({
   value,
@@ -27,8 +30,13 @@ export const GrupoSelect = ({
   className,
   disabled = false,
   showAllOption = false,
+  includeAll = false,
 }: GrupoSelectProps) => {
-  const { data: grupos, isLoading } = useGruposSimple();
+  const { data: gruposSimple, isLoading: isLoadingSimple } = useGruposSimple();
+  const { data: gruposAll, isLoading: isLoadingAll } = useGruposAll();
+
+  const grupos = includeAll ? gruposAll : gruposSimple;
+  const isLoading = includeAll ? isLoadingAll : isLoadingSimple;
 
   const handleValueChange = (stringValue: string) => {
     if (stringValue === 'null') {

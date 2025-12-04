@@ -23,6 +23,18 @@ export function useGruposSimple(): UseQueryResult<EmpreendimentoGrupoSimple[], E
 }
 
 /**
+ * Hook para listar todos os grupos (ativos e inativos) - Para cadastro de metas
+ * @returns Query result com lista de todos os grupos
+ */
+export function useGruposAll(): UseQueryResult<EmpreendimentoGrupoSimple[], Error> {
+  return useQuery({
+    queryKey: ['grupos', 'all'],
+    queryFn: () => grupoService.listAll(),
+    staleTime: 1000 * 60 * 5, // 5 minutos
+  });
+}
+
+/**
  * Hook para listar grupos de empreendimentos
  * @param apenasAtivos - Se true, retorna apenas grupos ativos
  * @returns Query result com lista de grupos

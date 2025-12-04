@@ -20,6 +20,7 @@ interface DashboardFilters {
   data_inicio?: string;
   data_fim?: string;
   empreendimento_id?: number;
+  grupo_id?: number;
 }
 
 /**

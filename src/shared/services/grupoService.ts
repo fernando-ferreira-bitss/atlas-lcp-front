@@ -21,6 +21,14 @@ class GrupoService {
   }
 
   /**
+   * Lista todos os grupos com empreendimentos - Para cadastro de metas
+   * @returns Lista de todos os grupos
+   */
+  async listAll(): Promise<EmpreendimentoGrupoSimple[]> {
+    return apiClient.get<never, EmpreendimentoGrupoSimple[]>(`${this.baseURL}/all`);
+  }
+
+  /**
    * Lista todos os grupos com contagem de membros
    * @param apenasAtivos - Se true, retorna apenas grupos ativos
    * @param skip - Paginação: registros a pular

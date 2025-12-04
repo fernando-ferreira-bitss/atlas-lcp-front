@@ -210,7 +210,10 @@ export interface GraficoVendasMes {
   mes: number;
   total_vendas: number;
   valor_vendas: number;
-  meta_vendas: number;
+  valor_meta_vendas: number;
+  qtd_meta_vendas: number;
+  total_distratos: number;
+  valor_distratos: number;
 }
 
 export interface VendasPorPeriodo {

@@ -36,7 +36,7 @@ export const SalesEvolutionChart = ({ data }: SalesEvolutionChartProps) => {
   const chartData = data.map((item) => ({
     mes: mesesNomes[item.mes - 1] || item.mes.toString(), // Jan, Fev, Mar...
     vendas: item.valor_vendas / 1000000, // Converte para milhões
-    meta: item.meta_vendas / 1000000, // Converte para milhões
+    meta: item.valor_meta_vendas / 1000000, // Converte para milhões
   }));
 
   return (

@@ -180,6 +180,7 @@ export const MetaFormModal = ({ open, onOpenChange, meta }: MetaFormModalProps) 
               onChange={(value) => setValue('empreendimento_grupo_id', value || 0)}
               placeholder="Selecione um grupo"
               disabled={isEditing}
+              includeAll
             />
             {errors.empreendimento_grupo_id && (
               <p className="text-xs text-red-500">{errors.empreendimento_grupo_id.message}</p>

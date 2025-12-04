@@ -11,7 +11,6 @@ import type { DashboardFilters as IFilters } from '@/shared/types';
 import { MetaGaugeChart } from '@/features/dashboard/components/charts/MetaGaugeChart';
 import { VendasPorEmpreendimentoChart } from '@/features/dashboard/components/charts/VendasPorEmpreendimentoChart';
 import {
-  useComparativoAnos,
   useConversaoPorGrupo,
   useDashboardKPIs,
   useGraficoVendasMes,
@@ -82,7 +81,6 @@ export const DashboardFull = () => {
   const [showPeriodFilter, setShowPeriodFilter] = useState(false);
 
   const currentYear = new Date().getFullYear();
-  const previousYear = currentYear - 1;
 
   // Hooks de dados
   const { data: kpis, isLoading } = useDashboardKPIs(filters);
@@ -190,13 +188,6 @@ export const DashboardFull = () => {
     data_fim: filters.data_fim,
     limit: 5,
   });
-
-  const { data: comparativoAnos } = useComparativoAnos(
-    currentYear,
-    previousYear,
-    undefined,
-    filters.grupo_id
-  );
 
   // Salva filtros no localStorage sempre que mudarem
   useEffect(() => {
@@ -516,7 +507,7 @@ export const DashboardFull = () => {
             Últimas Vendas
           </h2>
           <div
-            className={`overflow-auto ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'max-h-[180px]'}`}
+            className={`overflow-auto ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'max-h-[300px]'}`}
           >
             <UltimasVendasCompactTable
               grupoId={filters.grupo_id}
@@ -571,7 +562,7 @@ export const DashboardFull = () => {
             Vendas por Grupo
           </h2>
           {conversaoPorGrupo && conversaoPorGrupo.length > 0 ? (
-            <div className={`overflow-auto ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[180px]'}`}>
+            <div className={`overflow-auto ${isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[220px]'}`}>
               <VendasConversaoBarChart
                 data={conversaoPorGrupo.map((g) => ({
                   empreendimento_id: g.grupo_id,
@@ -695,14 +686,11 @@ export const DashboardFull = () => {
           <h2
             className={`mb-2 font-bold text-lcp-blue ${isFullscreen ? 'text-sm mb-3' : 'text-xs'} lg:text-sm lg:mb-3`}
           >
-            📈 Evolução de Vendas - Meta vs Realizado ({previousYear} vs {currentYear})
+            📈 Evolução de Vendas - Meta vs Realizado
           </h2>
-          {graficoData &&
-          graficoData.length > 0 &&
-          comparativoAnos &&
-          comparativoAnos.length > 0 ? (
+          {graficoData && graficoData.length > 0 ? (
             <div className={isFullscreen ? 'h-[calc(100%-2rem)]' : 'h-[220px]'}>
-              <UnifiedSalesChart vendasMesData={graficoData} comparativoData={comparativoAnos} />
+              <UnifiedSalesChart data={graficoData} />
             </div>
           ) : (
             <div

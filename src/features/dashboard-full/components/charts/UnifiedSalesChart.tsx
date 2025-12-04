@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Bar,
   CartesianGrid,
@@ -10,43 +11,55 @@ import {
   YAxis,
 } from 'recharts';
 
-import type { ComparativoAnos } from '@/shared/types';
+import type { GraficoVendasMes } from '@/shared/types';
 
 import { formatCurrency } from '@/shared/utils/format';
 
 interface UnifiedSalesChartProps {
-  vendasMesData: Array<{
-    mes: number;
-    total_vendas: number;
-    valor_vendas: number;
-    meta_vendas: number;
-  }>;
-  comparativoData: ComparativoAnos[];
+  data: GraficoVendasMes[];
 }
 
 const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
-export const UnifiedSalesChart = ({ vendasMesData, comparativoData }: UnifiedSalesChartProps) => {
-  // Combinar os dados - pegar apenas os meses que têm dados reais
-  const mesesComDados = new Set([
-    ...vendasMesData.map((v) => v.mes),
-    ...comparativoData.map((c) => c.mes),
-  ]);
+const SERIES_LABELS: Record<string, string> = {
+  realizadoVGV: 'Realizado VGV R$',
+  distratoVGV: 'Distrato VGV R$',
+  metaVGV: 'Meta VGV R$',
+  realizadoLotes: 'Realizado #lotes',
+  distratoLotes: 'Distrato #lotes',
+  metaLotes: 'Meta #lotes',
+};
 
-  const chartData = Array.from(mesesComDados)
-    .sort((a, b) => a - b)
-    .map((mesNum) => {
-      const vendaMes = vendasMesData.find((v) => v.mes === mesNum);
-      const comparativo = comparativoData.find((c) => c.mes === mesNum);
+export const UnifiedSalesChart = ({ data }: UnifiedSalesChartProps) => {
+  const [hiddenSeries, setHiddenSeries] = useState<Set<string>>(new Set());
 
-      return {
-        mes: MESES[mesNum - 1],
-        meta: vendaMes?.meta_vendas || 0,
-        realizado: vendaMes?.valor_vendas || 0,
-        anoAnterior: comparativo?.vendas_ano_anterior || 0, // Quantidade
-        anoAtual: comparativo?.vendas_ano_atual || 0, // Quantidade
-      };
+  const chartData = data
+    .sort((a, b) => a.mes - b.mes)
+    .map((item) => ({
+      mes: MESES[item.mes - 1],
+      // Valores em R$
+      realizadoVGV: item.valor_vendas,
+      distratoVGV: item.valor_distratos,
+      metaVGV: item.valor_meta_vendas,
+      // Quantidades
+      realizadoLotes: item.total_vendas,
+      distratoLotes: item.total_distratos,
+      metaLotes: item.qtd_meta_vendas,
+    }));
+
+  const handleLegendClick = (dataKey: string) => {
+    setHiddenSeries((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(dataKey)) {
+        newSet.delete(dataKey);
+      } else {
+        newSet.add(dataKey);
+      }
+      return newSet;
     });
+  };
+
+  const isHidden = (dataKey: string) => hiddenSeries.has(dataKey);
 
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -64,7 +77,7 @@ export const UnifiedSalesChart = ({ vendasMesData, comparativoData }: UnifiedSal
           tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
           tickFormatter={(value) => formatCurrency(value, 0)}
         />
-        {/* Eixo Y direito - Quantidades */}
+        {/* Eixo Y direito - Quantidades (#lotes) */}
         <YAxis
           yAxisId="right"
           orientation="right"
@@ -78,64 +91,76 @@ export const UnifiedSalesChart = ({ vendasMesData, comparativoData }: UnifiedSal
             borderRadius: '8px',
             fontSize: '11px',
           }}
-          formatter={(value: number, name: string, props: { dataKey?: string | number }) => {
-            const labels: Record<string, string> = {
-              meta: 'Meta',
-              realizado: 'Realizado',
-              anoAnterior: 'Ano Anterior',
-              anoAtual: 'Ano Atual',
-            };
-
-            // Get the dataKey from props
-            const dataKey = props.dataKey || name;
-
-            // Only format as currency for meta and realizado
-            const formattedValue =
-              dataKey === 'meta' || dataKey === 'realizado' ? formatCurrency(value) : value;
-
-            return [formattedValue, labels[dataKey] || name];
+          formatter={(value: number, name: string) => {
+            // Formatar como moeda para VGV
+            const isVGV = name.includes('VGV');
+            const formattedValue = isVGV ? formatCurrency(value) : value;
+            return [formattedValue, SERIES_LABELS[name] || name];
           }}
         />
         <Legend
-          wrapperStyle={{ paddingTop: '10px', fontSize: '10px' }}
-          formatter={(value) => {
-            const labels: Record<string, string> = {
-              meta: 'Meta',
-              realizado: 'Realizado',
-              anoAnterior: 'Ano Anterior',
-              anoAtual: 'Ano Atual',
-            };
-            return labels[value] || value;
-          }}
+          wrapperStyle={{ paddingTop: '10px', fontSize: '10px', cursor: 'pointer' }}
+          onClick={(e) => handleLegendClick(e.dataKey as string)}
+          formatter={(value) => SERIES_LABELS[value] || value}
         />
-        {/* Barras para Meta e Realizado - Eixo Esquerdo (R$) */}
+
+        {/* Barras - Eixo Esquerdo (R$) */}
         <Bar
           yAxisId="left"
-          dataKey="realizado"
+          dataKey="realizadoVGV"
           fill="#20B187"
           radius={[4, 4, 0, 0]}
-          name="Realizado (R$)"
+          name="realizadoVGV"
+          hide={isHidden('realizadoVGV')}
         />
-        <Bar yAxisId="left" dataKey="meta" fill="#0B2D5C" radius={[4, 4, 0, 0]} name="Meta (R$)" />
-        {/* Linhas para comparativo de anos - Eixo Direito (Quantidade) */}
+        <Bar
+          yAxisId="left"
+          dataKey="metaVGV"
+          fill="#0B2D5C"
+          radius={[4, 4, 0, 0]}
+          name="metaVGV"
+          hide={isHidden('metaVGV')}
+        />
+        <Bar
+          yAxisId="left"
+          dataKey="distratoVGV"
+          fill="#EF4444"
+          radius={[4, 4, 0, 0]}
+          name="distratoVGV"
+          hide={isHidden('distratoVGV')}
+        />
+
+        {/* Linhas - Eixo Direito (Quantidade #lotes) */}
         <Line
           yAxisId="right"
           type="monotone"
-          dataKey="anoAnterior"
-          stroke="#F45B32"
+          dataKey="realizadoLotes"
+          stroke="#10B981"
+          strokeWidth={2}
+          dot={{ r: 3 }}
+          name="realizadoLotes"
+          hide={isHidden('realizadoLotes')}
+        />
+        <Line
+          yAxisId="right"
+          type="monotone"
+          dataKey="metaLotes"
+          stroke="#3B82F6"
           strokeWidth={2}
           strokeDasharray="5 5"
-          dot={{ r: 2 }}
-          name="Ano Anterior (Qtd)"
+          dot={{ r: 3 }}
+          name="metaLotes"
+          hide={isHidden('metaLotes')}
         />
         <Line
           yAxisId="right"
           type="monotone"
-          dataKey="anoAtual"
-          stroke="#9333EA"
+          dataKey="distratoLotes"
+          stroke="#F97316"
           strokeWidth={2}
-          dot={{ r: 2 }}
-          name="Ano Atual (Qtd)"
+          dot={{ r: 3 }}
+          name="distratoLotes"
+          hide={isHidden('distratoLotes')}
         />
       </ComposedChart>
     </ResponsiveContainer>
