@@ -74,8 +74,17 @@ export const UnifiedSalesChart = ({ data }: UnifiedSalesChartProps) => {
         <YAxis
           yAxisId="left"
           className="text-xs"
+          width={80}
           tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
-          tickFormatter={(value) => formatCurrency(value, 0)}
+          tickFormatter={(value) => {
+            if (value >= 1000000) {
+              return `R$ ${(value / 1000000).toFixed(1)}M`;
+            }
+            if (value >= 1000) {
+              return `R$ ${(value / 1000).toFixed(0)}K`;
+            }
+            return `R$ ${value}`;
+          }}
         />
         {/* Eixo Y direito - Quantidades (#lotes) */}
         <YAxis

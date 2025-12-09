@@ -18,7 +18,7 @@ import { cn } from '@/shared/lib/utils';
 
 const menuItems = [
   {
-    title: 'Dashboard',
+    title: 'Mobile',
     href: '/',
     icon: Home,
     adminOnly: false,

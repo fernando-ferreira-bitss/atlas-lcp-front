@@ -47,6 +47,8 @@ export const SalesEvolutionChart = ({ data }: SalesEvolutionChartProps) => {
         <YAxis
           tick={{ fill: '#666', fontSize: 12 }}
           axisLine={{ stroke: '#ccc' }}
+          width={60}
+          tickFormatter={(value: number) => value.toFixed(1)}
           label={{
             value: 'Valor (MM)',
             angle: -90,

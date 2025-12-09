@@ -238,10 +238,18 @@ export interface DashboardKPIs {
   percentual_meta: number;
   meta_vendas_ytd: number;
   percentual_meta_ytd: number;
+  valor_vendas_ytd: number;
+  qtd_distratos_ytd: number;
+  valor_distratos_ytd: number;
+  valor_vendas_liquido_ytd: number;
+  percentual_meta_liquido_ytd: number;
   meta_vendas_mensal: number;
   percentual_meta_mensal: number;
   valor_vendas_mensal: number;
-  valor_vendas_ytd: number;
+  qtd_distratos_mensal: number;
+  valor_distratos_mensal: number;
+  valor_vendas_liquido_mensal: number;
+  percentual_meta_liquido_mensal: number;
 }
 
 export interface ComparativoAnos {

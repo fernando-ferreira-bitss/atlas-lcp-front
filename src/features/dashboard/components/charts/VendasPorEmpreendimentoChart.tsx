@@ -20,7 +20,7 @@ export const VendasPorEmpreendimentoChart = ({ data }: VendasPorEmpreendimentoCh
     const nome = item.grupo_nome || item.empreendimento_nome || 'Sem nome';
     return {
       nomeCompleto: nome,
-      nomeAbreviado: nome.length > 20 ? `${nome.substring(0, 20)}...` : nome,
+      nomeAbreviado: nome.length > 15 ? `${nome.substring(0, 15)}...` : nome,
       propostas: item.total_propostas,
       vendas: item.total_vendas,
     };
@@ -28,10 +28,17 @@ export const VendasPorEmpreendimentoChart = ({ data }: VendasPorEmpreendimentoCh
 
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={chartData}>
+      <BarChart data={chartData} margin={{ bottom: 10 }}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="nomeAbreviado" angle={-45} textAnchor="end" height={120} />
-        <YAxis />
+        <XAxis
+          dataKey="nomeAbreviado"
+          angle={-35}
+          textAnchor="end"
+          height={80}
+          interval={0}
+          tick={{ fontSize: 10 }}
+        />
+        <YAxis width={40} tick={{ fontSize: 11 }} />
         <Tooltip
           labelFormatter={(label) => {
             const item = chartData.find((d) => d.nomeAbreviado === label);

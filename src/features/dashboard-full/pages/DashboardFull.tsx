@@ -647,7 +647,7 @@ export const DashboardFull = () => {
           <h2
             className={`text-center font-bold text-lcp-blue ${isFullscreen ? 'text-sm mb-2' : 'text-xs mb-1'} lg:text-sm lg:mb-2`}
           >
-            🎯 Atendimento de Metas
+            🎯 Atendimento de Metas Líquidas
           </h2>
 
           {/* Velocímetros lado a lado */}
@@ -657,7 +657,7 @@ export const DashboardFull = () => {
             {/* Meta Mensal */}
             <div className="flex h-full flex-1">
               <MetaGaugeChart
-                percentual={kpis.percentual_meta_mensal}
+                percentual={kpis.percentual_meta_liquido_mensal}
                 title="Meta Período"
                 subtitle={formatCurrency(kpis.meta_vendas_mensal)}
                 isFullscreen={isFullscreen}
@@ -667,7 +667,7 @@ export const DashboardFull = () => {
             {/* Meta YTD */}
             <div className="flex h-full flex-1">
               <MetaGaugeChart
-                percentual={kpis.percentual_meta_ytd}
+                percentual={kpis.percentual_meta_liquido_ytd}
                 title="Meta YTD"
                 subtitle={formatCurrency(kpis.meta_vendas_ytd)}
                 isFullscreen={isFullscreen}
