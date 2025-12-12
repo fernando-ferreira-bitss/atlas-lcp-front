@@ -24,7 +24,7 @@ const menuItems = [
     adminOnly: false,
   },
   {
-    title: 'Dashboard 2',
+    title: 'Dashboard',
     href: '/dashboard-full',
     icon: Monitor,
     adminOnly: false,
