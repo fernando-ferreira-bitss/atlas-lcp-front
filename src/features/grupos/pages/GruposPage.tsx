@@ -1,8 +1,9 @@
-import { Edit, Loader2, Plus, Trash2 } from 'lucide-react';
+import { Building, Edit, Loader2, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { GrupoFormModal } from '../components/GrupoFormModal';
+import { UnidadesModal } from '../components/UnidadesModal';
 import { useDeleteGrupo, useGrupos } from '../hooks/useGrupos';
 
 import type { EmpreendimentoGrupoWithMembros } from '@/shared/types';
@@ -22,6 +23,11 @@ export const GruposPage = () => {
   const [selectedGrupo, setSelectedGrupo] = useState<EmpreendimentoGrupoWithMembros | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loadingGrupoId, setLoadingGrupoId] = useState<number | null>(null);
+
+  // Estado para modal de unidades
+  const [selectedGrupoForUnidades, setSelectedGrupoForUnidades] =
+    useState<EmpreendimentoGrupoWithMembros | null>(null);
+  const [isUnidadesModalOpen, setIsUnidadesModalOpen] = useState(false);
 
   const { data: grupos, isLoading, error } = useGrupos();
   const deleteGrupo = useDeleteGrupo();
@@ -61,6 +67,16 @@ export const GruposPage = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedGrupo(null);
+  };
+
+  const handleOpenUnidadesModal = (grupo: EmpreendimentoGrupoWithMembros) => {
+    setSelectedGrupoForUnidades(grupo);
+    setIsUnidadesModalOpen(true);
+  };
+
+  const handleCloseUnidadesModal = () => {
+    setIsUnidadesModalOpen(false);
+    setSelectedGrupoForUnidades(null);
   };
 
   if (isLoading) {
@@ -137,8 +153,18 @@ export const GruposPage = () => {
                         <Button
                           variant="ghost"
                           size="sm"
+                          onClick={() => handleOpenUnidadesModal(grupo)}
+                          disabled={loadingGrupoId === grupo.id}
+                          title="Configurar unidades"
+                        >
+                          <Building className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => handleEdit(grupo)}
                           disabled={loadingGrupoId === grupo.id}
+                          title="Editar grupo"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -148,6 +174,7 @@ export const GruposPage = () => {
                           onClick={() => handleDelete(grupo.id, grupo.nome_grupo)}
                           disabled={loadingGrupoId === grupo.id}
                           className="text-red-600 hover:text-red-700"
+                          title="Excluir grupo"
                         >
                           {loadingGrupoId === grupo.id ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -177,6 +204,12 @@ export const GruposPage = () => {
       </div>
 
       <GrupoFormModal isOpen={isModalOpen} onClose={handleCloseModal} grupo={selectedGrupo} />
+
+      <UnidadesModal
+        isOpen={isUnidadesModalOpen}
+        onClose={handleCloseUnidadesModal}
+        grupo={selectedGrupoForUnidades}
+      />
     </div>
   );
 };

@@ -385,3 +385,39 @@ export interface PaginationParams {
   skip?: number;
   limit?: number;
 }
+
+// === Unidade Types ===
+export interface Unidade {
+  id: number;
+  codigo_mega: number;
+  empreendimento_id: number;
+  empreendimento_nome: string | null;
+  grupo_id: number | null;
+  grupo_nome: string | null;
+  nome: string;
+  bloco_codigo: number | null;
+  bloco_nome: string | null;
+  status: string | null;
+  valor: number | null;
+  tipologia: string | null;
+  area_privativa: string | null;
+  pertence_cliente: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UnidadeListResponse {
+  total: number;
+  skip: number;
+  limit: number;
+  items: Unidade[];
+}
+
+export interface UpdateUnidadesResponse {
+  total_grupo: number;
+  pertence_cliente: number;
+  nao_pertence: number;
+  vendas_atualizadas: number;
+  propostas_atualizadas: number;
+  mensagem: string;
+}
