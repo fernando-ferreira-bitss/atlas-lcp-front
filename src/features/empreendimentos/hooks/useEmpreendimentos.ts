@@ -15,12 +15,15 @@ export const useEmpreendimentos = (): UseQueryResult<Empreendimento[], Error> =>
 /**
  * Hook para buscar todos os empreendimentos sem paginação
  * Usa a rota /api/v1/empreendimentos/all
+ * @param enabled - Se true, executa a query. Útil para só buscar quando necessário.
  */
-export const useAllEmpreendimentos = (): UseQueryResult<Empreendimento[], Error> =>
+export const useAllEmpreendimentos = (enabled = true): UseQueryResult<Empreendimento[], Error> =>
   useQuery({
     queryKey: ['empreendimentos', 'all'],
     queryFn: () => empreendimentoService.getAllUnpaginated(),
-    staleTime: 1000 * 60 * 10, // 10 minutos
+    staleTime: 0, // Sempre buscar na API
+    gcTime: 0, // Não manter em cache
+    enabled,
   });
 
 export const useEmpreendimento = (id: number): UseQueryResult<Empreendimento, Error> =>

@@ -130,12 +130,15 @@ export function useGrupoEmpreendimentos(id: number): UseQueryResult<number[], Er
 
 /**
  * Hook para buscar empreendimentos disponíveis (sem grupo)
+ * @param enabled - Se true, executa a query. Útil para só buscar quando modal está aberto.
  * @returns Query result com lista de empreendimentos disponíveis para vincular
  */
-export function useEmpreendimentosDisponiveis(): UseQueryResult<EmpreendimentoSimple[], Error> {
+export function useEmpreendimentosDisponiveis(enabled = true): UseQueryResult<EmpreendimentoSimple[], Error> {
   return useQuery({
     queryKey: ['empreendimentos-disponiveis'],
     queryFn: () => grupoService.getEmpreendimentosDisponiveis(),
-    staleTime: 1000 * 60 * 2, // 2 minutos - dados mais voláteis
+    staleTime: 0, // Sempre buscar na API
+    gcTime: 0, // Não manter em cache
+    enabled,
   });
 }

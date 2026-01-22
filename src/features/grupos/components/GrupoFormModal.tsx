@@ -49,12 +49,12 @@ export const GrupoFormModal = ({ isOpen, onClose, grupo }: GrupoFormModalProps) 
   const [selectedEmpreendimentos, setSelectedEmpreendimentos] = useState<number[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Buscar TODOS os empreendimentos (para obter dados completos dos vinculados)
-  const { data: todosEmpreendimentos, isLoading: isLoadingTodos } = useAllEmpreendimentos();
+  // Buscar TODOS os empreendimentos (para obter dados completos dos vinculados) - só quando modal está aberto
+  const { data: todosEmpreendimentos, isLoading: isLoadingTodos } = useAllEmpreendimentos(isOpen);
 
-  // Buscar empreendimentos disponíveis (sem grupo)
+  // Buscar empreendimentos disponíveis (sem grupo) - só quando modal está aberto
   const { data: empreendimentosDisponiveis, isLoading: isLoadingDisponiveis } =
-    useEmpreendimentosDisponiveis();
+    useEmpreendimentosDisponiveis(isOpen);
 
   // Buscar IDs dos empreendimentos já vinculados ao grupo (apenas se editando)
   const { data: empreendimentosVinculadosIds, isLoading: isLoadingVinculados } =
